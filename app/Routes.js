@@ -1,15 +1,27 @@
 import React from 'react';
-import { Switch, Route } from 'react-router';
-import routes from './constants/routes.json';
-import App from './containers/App';
-import HomePage from './containers/HomePage';
-import CounterPage from './containers/CounterPage';
+import routes from './constants/routes.js';
+import { Switch, Route, Redirect } from 'react-router-dom';
+import App from './App';
+import HomeScreen from './containers/HomeScreen';
+import SettingsScreen from './containers/SettingsScreen';
+import OrientationScreen from './containers/OrientationScreen';
+import TermsScreen from './containers/TermsScreen';
 
 export default () => (
   <App>
     <Switch>
-      <Route path={routes.COUNTER} component={CounterPage} />
-      <Route path={routes.HOME} component={HomePage} />
+      <Redirect exact from="/" to={routes.TermsScreen} />
+
+      <Route
+        exact
+        path={routes.OrientationScreen}
+        component={OrientationScreen}
+      />
+      <Route exact path={routes.HomeScreen} component={HomeScreen} />
+      <Route exact path={routes.SettingsScreen} component={SettingsScreen} />
+      <Route exact path={routes.CreatePinScreen} component={HomeScreen} />
+      <Route exact path={routes.OrientationScreen} component={SettingsScreen} />
+      <Route exact path={routes.TermsScreen} component={TermsScreen} />
     </Switch>
   </App>
 );

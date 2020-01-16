@@ -57,8 +57,10 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    height: 800,
+    width: 450,
+    resizable: false,
+    fullscreenable: false,
     webPreferences: {
       nodeIntegration: true
     }
