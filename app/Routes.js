@@ -6,11 +6,12 @@ import HomeScreen from './containers/HomeScreen';
 import SettingsScreen from './containers/SettingsScreen';
 import OrientationScreen from './containers/OrientationScreen';
 import TermsScreen from './containers/TermsScreen';
+import ChangePinScreen from './containers/ChangePinScreen';
 
 export default () => (
   <App>
     <Switch>
-      <Redirect exact from="/" to={routes.TermsScreen} />
+      <Redirect exact from="/" to={routes.HomeScreen} />
 
       <Route
         exact
@@ -22,6 +23,7 @@ export default () => (
       <Route exact path={routes.CreatePinScreen} component={HomeScreen} />
       <Route exact path={routes.OrientationScreen} component={SettingsScreen} />
       <Route exact path={routes.TermsScreen} component={TermsScreen} />
+      <Route exact path={routes.ChangePinScreen} component={ChangePinScreen} />
     </Switch>
   </App>
 );

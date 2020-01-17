@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Settings, ArrowBack } from '@material-ui/icons';
+import { connect } from 'react-redux';
 import Colors from '../../constants/Colors.js';
 import Images from '../../constants/Images.js';
 import routes from '../../constants/routes.js';
@@ -9,17 +10,20 @@ import routes from '../../constants/routes.js';
 class ScreenHeader extends Component {
   constructor(props) {
     super(props);
+    this.goBack = this.goBack.bind(this);
+  }
+
+  goBack() {
+    this.props.history.goBack();
   }
 
   render() {
-    const { title, classes, showSettings } = this.props;
+    const { title, classes, showSettings, history } = this.props;
 
     if (!showSettings) {
       return (
         <div className={classes.headerWrapper}>
-          <Link to={routes.HomeScreen} className={classes.link}>
-            <ArrowBack />
-          </Link>
+          <ArrowBack onClick={this.goBack} />
           <h1>{title}</h1>
           <span />
         </div>
@@ -36,6 +40,12 @@ class ScreenHeader extends Component {
       </div>
     );
   }
+}
+
+function mapStateToProps(state) {
+  const { router } = state;
+
+  return { history: router };
 }
 
 const styles = theme => ({
@@ -66,4 +76,4 @@ const styles = theme => ({
   }
 });
 
-export default withStyles(styles)(ScreenHeader);
+export default withStyles(styles)(withRouter(ScreenHeader));
