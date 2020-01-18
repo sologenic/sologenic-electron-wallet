@@ -1,47 +1,47 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
-import routes from '../constants/routes';
-import Colors from '../constants/Colors.js';
-import Images from '../constants/Images';
-import { withStyles } from '@material-ui/core';
-import ScreenHeader from '../components/shared/ScreenHeader';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import PinInput from 'react-pin-input';
-import { changingPin } from '../actions/index';
+import { bindActionCreators } from 'redux';
+import Colors from '../constants/Colors';
+import Images from '../constants/Images';
 
-class ChangePinScreen extends Component {
+// APP COMPONENTS
+import ScreenHeader from '../components/shared/ScreenHeader.js';
+
+// MUI COMPONENTS
+import { withStyles } from '@material-ui/core';
+
+// OTHER COMPONENTS
+import PinInput from 'react-pin-input';
+
+class PinScreen extends Component {
   constructor(props) {
     super(props);
-    this.state = { isPinWrong: false };
+    this.state = {
+      isPinWrong: false
+    };
     this.checkPin = this.checkPin.bind(this);
   }
 
   checkPin(pin) {
     const { pinCode } = this.props;
+
     if (pinCode.pin !== pin) {
       this.setState({
         isPinWrong: true
       });
-      this.pin.clear();
     } else {
-      this.props.changingPin(true);
-      this.props.history.push('/set-pin-screen');
+      this.props.history.push('/dashboard');
     }
   }
 
   render() {
-    const { isPinWrong } = this.state;
     const { classes } = this.props;
-
+    const { isPinWrong } = this.state;
     return (
-      <div className={classes.changePinScreenContainer}>
-        <ScreenHeader
-          title="Change Pin"
-          showSettings={false}
-          showBackArrow={true}
-        />
-        <h2>{isPinWrong ? 'Wrong PIN' : 'Enter Your Current PIN'}</h2>
+      <div className={classes.pinScreenContainer}>
+        <img src={Images.soloWhite} />
+        <h1>Wallet</h1>
+        <h2>{isPinWrong ? 'Wrong PIN' : 'Enter Your PIN'}</h2>
         <PinInput
           length={4}
           initialValue=""
@@ -52,7 +52,6 @@ class ChangePinScreen extends Component {
           onComplete={(v, i) => {
             this.checkPin(v);
           }}
-          ref={p => (this.pin = p)}
           style={{
             margin: '32px auto',
             width: '70%',
@@ -76,26 +75,39 @@ class ChangePinScreen extends Component {
 }
 
 function mapStateToProps(state) {
+  const { pinCode } = state;
   return {
-    pinCode: state.pinCode
+    pinCode: pinCode
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ changingPin: changingPin }, dispatch);
+  return bindActionCreators({}, dispatch);
 }
-
 const styles = theme => ({
-  changePinScreenContainer: {
-    '& h2': {
+  pinScreenContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    '& img': {
+      width: 150,
+      marginTop: 32,
+      marginBottom: 12,
+      objectFit: 'contain'
+    },
+    '& h1': {
       textAlign: 'center',
+      fontSize: 48,
+      fontWeight: 300
+    },
+    '& h2': {
       fontWeight: 300,
-      fontSize: 18,
+      fontSize: 16,
       marginTop: 32
     }
   }
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(ChangePinScreen)
+  connect(mapStateToProps, mapDispatchToProps)(PinScreen)
 );

@@ -7,6 +7,9 @@ export const getDefaultFiatCurrency = () => {
 };
 
 export const setDefaultFiatCurrency = createAction('setDefaultFiatCurrency');
+export const setPinCode = createAction('setPinCode');
+export const setTerms = createAction('setTerms');
+export const changingPin = createAction('changingPin');
 
 export const getMarketData = () => {
   return {

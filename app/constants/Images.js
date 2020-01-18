@@ -11,7 +11,16 @@ const images = {
   xrp: './assets/images/icons/xrp.png',
   soloSmall: './assets/images/icons/solo_small.png',
   xrpSmall: './assets/images/icons/xrp_small.png',
-  tokenizedAsset: './assets/images/icons/tokenized_asset.png'
+  tokenizedAsset: './assets/images/icons/tokenized_asset.png',
+  soloWhite: './assets/images/solo-whitelogo.png',
+  oS1: './assets/images/orientation/bg1.png',
+  oS2: './assets/images/orientation/bg2.png',
+  oS3: './assets/images/orientation/bg3.png',
+  oS4: './assets/images/orientation/bg4.png',
+  oSimg1: './assets/images/orientation/img1.png',
+  oSimg2: './assets/images/orientation/img2.png',
+  oSimg3: './assets/images/orientation/img3.png',
+  oSimg4: './assets/images/orientation/img4.png'
 };
 
 export default images;

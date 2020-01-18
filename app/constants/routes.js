@@ -1,11 +1,13 @@
 const routes = {
-  OrientationScreen: '/',
+  OrientationScreen: '/intro',
   HomeScreen: '/dashboard',
   SettingsScreen: '/settings',
   CreatePinScreen: '/create-pin',
   AddWalletScree: '/add-wallet',
   TermsScreen: '/terms-conditions',
-  ChangePinScreen: '/change-pin'
+  ChangePinScreen: '/change-pin',
+  SetPinScreen: '/set-pin-screen',
+  PinScreen: '/pin-screen'
 };
 
 module.exports = routes;

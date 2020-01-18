@@ -18,12 +18,16 @@ class ScreenHeader extends Component {
   }
 
   render() {
-    const { title, classes, showSettings, history } = this.props;
+    const { title, classes, showSettings, history, showBackArrow } = this.props;
 
     if (!showSettings) {
       return (
         <div className={classes.headerWrapper}>
-          <ArrowBack onClick={this.goBack} />
+          {showBackArrow ? (
+            <ArrowBack onClick={this.goBack} style={{ cursor: 'pointer' }} />
+          ) : (
+            <span />
+          )}
           <h1>{title}</h1>
           <span />
         </div>
@@ -59,7 +63,7 @@ const styles = theme => ({
       fontSize: 20,
       fontWeight: 300,
       textAlign: 'center',
-      width: '50%'
+      width: '65%'
     },
     '& img': {
       width: 20,
