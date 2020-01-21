@@ -47,7 +47,6 @@ class OrientationScreen extends Component {
   render() {
     let { step } = this.state;
     const { classes } = this.props;
-    console.log(this.props);
 
     return (
       <div className={classes.orientationScreenContainer}>

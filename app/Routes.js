@@ -10,6 +10,9 @@ import TermsScreen from './containers/TermsScreen';
 import ChangePinScreen from './containers/ChangePinScreen';
 import SetPinScreen from './containers/SetPinScreen';
 import PinScreen from './containers/PinScreen.js';
+import AddWalletScreen from './containers/AddWalletScreen';
+import RecoveryPhraseScreen from './containers/RecoveryPhraseScreen';
+import RecoveryTestScreen from './containers/RecoveryTestScreen';
 
 class Routes extends React.Component {
   constructor(props) {
@@ -23,7 +26,7 @@ class Routes extends React.Component {
     return (
       <App>
         <Switch>
-          <Redirect exact from="/" to={routes.OrientationScreen} />
+          <Redirect exact from="/" to={routes.PinScreen} />
 
           <Route
             exact
@@ -50,6 +53,21 @@ class Routes extends React.Component {
           />
           <Route exact path={routes.SetPinScreen} component={SetPinScreen} />
           <Route exact path={routes.PinScreen} component={PinScreen} />
+          <Route
+            exact
+            path={routes.AddWalletScreen}
+            component={AddWalletScreen}
+          />
+          <Route
+            exact
+            path={routes.RecoveryPhraseScreen}
+            component={RecoveryPhraseScreen}
+          />
+          <Route
+            exact
+            path={routes.RecoveryTestScreen}
+            component={RecoveryTestScreen}
+          />
         </Switch>
       </App>
     );

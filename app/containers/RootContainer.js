@@ -9,7 +9,7 @@ import {
   setTerms
 } from '../actions/index.js';
 
-storage.setDataPath(os.tmpdir());
+storage.setDataPath();
 
 class RootContainer extends Component {
   constructor(props) {

@@ -10,6 +10,11 @@ export const setDefaultFiatCurrency = createAction('setDefaultFiatCurrency');
 export const setPinCode = createAction('setPinCode');
 export const setTerms = createAction('setTerms');
 export const changingPin = createAction('changingPin');
+export const generateNewWallet = createAction('generateNewWallet');
+export const addNewWallet = createAction('addNewWallet');
+export const fillNewWallet = createAction('fillNewWallet');
+
+export const testingSaga = createAction('testingSaga');
 
 export const getMarketData = () => {
   return {

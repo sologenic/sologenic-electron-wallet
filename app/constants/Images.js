@@ -20,7 +20,8 @@ const images = {
   oSimg1: './assets/images/orientation/img1.png',
   oSimg2: './assets/images/orientation/img2.png',
   oSimg3: './assets/images/orientation/img3.png',
-  oSimg4: './assets/images/orientation/img4.png'
+  oSimg4: './assets/images/orientation/img4.png',
+  qricon: './assets/images/icons/qricon.png'
 };
 
 export default images;

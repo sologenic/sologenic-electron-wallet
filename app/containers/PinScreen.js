@@ -54,7 +54,7 @@ class PinScreen extends Component {
           }}
           style={{
             margin: '32px auto',
-            width: '70%',
+            width: '40%',
             display: 'flex',
             justifyContent: 'space-between'
           }}

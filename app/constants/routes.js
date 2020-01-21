@@ -7,7 +7,10 @@ const routes = {
   TermsScreen: '/terms-conditions',
   ChangePinScreen: '/change-pin',
   SetPinScreen: '/set-pin-screen',
-  PinScreen: '/pin-screen'
+  PinScreen: '/pin-screen',
+  AddWalletScreen: '/add-wallet-screen',
+  RecoveryPhraseScreen: '/recovery-phrase-screen',
+  RecoveryTestScreen: '/recovery-test-screen'
 };
 
 module.exports = routes;

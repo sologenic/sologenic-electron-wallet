@@ -4,6 +4,8 @@ import { createHashHistory } from 'history';
 import { routerMiddleware, routerActions } from 'connected-react-router';
 import { createLogger } from 'redux-logger';
 import createRootReducer from '../reducers';
+import createSagaMiddleware from 'redux-saga';
+import saga from '../sagas/index.js';
 
 const history = createHashHistory();
 
@@ -46,12 +48,16 @@ const configureStore = initialState => {
     : compose;
   /* eslint-enable no-underscore-dangle */
 
+  const sagaMiddleware = createSagaMiddleware();
+
   // Apply Middleware & Compose Enhancers
-  enhancers.push(applyMiddleware(...middleware));
+  enhancers.push(applyMiddleware(sagaMiddleware));
   const enhancer = composeEnhancers(...enhancers);
 
   // Create Store
   const store = createStore(rootReducer, initialState, enhancer);
+
+  sagaMiddleware.run(saga);
 
   if (module.hot) {
     module.hot.accept(
