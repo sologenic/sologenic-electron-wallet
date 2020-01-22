@@ -1,6 +1,6 @@
 import React from 'react';
 import routes from './constants/routes.js';
-import { Switch, Route, Redirect } from 'react-router-dom';
+import { Switch, Route, Redirect, IndexRoute } from 'react-router-dom';
 import { conenct, connect } from 'react-redux';
 import App from './App';
 import HomeScreen from './containers/HomeScreen';
@@ -13,26 +13,19 @@ import PinScreen from './containers/PinScreen.js';
 import AddWalletScreen from './containers/AddWalletScreen';
 import RecoveryPhraseScreen from './containers/RecoveryPhraseScreen';
 import RecoveryTestScreen from './containers/RecoveryTestScreen';
+import SingleWalletScreen from './containers/SingleWalletScreen';
 
 class Routes extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      initialRoute: ''
-    };
+    this.state = {};
   }
 
   render() {
     return (
       <App>
         <Switch>
-          <Redirect exact from="/" to={routes.PinScreen} />
-
-          <Route
-            exact
-            path={routes.OrientationScreen}
-            component={OrientationScreen}
-          />
+          <Route exact path="/" component={OrientationScreen} />
           <Route exact path={routes.HomeScreen} component={HomeScreen} />
           <Route
             exact
@@ -67,6 +60,11 @@ class Routes extends React.Component {
             exact
             path={routes.RecoveryTestScreen}
             component={RecoveryTestScreen}
+          />
+          <Route
+            exact
+            path={routes.SingleWalletScreen}
+            component={SingleWalletScreen}
           />
         </Switch>
       </App>

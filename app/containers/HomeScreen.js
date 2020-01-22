@@ -5,9 +5,11 @@ import Images from '../constants/Images';
 import ScreeHeader from '../components/shared/ScreenHeader.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { testingSaga, getWallets } from '../actions/index';
+import { testingSaga, connectToRippleApi } from '../actions/index';
 import { Close, ExpandMore, Add, GetApp } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
+import WalletCard from '../components/shared/WalletCard';
+import storage from 'electron-json-storage';
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -19,9 +21,9 @@ class HomeScreen extends Component {
     this.closeAddWallet = this.closeAddWallet.bind(this);
   }
 
-  // componentDidMount() {
-  //   this.props.getWallets();
-  // }
+  componentDidMount() {
+    this.props.connectToRippleApi();
+  }
 
   openAddWallet() {
     console.log('Clicked!');
@@ -45,14 +47,23 @@ class HomeScreen extends Component {
     return (
       <div className={classes.homeScreenContainer}>
         <ScreeHeader title="Your Wallets" showSettings={true} />
+        <div className={classes.walletsContainer}>
+          {wallets.wallets && wallets.wallets.length > 0 ? (
+            wallets.wallets.map((wlt, idx) => {
+              return (
+                <WalletCard
+                  key={idx}
+                  nickname={wlt.nickname}
+                  balance={wlt.balance}
+                  wallet={wlt}
+                />
+              );
+            })
+          ) : (
+            <h3>No Wallets Added</h3>
+          )}
+        </div>
 
-        {wallets.wallets.length > 0 ? (
-          wallets.wallets.map((wlt, idx) => {
-            return <div className={classes.walletCard}>{wlt.nickname}</div>;
-          })
-        ) : (
-          <h3>No Wallets Added</h3>
-        )}
         <Add onClick={this.openAddWallet} classes={{ root: classes.addBtn }} />
         <div
           className={`${classes.addWalletScreen} ${
@@ -90,7 +101,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       testingSaga,
-      getWallets
+      connectToRippleApi
     },
     dispatch
   );
@@ -104,6 +115,16 @@ const styles = theme => ({
       fontWeight: 300,
       textAlign: 'center',
       marginTop: 32
+    },
+    '&::-webkit-scrollbar': {
+      display: 'none'
+    }
+  },
+  walletsContainer: {
+    height: '555px',
+    overflow: 'auto',
+    '&::-webkit-scrollbar': {
+      display: 'none'
     }
   },
   addWalletScreen: {

@@ -63,7 +63,7 @@ class SetPinScreen extends Component {
         }
       });
 
-      setTimeout(() => this.props.history.push('/dashboard'), 3000);
+      setTimeout(() => this.props.history.push('/dashboard'), 1500);
     }
   }
 
@@ -108,7 +108,7 @@ class SetPinScreen extends Component {
             }}
             style={{
               margin: '32px auto',
-              width: '70%',
+              width: '40%',
               display: 'flex',
               justifyContent: 'space-between'
             }}
@@ -158,7 +158,7 @@ class SetPinScreen extends Component {
               ref={p => (this.pin = p)}
               style={{
                 margin: '32px auto',
-                width: '70%',
+                width: '40%',
                 display: 'flex',
                 justifyContent: 'space-between'
               }}

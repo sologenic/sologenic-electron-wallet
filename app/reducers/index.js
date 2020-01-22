@@ -2,6 +2,7 @@
 import { combineReducers } from 'redux';
 import { connectRouter } from 'connected-react-router';
 import { createReducer } from 'redux-act';
+import storage from 'electron-json-storage';
 // import type { HashHistory } from 'history';
 import {
   getDefaultFiatCurrency,
@@ -11,7 +12,8 @@ import {
   changingPin,
   generateNewWallet,
   // addNewWallet,
-  fillNewWallet
+  fillNewWallet,
+  fillWallets
 } from '../actions/index.js';
 
 const initial = {
@@ -39,7 +41,7 @@ const wallets = createReducer(
     [fillNewWallet]: (state, payload) => {
       const { wallets } = state;
       console.log('STORE WALLETS', payload);
-      const payload2 = payload.payload;
+      const payload2 = payload;
 
       const newWallet = {
         id: payload2.rippleClassicAddress,
@@ -56,9 +58,22 @@ const wallets = createReducer(
         trustline: 'ADD TRUSTLINE'
       };
 
+      storage.set('wallets', [...wallets, newWallet], function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+
       return {
         ...state,
         wallets: [...wallets, newWallet],
+        updated: true
+      };
+    },
+    [fillWallets]: (state, payload) => {
+      return {
+        ...state,
+        wallets: payload,
         updated: true
       };
     }
@@ -98,6 +113,11 @@ const isPinChanging = createReducer(
 const defaultFiat = createReducer(
   {
     [setDefaultFiatCurrency]: (state, payload) => {
+      storage.set('defaultCurrency', { currency: payload }, function(err) {
+        if (err) {
+          console.log('ERROR', err);
+        }
+      });
       return {
         ...state,
         currency: payload

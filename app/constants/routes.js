@@ -10,7 +10,8 @@ const routes = {
   PinScreen: '/pin-screen',
   AddWalletScreen: '/add-wallet-screen',
   RecoveryPhraseScreen: '/recovery-phrase-screen',
-  RecoveryTestScreen: '/recovery-test-screen'
+  RecoveryTestScreen: '/recovery-test-screen',
+  SingleWalletScreen: '/single-wallet-screen/:id'
 };
 
 module.exports = routes;

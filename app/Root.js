@@ -14,11 +14,7 @@ type Props = {
 
 const Root = ({ store, history }: Props) => (
   <Provider store={store}>
-    <RootContainer>
-      <ConnectedRouter history={history}>
-        <Routes />
-      </ConnectedRouter>
-    </RootContainer>
+    <RootContainer history={history} />
   </Provider>
 );
 

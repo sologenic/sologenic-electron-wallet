@@ -56,15 +56,7 @@ class SettingsScreen extends Component {
 
   confirmSelectedFiat() {
     this.props.setDefaultFiatCurrency(this.state.selectedFiat);
-    storage.set(
-      'defaultCurrency',
-      { currency: this.state.selectedFiat },
-      function(err) {
-        if (err) {
-          console.log('ERROR', err);
-        }
-      }
-    );
+
     this.setState({ selectFiatMenuOpen: false });
   }
 

@@ -20,11 +20,8 @@ class OrientationScreen extends Component {
       step: 1
     };
     this.changeStep = this.changeStep.bind(this);
-    this.getStarted = this.getStarted.bind(this);
     this.changeSlide = this.changeSlide.bind(this);
   }
-
-  getStarted() {}
 
   changeStep() {
     let step = this.state.step;
@@ -42,6 +39,14 @@ class OrientationScreen extends Component {
     this.setState({
       step: slide
     });
+  }
+
+  componentDidMount() {
+    const isPinSet = this.props.pinCode.pin === '' ? false : true;
+
+    if (isPinSet) {
+      this.props.history.push('/pin-screen');
+    }
   }
 
   render() {
@@ -83,7 +88,7 @@ class OrientationScreen extends Component {
                 console.log('clicked');
                 this.props.history.push('/terms-conditions');
               }}
-              // disabled={step === 4 ? false : true}
+              disabled={step === 4 ? false : true}
             >
               Get Started
             </button>
@@ -120,6 +125,8 @@ const styles = theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     padding: '32px 0 38px',
+    margin: '0 auto',
+    width: '60%',
     '& p': {
       textAlign: 'center',
       fontSize: 20,
@@ -177,19 +184,19 @@ const styles = theme => ({
     left: 0
   },
   mainImg: {
-    width: '80%',
+    width: '40%',
     height: 'auto',
     position: 'absolute',
-    top: 32,
+    top: 20,
     left: '50%',
     transform: 'translateX(-50%)'
   },
   mainImg2: {
-    width: '65%',
+    width: '30%',
     top: 16
   },
   mainImg4: {
-    width: '80%',
+    width: '40%',
     top: 32
   },
   notActiveDot: {

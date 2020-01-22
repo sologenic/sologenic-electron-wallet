@@ -41,7 +41,6 @@ class RecoveryPhraseScreen extends Component {
 
     const mnemonic = newWallet.newWallet.wallet.mnemonic.split(' ');
 
-    console.log(this.props);
     return (
       <div className={classes.recoveryPhraseScreenContainer}>
         <ScreenHeader

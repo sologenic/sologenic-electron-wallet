@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core';
 import { Error } from '@material-ui/icons';
 
 // ACTIONS
-import { addNewWallet } from '../../actions/index';
+import { fillNewWallet } from '../../actions/index';
 
 class RecoveryPhrase extends Component {
   constructor(props) {
@@ -54,7 +54,7 @@ class RecoveryPhrase extends Component {
         isWrongPhrase: true
       });
     } else {
-      this.props.addNewWallet({
+      this.props.fillNewWallet({
         nickname: this.props.newWallet.newWallet.walletNickname,
         wallet: this.props.newWallet.newWallet.wallet,
         walletAddress: this.props.newWallet.newWallet.walletAddress,
@@ -70,7 +70,7 @@ class RecoveryPhrase extends Component {
     const { classes, phrase, randomNumbers } = this.props;
     const { isWrongPhrase } = this.state;
 
-    console.log(this.props);
+    console.log('RecoveryPhrase', this.props);
 
     if (randomNumbers && randomNumbers.length) {
       return (
@@ -152,7 +152,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ addNewWallet }, dispatch);
+  return bindActionCreators({ fillNewWallet }, dispatch);
 }
 const styles = theme => ({
   testContainer: {

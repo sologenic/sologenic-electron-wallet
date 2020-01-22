@@ -30,11 +30,9 @@ class AddWalletScreen extends Component {
     const result = generateNewRandomWallet();
     console.log('New WALLET', result);
     const walletAddress = getAddress(result);
-    console.log('WALLET ADDRESS', walletAddress);
     const rippleClassicAddress = getRippleClassicAddressFromXAddress(
       walletAddress
     );
-    console.log('Ripple ADDRESS', rippleClassicAddress);
     const nickname = this.refs.walletNickname.value.trim();
 
     this.props.generateNewWallet({
@@ -43,7 +41,6 @@ class AddWalletScreen extends Component {
       walletAddress,
       rippleClassicAddress
     });
-    console.log('Wallet Name', nickname);
 
     this.props.history.push({
       pathname: '/recovery-phrase-screen'

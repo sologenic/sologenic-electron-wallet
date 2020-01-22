@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
-import { Settings, ArrowBack } from '@material-ui/icons';
+import { Settings, ArrowBack, MoreVert } from '@material-ui/icons';
 import { connect } from 'react-redux';
 import Colors from '../../constants/Colors.js';
 import Images from '../../constants/Images.js';
@@ -18,31 +18,53 @@ class ScreenHeader extends Component {
   }
 
   render() {
-    const { title, classes, showSettings, history, showBackArrow } = this.props;
+    const {
+      title,
+      classes,
+      showSettings,
+      history,
+      showBackArrow,
+      dark,
+      showWalletOptions
+    } = this.props;
 
-    if (!showSettings) {
-      return (
-        <div className={classes.headerWrapper}>
-          {showBackArrow ? (
-            <ArrowBack onClick={this.goBack} style={{ cursor: 'pointer' }} />
-          ) : (
-            <span />
-          )}
-          <h1>{title}</h1>
-          <span />
-        </div>
-      );
-    }
-
+    // if (!showSettings) {
     return (
-      <div className={classes.headerWrapper}>
-        <img src={Images.solo} alt="solo-icon" />
+      <div
+        className={classes.headerWrapper}
+        style={{
+          background: dark ? 'transparent' : Colors.headerBackground
+        }}
+      >
+        {showBackArrow ? (
+          <ArrowBack onClick={this.goBack} style={{ cursor: 'pointer' }} />
+        ) : (
+          <img src={Images.solo} alt="solo-icon" />
+        )}
         <h1>{title}</h1>
-        <Link to={routes.SettingsScreen} className={classes.link}>
-          <Settings />
-        </Link>
+        {showSettings ? (
+          <Link to={routes.SettingsScreen} className={classes.link}>
+            <Settings />
+          </Link>
+        ) : showWalletOptions ? (
+          <MoreVert
+            onClick={() => console.log('Options clicked!')}
+            classes={{ root: classes.optionsLink }}
+          />
+        ) : (
+          <span />
+        )}
       </div>
     );
+    // }
+
+    // return (
+    //   <div className={classes.headerWrapper}>
+    //     <img src={Images.solo} alt="solo-icon" />
+    //     <h1>{title}</h1>
+    //
+    //   </div>
+    // );
   }
 }
 
@@ -58,7 +80,7 @@ const styles = theme => ({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 18,
-    background: Colors.headerBackground,
+    // background: Colors.headerBackground,
     '& h1': {
       fontSize: 20,
       fontWeight: 300,
@@ -77,6 +99,9 @@ const styles = theme => ({
       color: Colors.lightGray,
       transition: '.5s'
     }
+  },
+  optionsLink: {
+    cursor: 'pointer'
   }
 });
 
