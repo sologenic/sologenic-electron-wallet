@@ -5,7 +5,7 @@ import Images from '../constants/Images';
 import ScreeHeader from '../components/shared/ScreenHeader.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { testingSaga, connectToRippleApi } from '../actions/index';
+import { testingSaga, connectToRippleApi, connection } from '../actions/index';
 import { Close, ExpandMore, Add, GetApp } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import WalletCard from '../components/shared/WalletCard';
@@ -21,8 +21,8 @@ class HomeScreen extends Component {
     this.closeAddWallet = this.closeAddWallet.bind(this);
   }
 
-  componentDidMount() {
-    this.props.connectToRippleApi();
+  async componentDidMount() {
+    await this.props.connectToRippleApi();
   }
 
   openAddWallet() {
@@ -39,10 +39,14 @@ class HomeScreen extends Component {
   }
 
   render() {
-    const { classes, wallets } = this.props;
+    const { classes, wallets, connection } = this.props;
     const { addWalletOpen } = this.state;
 
     console.log(this.props);
+
+    if (!connection.connected) {
+      return <h1>Connecting....</h1>;
+    }
 
     return (
       <div className={classes.homeScreenContainer}>
@@ -94,7 +98,7 @@ class HomeScreen extends Component {
 }
 
 function mapStateToProps(state) {
-  return { wallets: state.wallets };
+  return { wallets: state.wallets, connection: state.connection };
 }
 
 function mapDispatchToProps(dispatch) {

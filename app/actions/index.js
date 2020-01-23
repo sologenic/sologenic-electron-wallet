@@ -15,6 +15,24 @@ export const addNewWallet = createAction('addNewWallet');
 export const fillNewWallet = createAction('fillNewWallet');
 export const fillWallets = createAction('fillWallets');
 export const connectToRippleApi = createAction('connectToRippleApi');
+export const getBalance = createAction('getBalance');
+export const getBalanceSuccess = createAction('getBalanceSuccess');
+export const setConnection = createAction('setConnection');
+
+export const getMarketData = createAction('getMarketData');
+export const getMarketDataSuccess = createAction('getMarketDataSuccess');
+export const getMarketDataError = createAction('getMarketDataError');
+
+export const getMarketSevens = createAction('getMarketSevens');
+export const getMarketSevensSuccess = createAction('getMarketSevensSuccess');
+
+export const changeWalletNickname = createAction('changeWalletNickname');
+export const deleteWallet = createAction('deleteWallet');
+
+export const closeModal = createAction('closeModal');
+export const openModal = createAction('openModal');
+export const openOptions = createAction('openOptions');
+export const closeOptions = createAction('closeOptions');
 
 export const testingSaga = createAction('testingSaga');
 

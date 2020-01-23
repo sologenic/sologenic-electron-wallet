@@ -3,18 +3,30 @@ import { Link, withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { Settings, ArrowBack, MoreVert } from '@material-ui/icons';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import Colors from '../../constants/Colors.js';
 import Images from '../../constants/Images.js';
 import routes from '../../constants/routes.js';
+import { openOptions, closeOptions } from '../../actions/index';
 
 class ScreenHeader extends Component {
   constructor(props) {
     super(props);
     this.goBack = this.goBack.bind(this);
+    this.openOptionsModal = this.openOptionsModal.bind(this);
+    this.closeOptionsModal = this.closeOptionsModal.bind(this);
   }
 
   goBack() {
     this.props.history.goBack();
+  }
+
+  openOptionsModal() {
+    this.props.openOptions();
+  }
+
+  closeOptionsModal() {
+    this.props.closeOptions();
   }
 
   render() {
@@ -25,7 +37,8 @@ class ScreenHeader extends Component {
       history,
       showBackArrow,
       dark,
-      showWalletOptions
+      showWalletOptions,
+      walletOptions
     } = this.props;
 
     // if (!showSettings) {
@@ -48,7 +61,11 @@ class ScreenHeader extends Component {
           </Link>
         ) : showWalletOptions ? (
           <MoreVert
-            onClick={() => console.log('Options clicked!')}
+            onClick={
+              walletOptions.isOpen
+                ? this.closeOptionsModal
+                : this.openOptionsModal
+            }
             classes={{ root: classes.optionsLink }}
           />
         ) : (
@@ -69,9 +86,19 @@ class ScreenHeader extends Component {
 }
 
 function mapStateToProps(state) {
-  const { router } = state;
+  const { walletOptions } = state;
 
-  return { history: router };
+  return { walletOptions };
+}
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      openOptions,
+      closeOptions
+    },
+    dispatch
+  );
 }
 
 const styles = theme => ({
@@ -105,4 +132,6 @@ const styles = theme => ({
   }
 });
 
-export default withStyles(styles)(withRouter(ScreenHeader));
+export default withStyles(styles)(
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(ScreenHeader))
+);

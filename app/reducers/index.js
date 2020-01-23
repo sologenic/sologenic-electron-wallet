@@ -13,8 +13,20 @@ import {
   generateNewWallet,
   // addNewWallet,
   fillNewWallet,
-  fillWallets
+  fillWallets,
+  closeModal,
+  openModal,
+  openOptions,
+  closeOptions,
+  changeWalletNickname,
+  deleteWallet,
+  getBalanceSuccess,
+  setConnection,
+  getMarketDataSuccess,
+  getMarketDataError,
+  getMarketSevensSuccess
 } from '../actions/index.js';
+import { create } from 'react-test-renderer';
 
 const initial = {
   defaultFiat: {
@@ -33,8 +45,107 @@ const initial = {
   wallets: {
     wallets: [],
     updated: false
+  },
+  modal: {
+    isOpen: false
+  },
+  walletOptions: {
+    isOpen: false
+  },
+  connection: {
+    connected: false
+  },
+  marketData: {
+    market: {},
+    updated: false
+  },
+  marketSevens: {
+    sevens: {},
+    updated: false
   }
 };
+
+const marketSevens = createReducer(
+  {
+    [getMarketSevensSuccess]: (state, payload) => {
+      console.log('MARKET 7 REDUCER', payload);
+      return {
+        ...state,
+        sevens: payload,
+        updated: true
+      };
+    }
+  },
+  initial.marketSevens
+);
+
+const marketData = createReducer(
+  {
+    [getMarketDataSuccess]: (state, payload) => {
+      return {
+        ...state,
+        market: payload,
+        updated: true
+      };
+    },
+    [getMarketDataError]: (state, payload) => {
+      return {
+        ...state,
+        market: payload,
+        updated: true
+      };
+    }
+  },
+  initial.marketData
+);
+
+const connection = createReducer(
+  {
+    [setConnection]: (state, payload) => {
+      return {
+        ...state,
+        connected: payload
+      };
+    }
+  },
+  initial.connection
+);
+
+const walletOptions = createReducer(
+  {
+    [openOptions]: (state, payload) => {
+      return {
+        ...state,
+        isOpen: true
+      };
+    },
+    [closeOptions]: (state, paylod) => {
+      return {
+        ...state,
+        isOpen: false
+      };
+    }
+  },
+  initial.walletOptions
+);
+
+const modal = createReducer(
+  {
+    [closeModal]: (state, payload) => {
+      return {
+        ...state,
+        isOpen: false
+      };
+    },
+    [openModal]: (state, payload) => {
+      return {
+        ...state,
+        isOpen: true
+      };
+    }
+  },
+  initial.modal
+);
 
 const wallets = createReducer(
   {
@@ -55,7 +166,7 @@ const wallets = createReducer(
         walletAddress: payload2.rippleClassicAddress,
         rippleClassicAddress: payload2.rippleClassicAddress,
         transactions: [],
-        trustline: 'ADD TRUSTLINE'
+        trustline: false
       };
 
       storage.set('wallets', [...wallets, newWallet], function(err) {
@@ -75,6 +186,75 @@ const wallets = createReducer(
         ...state,
         wallets: payload,
         updated: true
+      };
+    },
+    [changeWalletNickname]: (state, payload) => {
+      console.log('Changing Wallet Name', payload);
+
+      const { wallet, newName } = payload;
+      const { wallets } = state;
+      let walletsCopy = [...wallets];
+      const updatedWallets = walletsCopy.map(wlt => {
+        if (wallet.id === wlt.id) {
+          wlt.nickname = newName;
+        }
+        return wlt;
+      });
+
+      storage.set('wallets', [...updatedWallets], function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+
+      return {
+        ...state,
+        wallets: updatedWallets
+      };
+    },
+    [deleteWallet]: (state, payload) => {
+      const { wallet } = payload;
+      const { wallets } = state;
+      const walletsCopy = [...wallets];
+      const updatedWallets = walletsCopy.filter(wlt => {
+        return wallet.id !== wlt.id;
+      });
+
+      storage.set('wallets', [...updatedWallets], function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+
+      return {
+        ...state,
+        wallets: updatedWallets
+      };
+    },
+    [getBalanceSuccess]: (state, payload) => {
+      const { wallets } = state;
+      const { id, amount } = payload;
+
+      console.log('GET_BALANCE_SUCESS -> ', payload);
+      const updatedWallets = wallets.map(item => {
+        if (item.id === id) {
+          item.balance.xrp = amount;
+
+          return item;
+        }
+
+        return item;
+      });
+
+      storage.set('wallets', [...updatedWallets], function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      // const {id, payload} = payload;
+      return {
+        ...state,
+        wallets: updatedWallets
       };
     }
   },
@@ -118,9 +298,30 @@ const defaultFiat = createReducer(
           console.log('ERROR', err);
         }
       });
+
+      let symbol = '$';
+
+      switch (payload) {
+        case 'gbp':
+          symbol = '£';
+          break;
+        case 'eur':
+          symbol = '€';
+          break;
+        case 'aed':
+          symbol = 'د.إ';
+          break;
+        case 'jpy':
+          symbol = '¥';
+          break;
+        default:
+          symbol = '$';
+      }
+
       return {
         ...state,
-        currency: payload
+        currency: payload,
+        symbol: symbol
       };
     }
   },
@@ -159,6 +360,11 @@ export default function createRootReducer(history) {
     terms: terms,
     isPinChanging: isPinChanging,
     newWallet: newWallet,
-    wallets: wallets
+    wallets: wallets,
+    modal: modal,
+    walletOptions: walletOptions,
+    connection: connection,
+    marketData: marketData,
+    marketSevens: marketSevens
   });
 }

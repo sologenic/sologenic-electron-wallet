@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core';
 import { Error } from '@material-ui/icons';
 
 // ACTIONS
-import { fillNewWallet } from '../../actions/index';
+import { fillNewWallet, openModal } from '../../actions/index';
 
 class RecoveryPhrase extends Component {
   constructor(props) {
@@ -62,7 +62,7 @@ class RecoveryPhrase extends Component {
           .rippleClassicAddress
       });
 
-      this.props.history.push('/dashboard');
+      this.props.openModal('success');
     }
   }
 
@@ -152,7 +152,7 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ fillNewWallet }, dispatch);
+  return bindActionCreators({ fillNewWallet, openModal }, dispatch);
 }
 const styles = theme => ({
   testContainer: {

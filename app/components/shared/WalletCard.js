@@ -5,11 +5,12 @@ import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import { Link } from 'react-router-dom';
 
-// APP COMPONENTS
-
 // MUI COMPONENTS
 import { withStyles } from '@material-ui/core';
 import { ChevronRight } from '@material-ui/icons';
+
+// ACTIONS
+import { getBalance, getMarketData } from '../../actions/index';
 
 class WalletCard extends Component {
   constructor(props) {
@@ -17,10 +18,40 @@ class WalletCard extends Component {
     this.state = {};
   }
 
+  async componentDidMount() {
+    const { id, walletAddress } = this.props.wallet;
+    await this.props.getBalance({
+      address: walletAddress,
+      id
+    });
+    await this.props.getMarketData({
+      defaultFiat: this.props.defaultCurrency.currency
+    });
+  }
+
   render() {
-    const { classes, nickname, balance, defaultCurrency, wallet } = this.props;
+    const {
+      classes,
+      nickname,
+      balance,
+      defaultCurrency,
+      wallet,
+      marketData
+    } = this.props;
 
     console.log('Wallet Card', this.props);
+
+    let totalBalance = 0;
+
+    if (typeof marketData.market.last !== 'undefined') {
+      const { last } = marketData.market;
+      const { xrp, solo } = wallet.balance;
+
+      const xrpValue = xrp * last;
+      const soloValue = solo * 0;
+
+      totalBalance = xrpValue + soloValue;
+    }
 
     return (
       <div className={classes.walletCardContainer}>
@@ -39,7 +70,11 @@ class WalletCard extends Component {
               <div className={classes.walletBalance}>
                 <div className={classes.balanceLine}>
                   <span>Total Balance:</span>{' '}
-                  <p>$0.00 {defaultCurrency.currency.toUpperCase()}</p>
+                  <p>
+                    ~{defaultCurrency.symbol}
+                    {totalBalance.toFixed(2)}{' '}
+                    {defaultCurrency.currency.toUpperCase()}
+                  </p>
                 </div>
                 <div className={classes.balanceLine}>
                   <span>Tokenized Assets:</span>
@@ -57,7 +92,7 @@ class WalletCard extends Component {
           >
             <img src={Images.xrp} />
             <p className={balance.xrp === 0 ? classes.notActivated : ''}>
-              {balance.xrp === 0 ? 'Not Activated' : balance.xrp}
+              {balance.xrp === 0 ? 'Not Activated' : `${balance.xrp} XRP`}
             </p>
           </div>
           <div className={classes.walletBodySection}>
@@ -74,12 +109,14 @@ class WalletCard extends Component {
 
 function mapStateToProps(state) {
   return {
-    defaultCurrency: state.defaultFiat
+    defaultCurrency: state.defaultFiat,
+    wallets: state.wallets,
+    marketData: state.marketData
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({}, dispatch);
+  return bindActionCreators({ getBalance, getMarketData }, dispatch);
 }
 const styles = theme => ({
   walletCardContainer: {
