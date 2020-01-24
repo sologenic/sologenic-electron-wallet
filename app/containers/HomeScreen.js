@@ -10,6 +10,7 @@ import { Close, ExpandMore, Add, GetApp } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import WalletCard from '../components/shared/WalletCard';
 import storage from 'electron-json-storage';
+import {CircularProgress, Grow} from "@material-ui/core";
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -45,7 +46,7 @@ class HomeScreen extends Component {
     console.log(this.props);
 
     if (!connection.connected) {
-      return <h1>Connecting....</h1>;
+      return <div className={classes.loadingProgress}><CircularProgress classes={{circle: classes.circleProgress}} size={200} /></div>
     }
 
     return (
@@ -55,12 +56,13 @@ class HomeScreen extends Component {
           {wallets.wallets && wallets.wallets.length > 0 ? (
             wallets.wallets.map((wlt, idx) => {
               return (
-                <WalletCard
-                  key={idx}
-                  nickname={wlt.nickname}
-                  balance={wlt.balance}
-                  wallet={wlt}
-                />
+                  <WalletCard
+                    nickname={wlt.nickname}
+                    balance={wlt.balance}
+                    wallet={wlt}
+                    key={idx}
+                  />
+              
               );
             })
           ) : (
@@ -112,6 +114,16 @@ function mapDispatchToProps(dispatch) {
 }
 
 const styles = theme => ({
+  loadingProgress: {
+    width: "100%",
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  circleProgress: {
+    color: Colors.darkRed
+  },
   homeScreenContainer: {
     position: 'relative',
     height: '100vh',

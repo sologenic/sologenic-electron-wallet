@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 // MUI COMPONENTS
-import { withStyles, Collapse, Dialog, TextField } from '@material-ui/core';
+import { withStyles, Collapse, Dialog, TextField, Fade } from '@material-ui/core';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 
@@ -156,6 +156,7 @@ class SingleWalletScreen extends Component {
     }
 
     return (
+      <Fade in>
       <div>
         <ScreenHeader
           showBackArrow={true}
@@ -227,7 +228,8 @@ class SingleWalletScreen extends Component {
         ) : (
           ''
         )}
-      </div>
+        </div>
+      </Fade>
     );
   }
 }

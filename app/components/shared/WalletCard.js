@@ -6,7 +6,7 @@ import Images from '../../constants/Images';
 import { Link } from 'react-router-dom';
 
 // MUI COMPONENTS
-import { withStyles } from '@material-ui/core';
+import { withStyles, Grow } from '@material-ui/core';
 import { ChevronRight } from '@material-ui/icons';
 
 // ACTIONS
@@ -54,6 +54,8 @@ class WalletCard extends Component {
     }
 
     return (
+      <Grow in timeout={1000}>
+
       <div className={classes.walletCardContainer}>
         <Link
           style={{ textDecoration: 'none', color: 'white' }}
@@ -103,6 +105,7 @@ class WalletCard extends Component {
           </div>
         </div>
       </div>
+      </Grow>
     );
   }
 }

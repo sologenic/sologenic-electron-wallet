@@ -71,12 +71,13 @@ class WalletTab extends Component {
     const { isModalOpen, priceChange, priceColor } = this.state;
 
     let totalBalance = 0;
+    let xrpValue = 0;
 
     if (typeof marketData.market.last !== 'undefined') {
       const { last } = marketData.market;
       const { xrp } = wallet.balance;
 
-      const xrpValue = xrp * last;
+      xrpValue = xrp * last;
       // const soloValue = solo * 0;
 
       totalBalance = xrpValue;
