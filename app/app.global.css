@@ -135,3 +135,7 @@ body {
   color: white;
   font-family: 'DM Sans', 'Roboto', sans-serif;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

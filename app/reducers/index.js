@@ -24,7 +24,10 @@ import {
   setConnection,
   getMarketDataSuccess,
   getMarketDataError,
-  getMarketSevensSuccess
+  getMarketSevensSuccess,
+  getCurrentWallet,
+  getTransactionsSuccess,
+  createTrustlineSuccess
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -40,6 +43,10 @@ const initial = {
   },
   isPinChanging: {
     changing: false
+  },
+  currentWallet: {
+    wallet: null,
+    updated: false
   },
   newWallet: null,
   wallets: {
@@ -62,13 +69,51 @@ const initial = {
   marketSevens: {
     sevens: {},
     updated: false
+  },
+  transactions: {
+    transactions: [],
+    updated: false
   }
 };
+
+const transactions = createReducer(
+  {
+    [getTransactionsSuccess]: (state, payload) => {
+      console.log(payload);
+
+      return {
+        ...state,
+        transactions: payload,
+        updated: true
+      };
+    }
+  },
+  initial.transactions
+);
+
+const currentWallet = createReducer(
+  {
+    [getCurrentWallet]: (state, payload) => {
+      console.log('GET_WALLET -> ');
+
+      const { id } = payload;
+      const { wallets } = state;
+      const currentWallet = wallets.wallets.find(item => item.id === id);
+
+      return {
+        ...state,
+        wallet: currentWallet,
+        updated: true
+      };
+    }
+  },
+  initial.currentWallet
+);
 
 const marketSevens = createReducer(
   {
     [getMarketSevensSuccess]: (state, payload) => {
-      console.log('MARKET 7 REDUCER', payload);
+      console.log('MARKET 7 REDUCER', state);
       return {
         ...state,
         sevens: payload,
@@ -166,7 +211,8 @@ const wallets = createReducer(
         walletAddress: payload2.rippleClassicAddress,
         rippleClassicAddress: payload2.rippleClassicAddress,
         transactions: [],
-        trustline: false
+        trustline: false,
+        isActive: false
       };
 
       storage.set('wallets', [...wallets, newWallet], function(err) {
@@ -252,6 +298,29 @@ const wallets = createReducer(
         }
       });
       // const {id, payload} = payload;
+      return {
+        ...state,
+        wallets: updatedWallets
+      };
+    },
+    [createTrustlineSuccess]: (state, payload) => {
+      const id = payload;
+      const { wallets } = state;
+      const copyWallets = [...wallets];
+      const updatedWallets = copyWallets.map(wlt => {
+        if (wlt.id === id) {
+          wlt.trustline = true;
+        }
+
+        return wlt;
+      });
+
+      storage.set('wallets', [...updatedWallets], function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+
       return {
         ...state,
         wallets: updatedWallets
@@ -365,6 +434,8 @@ export default function createRootReducer(history) {
     walletOptions: walletOptions,
     connection: connection,
     marketData: marketData,
-    marketSevens: marketSevens
+    marketSevens: marketSevens,
+    currentWallet: currentWallet,
+    transactions: transactions
   });
 }

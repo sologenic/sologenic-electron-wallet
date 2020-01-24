@@ -1,7 +1,7 @@
 import qrcode from 'qrcode-generator';
 import Colors from '../constants/Colors';
 import { Wallet, Utils } from 'xpring-common-js';
-import * as s from 'sologenic-xrpl-stream-js';
+import * as s from 'sologenic-xrpl-stream-js-non-redis';
 
 export const countWords = words => {
   const arrayOfWords = words

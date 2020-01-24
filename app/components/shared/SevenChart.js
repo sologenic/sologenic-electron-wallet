@@ -49,7 +49,7 @@ class SevenChart extends Component {
           tick={false}
           width={0}
         />
-        <Line type="linear" dataKey="value" stroke="#FFFFFF" dot={false} />
+        <Line type="linear" dataKey="value" stroke={color} dot={false} />
       </LineChart>
     );
   }

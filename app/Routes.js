@@ -15,6 +15,7 @@ import RecoveryPhraseScreen from './containers/RecoveryPhraseScreen';
 import RecoveryTestScreen from './containers/RecoveryTestScreen';
 import SingleWalletScreen from './containers/SingleWalletScreen';
 import ChangeWalletNicknameScreen from './containers/ChangeWalletNicknameScreen';
+import TransferXRPScreen from './containers/TransferXRPScreen';
 
 class Routes extends React.Component {
   constructor(props) {
@@ -71,6 +72,11 @@ class Routes extends React.Component {
             exact
             path={routes.ChangeWalletNicknameScreen}
             component={ChangeWalletNicknameScreen}
+          />
+          <Route
+            exact
+            path={routes.TransferXRPScreen}
+            component={TransferXRPScreen}
           />
         </Switch>
       </App>

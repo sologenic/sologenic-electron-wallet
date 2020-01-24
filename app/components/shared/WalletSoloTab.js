@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import {
   getMarketData,
   getMarketSevens,
-  transferXRP
+  createTrustlineRequest
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
 import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
 
-class WalletTab extends Component {
+class WalletSoloTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -23,6 +22,7 @@ class WalletTab extends Component {
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
+    this.activateSoloWallet = this.activateSoloWallet.bind(this);
   }
 
   async componentDidMount() {
@@ -47,15 +47,30 @@ class WalletTab extends Component {
     this.setState({ isModalOpen: false });
   }
 
-  // sendXRP() {
-  //   // await this.props.transferXRP();
-  //   this.props.history.push({
-  //     pathname: '/send-xrp',
-  //     state: {
-  //       wallet: this.props.wallet
-  //     }
-  //   });
-  // }
+  async activateSoloWallet() {
+    const { wallet } = this.props;
+    const { privateKey, publicKey, secret } = wallet.details.wallet;
+    const keypair = {
+      privateKey,
+      publicKey
+    };
+
+    if (secret) {
+      await this.props.createTrustlineRequest({
+        address: wallet.walletAddress,
+        secret,
+        keypair: '',
+        id: wallet.id
+      });
+    } else if (keypair) {
+      await this.props.createTrustlineRequest({
+        address: wallet.walletAddress,
+        secret: '',
+        keypair,
+        id: wallet.id
+      });
+    }
+  }
 
   render() {
     const {
@@ -74,28 +89,49 @@ class WalletTab extends Component {
 
     if (typeof marketData.market.last !== 'undefined') {
       const { last } = marketData.market;
-      const { xrp } = wallet.balance;
+      const { solo } = wallet.balance;
 
-      const xrpValue = xrp * last;
+      const soloValue = solo * last;
       // const soloValue = solo * 0;
 
-      totalBalance = xrpValue;
+      totalBalance = soloValue;
     }
 
-    if (xrpValue === 0) {
-      return <div>Deposit to activate</div>;
-    }
-
-    if (xrpValue > 0 && xrpValue < 21) {
-      return <div>Running low</div>;
+    if (!wallet.trustline) {
+      return (
+        <div className={classes.tabContainer}>
+          <p className={classes.balanceTitle}>
+            Click below to activate your SOLO wallet. It could take up to 10
+            seconds
+          </p>
+          <button
+            className={classes.actSoloWalletBtn}
+            onClick={this.activateSoloWallet}
+          >
+            Activate
+          </button>
+          <div className={classes.sendReceiveBtns}>
+            <button onClick={() => console.log('receive MONEY!!!!')} disabled>
+              RECEIVE
+            </button>
+            <button
+              className={classes.sendMoneyBtn}
+              disabled
+              onClick={() => console.log('send MONEY!!!!')}
+            >
+              SEND
+            </button>
+          </div>
+        </div>
+      );
     }
 
     return (
       <div className={classes.tabContainer}>
         <p className={classes.balanceTitle}>Your Balance:</p>
         <h2 className={classes.balance}>
-          {wallet.balance.xrp}
-          <span> XRP</span>
+          {wallet.balance.solo}
+          <span> SOLO</span>
         </h2>
         <p className={classes.fiatValue}>
           ~{defaultFiat.symbol}
@@ -123,12 +159,12 @@ class WalletTab extends Component {
           <button onClick={() => console.log('receive MONEY!!!!')}>
             RECEIVE
           </button>
-          <Link
+          <button
             className={classes.sendMoneyBtn}
-            to={{ pathname: '/send-xrp', state: { wallet: wallet } }}
+            onClick={() => console.log('send MONEY!!!!')}
           >
             SEND
-          </Link>
+          </button>
         </div>
         <div className={classes.walletFunctions}>
           <div className={classes.walletAddress}>
@@ -169,7 +205,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, transferXRP },
+    { getMarketData, getMarketSevens, createTrustlineRequest },
     dispatch
   );
 }
@@ -188,7 +224,18 @@ const styles = theme => ({
       cursor: 'pointer'
     }
   },
-
+  actSoloWalletBtn: {
+    background: Colors.darkRed,
+    color: 'white',
+    borderRadius: 25,
+    border: 'none',
+    transition: '.2s',
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 0.5,
+      transition: '.2s'
+    }
+  },
   walletAddress: {
     width: '50%',
     display: 'flex',
@@ -267,31 +314,10 @@ const styles = theme => ({
         opacity: 0.6,
         transition: '.2s'
       }
-    },
-    '& a': {
-      width: 150,
-      borderRadius: 25,
-      color: 'white',
-      padding: '12px 0',
-      fontSize: 20,
-      cursor: 'pointer',
-      transition: '.2s',
-      background: Colors.darkRed,
-      borderColor: Colors.darkRed,
-      // textAlign: "center",
-      textDecoration: 'none',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-
-      '&:hover': {
-        opacity: 0.6,
-        transition: '.2s'
-      }
     }
   }
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(WalletTab)
+  connect(mapStateToProps, mapDispatchToProps)(WalletSoloTab)
 );

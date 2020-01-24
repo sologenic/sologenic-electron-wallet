@@ -58,8 +58,8 @@ class WalletCard extends Component {
         <Link
           style={{ textDecoration: 'none', color: 'white' }}
           to={{
-            pathname: `/single-wallet-screen/${nickname}`,
-            state: { wallet }
+            pathname: `/single-wallet-screen/${wallet.id}`,
+            state: { walletID: wallet.id }
           }}
         >
           <div className={classes.walletCardHeader}>

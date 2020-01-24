@@ -12,7 +12,8 @@ const routes = {
   RecoveryPhraseScreen: '/recovery-phrase-screen',
   RecoveryTestScreen: '/recovery-test-screen',
   SingleWalletScreen: '/single-wallet-screen/:id',
-  ChangeWalletNicknameScreen: '/change-wallet-nickname'
+  ChangeWalletNicknameScreen: '/change-wallet-nickname',
+  TransferXRPScreen: '/send-xrp'
 };
 
 module.exports = routes;

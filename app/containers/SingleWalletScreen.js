@@ -3,13 +3,14 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 // MUI COMPONENTS
-import { withStyles, Collapse, Dialog } from '@material-ui/core';
+import { withStyles, Collapse, Dialog, TextField } from '@material-ui/core';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 
 // APP COMPONENTS
 import ScreenHeader from '../components/shared/ScreenHeader';
 import WalletTab from '../components/shared/WalletTab';
+import WalletSoloTab from '../components/shared/WalletSoloTab';
 import { ArrowBack } from '@material-ui/icons';
 
 // ACTION
@@ -17,7 +18,8 @@ import {
   changeWalletNickname,
   closeOptions,
   deleteWallet,
-  getBalance
+  getBalance,
+  getTransactions
 } from '../actions/index';
 
 class SingleWalletScreen extends Component {
@@ -26,7 +28,8 @@ class SingleWalletScreen extends Component {
     this.state = {
       tabOnView: 'xrp',
       changingNickName: false,
-      openDeleteModal: false
+      openDeleteModal: false,
+      currentWallet: null
     };
 
     this.startNicknameChange = this.startNicknameChange.bind(this);
@@ -39,12 +42,26 @@ class SingleWalletScreen extends Component {
   }
 
   async componentDidMount() {
-    const { wallet } = this.props.location.state;
+    // const { walletID } = this.props.location.state;
 
-    console.log('Single Screen', wallet);
+    const { pathname } = this.props.location;
+    const pathElmnts = pathname.split('/');
+
+    const { wallets } = this.props;
+    const currentWallet = wallets.wallets.find(
+      item => item.id === pathElmnts[2]
+    );
+
+    console.log('Single Screen', currentWallet);
     await this.props.getBalance({
-      address: wallet.walletAddress,
-      id: wallet.id
+      address: currentWallet.walletAddress,
+      id: currentWallet.id
+    });
+
+    await this.props.getTransactions({ address: currentWallet.walletAddress });
+
+    this.setState({
+      currentWallet
     });
   }
 
@@ -67,7 +84,7 @@ class SingleWalletScreen extends Component {
   }
 
   async deleteWallet() {
-    await this.props.deleteWallet({ wallet: this.props.location.state.wallet });
+    await this.props.deleteWallet({ wallet: this.state.currentWallet });
 
     await this.props.closeOptions();
 
@@ -78,13 +95,14 @@ class SingleWalletScreen extends Component {
     const newName = this.refs.walletNickname.value;
 
     await this.props.changeWalletNickname({
-      wallet: this.props.location.state.wallet,
+      wallet: this.state.currentWallet,
       newName
     });
 
     await this.props.closeOptions();
+    this.setState({ changingNickName: false });
 
-    this.props.history.push('/dashboard');
+    // this.props.history.push('/dashboard');
   }
 
   changeTab(tab) {
@@ -93,8 +111,18 @@ class SingleWalletScreen extends Component {
 
   render() {
     const { classes, location, walletOptions } = this.props;
-    const { wallet } = location.state;
-    const { changingNickName, openDeleteModal, tabOnView } = this.state;
+    const {
+      changingNickName,
+      openDeleteModal,
+      tabOnView,
+      currentWallet
+    } = this.state;
+
+    if (currentWallet === null) {
+      return <span>Loading....</span>;
+    }
+
+    let wallet = currentWallet;
 
     console.log('Single', wallet);
 
@@ -189,8 +217,16 @@ class SingleWalletScreen extends Component {
             </div>
           </div>
         </div>
-
-        <WalletTab wallet={wallet} tabOnView={tabOnView} />
+        {tabOnView === 'xrp' ? (
+          <WalletTab wallet={wallet} tabOnView={tabOnView} />
+        ) : (
+          ''
+        )}
+        {tabOnView === 'solo' ? (
+          <WalletSoloTab wallet={wallet} tabOnView={tabOnView} />
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -198,13 +234,20 @@ class SingleWalletScreen extends Component {
 
 function mapStateToProps(state) {
   return {
-    walletOptions: state.walletOptions
+    walletOptions: state.walletOptions,
+    wallets: state.wallets
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { changeWalletNickname, closeOptions, deleteWallet, getBalance },
+    {
+      changeWalletNickname,
+      closeOptions,
+      deleteWallet,
+      getBalance,
+      getTransactions
+    },
     dispatch
   );
 }
@@ -279,6 +322,7 @@ const styles = theme => ({
     right: 30,
     width: 200,
     height: 0,
+    zIndex: 999999,
     overflow: 'hidden',
     transition: '.2s',
     background: Colors.darkerGray,

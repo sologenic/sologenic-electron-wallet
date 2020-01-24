@@ -25,6 +25,15 @@ export const getMarketDataError = createAction('getMarketDataError');
 
 export const getMarketSevens = createAction('getMarketSevens');
 export const getMarketSevensSuccess = createAction('getMarketSevensSuccess');
+export const getTransactions = createAction('getTransactions');
+export const getTransactionsSuccess = createAction('getTransactionsSuccess');
+export const getTransactionsError = createAction('getTransactionsError');
+
+export const createTrustlineRequest = createAction('createTrustlineRequest');
+export const createTrustlineSuccess = createAction('createTrustlineSuccess');
+export const createTrustlineError = createAction('createTrustlineError');
+
+export const transferXRP = createAction('transferXRP');
 
 export const changeWalletNickname = createAction('changeWalletNickname');
 export const deleteWallet = createAction('deleteWallet');
