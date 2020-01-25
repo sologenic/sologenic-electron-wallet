@@ -27,7 +27,9 @@ import {
   getMarketSevensSuccess,
   getCurrentWallet,
   getTransactionsSuccess,
-  createTrustlineSuccess
+  createTrustlineSuccess,
+  transferXrpSuccess,
+  cleanTransferInProgress
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -73,8 +75,56 @@ const initial = {
   transactions: {
     transactions: [],
     updated: false
+  },
+  transferInProgress: {
+    transfer: {
+      info: {},
+      finished: false,
+      success: false
+    },
+    updated: false
   }
 };
+
+const transferInProgress = createReducer(
+  {
+    [transferXrpSuccess]: (state, payload) => {
+      console.log('TRANSFER SUCCESS ->', payload);
+
+      if (payload.result && payload.result.status === 'failed') {
+        return {
+          ...state,
+          transfer: {
+            info: payload,
+            finished: true,
+            success: false,
+            reason: payload.result.reason
+          },
+          updated: true
+        };
+      } else {
+        return {
+          ...state,
+          transfer: {
+            info: payload,
+            finished: true,
+            success: true,
+            reason: ''
+          },
+          updated: true
+        };
+      }
+    },
+    [cleanTransferInProgress]: (state, payload) => {
+      return {
+        ...state,
+        transfer: { info: {}, finished: false, success: false },
+        updated: false
+      };
+    }
+  },
+  initial.transferInProgress
+);
 
 const transactions = createReducer(
   {
@@ -436,6 +486,7 @@ export default function createRootReducer(history) {
     marketData: marketData,
     marketSevens: marketSevens,
     currentWallet: currentWallet,
-    transactions: transactions
+    transactions: transactions,
+    transferInProgress: transferInProgress
   });
 }

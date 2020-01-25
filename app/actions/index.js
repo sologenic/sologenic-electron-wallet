@@ -34,6 +34,8 @@ export const createTrustlineSuccess = createAction('createTrustlineSuccess');
 export const createTrustlineError = createAction('createTrustlineError');
 
 export const transferXRP = createAction('transferXRP');
+export const transferXrpSuccess = createAction('transferXrpSuccess');
+export const cleanTransferInProgress = createAction('cleanTransferInProgress');
 
 export const changeWalletNickname = createAction('changeWalletNickname');
 export const deleteWallet = createAction('deleteWallet');

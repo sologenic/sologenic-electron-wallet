@@ -3,7 +3,13 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 // MUI COMPONENTS
-import { withStyles, Collapse, Dialog, TextField, Fade } from '@material-ui/core';
+import {
+  withStyles,
+  Collapse,
+  Dialog,
+  TextField,
+  Fade
+} from '@material-ui/core';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 
@@ -57,8 +63,6 @@ class SingleWalletScreen extends Component {
       address: currentWallet.walletAddress,
       id: currentWallet.id
     });
-
-    await this.props.getTransactions({ address: currentWallet.walletAddress });
 
     this.setState({
       currentWallet
@@ -157,77 +161,77 @@ class SingleWalletScreen extends Component {
 
     return (
       <Fade in>
-      <div>
-        <ScreenHeader
-          showBackArrow={true}
-          title={wallet.nickname}
-          showSettings={false}
-          dark={true}
-          showWalletOptions={true}
-        />
-        <Dialog
-          open={openDeleteModal}
-          classes={{ paper: classes.deleteModalContainer }}
-        >
-          <h2>Delete this Wallet?</h2>
-          <p>Are you sure you would like to delete this wallet?</p>
-          <div className={classes.deleteBtnsContainer}>
-            <button onClick={this.closeDeleteModal}>CANCEL</button>
-            <button onClick={this.deleteWallet}>DELETE</button>
+        <div>
+          <ScreenHeader
+            showBackArrow={true}
+            title={wallet.nickname}
+            showSettings={false}
+            dark={true}
+            showWalletOptions={true}
+          />
+          <Dialog
+            open={openDeleteModal}
+            classes={{ paper: classes.deleteModalContainer }}
+          >
+            <h2>Delete this Wallet?</h2>
+            <p>Are you sure you would like to delete this wallet?</p>
+            <div className={classes.deleteBtnsContainer}>
+              <button onClick={this.closeDeleteModal}>CANCEL</button>
+              <button onClick={this.deleteWallet}>DELETE</button>
+            </div>
+          </Dialog>
+          <div
+            className={`${classes.walletOptions} ${
+              walletOptions.isOpen ? classes.wallletOptionsOpen : ''
+            }`}
+          >
+            <button onClick={this.startNicknameChange}>
+              Change Wallet Nickname
+            </button>
+            <button onClick={this.startWalletDelete}>Delete Wallet</button>
           </div>
-        </Dialog>
-        <div
-          className={`${classes.walletOptions} ${
-            walletOptions.isOpen ? classes.wallletOptionsOpen : ''
-          }`}
-        >
-          <button onClick={this.startNicknameChange}>
-            Change Wallet Nickname
-          </button>
-          <button onClick={this.startWalletDelete}>Delete Wallet</button>
-        </div>
-        <div className={classes.totalBalance}>
-          <p>Total Balance:</p>
-          <span>$0.00</span>
-        </div>
-        <div className={classes.singleWalletBody}>
-          <div className={classes.tabsDiv}>
-            <div
-              className={`${classes.singleTab} ${
-                tabOnView === 'xrp' ? classes.activeTab : ''
-              }`}
-              onClick={() => this.changeTab('xrp')}
-            >
-              <img src={Images.xrp} />
-            </div>
-            <div
-              className={`${classes.singleTab} ${
-                tabOnView === 'solo' ? classes.activeTab : ''
-              }`}
-              onClick={() => this.changeTab('solo')}
-            >
-              <img src={Images.solo} />
-            </div>
-            <div
-              className={`${classes.singleTab} ${
-                tabOnView === 'token' ? classes.activeTab : ''
-              }`}
-              onClick={() => this.changeTab('token')}
-            >
-              <img src={Images.tokenizedAsset} />
+          <div className={classes.totalBalance}>
+            <p>Total Balance:</p>
+            <span>$0.00</span>
+          </div>
+          <div className={classes.singleWalletBody}>
+            <div className={classes.tabsDiv}>
+              <div
+                className={`${classes.singleTab} ${
+                  tabOnView === 'xrp' ? classes.activeTab : ''
+                }`}
+                onClick={() => this.changeTab('xrp')}
+              >
+                <img src={Images.xrp} />
+              </div>
+              <div
+                className={`${classes.singleTab} ${
+                  tabOnView === 'solo' ? classes.activeTab : ''
+                }`}
+                onClick={() => this.changeTab('solo')}
+              >
+                <img src={Images.solo} />
+              </div>
+              <div
+                className={`${classes.singleTab} ${
+                  tabOnView === 'token' ? classes.activeTab : ''
+                }`}
+                onClick={() => this.changeTab('token')}
+              >
+                <img src={Images.tokenizedAsset} />
+              </div>
             </div>
           </div>
-        </div>
-        {tabOnView === 'xrp' ? (
-          <WalletTab wallet={wallet} tabOnView={tabOnView} />
-        ) : (
-          ''
-        )}
-        {tabOnView === 'solo' ? (
-          <WalletSoloTab wallet={wallet} tabOnView={tabOnView} />
-        ) : (
-          ''
-        )}
+          {tabOnView === 'xrp' ? (
+            <WalletTab wallet={wallet} tabOnView={tabOnView} />
+          ) : (
+            ''
+          )}
+          {tabOnView === 'solo' ? (
+            <WalletSoloTab wallet={wallet} tabOnView={tabOnView} />
+          ) : (
+            ''
+          )}
         </div>
       </Fade>
     );

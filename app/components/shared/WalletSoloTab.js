@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles } from '@material-ui/core';
+import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import {
   getMarketData,
   getMarketSevens,
-  createTrustlineRequest
+  createTrustlineRequest,
+  getTransactions
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
@@ -18,11 +19,32 @@ class WalletSoloTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isModalOpen: false
+      isModalOpen: false,
+      activationSoloModal: false,
+      loadingFinished: true
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
     this.activateSoloWallet = this.activateSoloWallet.bind(this);
+    this.loadMore = this.loadMore.bind(this);
+  }
+
+  async loadMore() {
+    const newLimit = this.state.transactionLimit + 5;
+
+    this.setState({
+      loadingFinished: false,
+      transactionLimit: newLimit
+    });
+
+    await this.props.getTransactions({
+      address: this.props.wallet.walletAddress,
+      limit: newLimit
+    });
+
+    this.setState({
+      loadingFinished: true
+    });
   }
 
   async componentDidMount() {
@@ -36,6 +58,11 @@ class WalletSoloTab extends Component {
     this.setState({
       priceColor,
       priceChange
+    });
+
+    await this.props.getTransactions({
+      address: this.props.wallet.walletAddress,
+      limit: this.state.transactionLimit
     });
   }
 
@@ -54,6 +81,10 @@ class WalletSoloTab extends Component {
       privateKey,
       publicKey
     };
+
+    this.setState({
+      activationSoloModal: true
+    });
 
     if (secret) {
       await this.props.createTrustlineRequest({
@@ -83,7 +114,13 @@ class WalletSoloTab extends Component {
       transactions
     } = this.props;
 
-    const { isModalOpen, priceChange, priceColor } = this.state;
+    const {
+      isModalOpen,
+      priceChange,
+      priceColor,
+      activationSoloModal,
+      loadingFinished
+    } = this.state;
 
     let totalBalance = 0;
 
@@ -122,6 +159,21 @@ class WalletSoloTab extends Component {
               SEND
             </button>
           </div>
+          <Dialog
+            open={activationSoloModal}
+            classes={{ paper: classes.activationSoloModalPaper }}
+            // open
+          >
+            <h1 className={classes.activationSoloModalTitle}>
+              Activating SOLO...
+            </h1>
+            <div className={classes.activationSoloModalBody}>
+              <span>Please wait</span>
+              <CircularProgress
+                classes={{ circle: classes.activatinSoloCircle }}
+              />
+            </div>
+          </Dialog>
         </div>
       );
     }
@@ -182,11 +234,27 @@ class WalletSoloTab extends Component {
         />
         <div className={classes.transactionsContainer}>
           {transactions.updated && transactions.transactions.length > 0 ? (
-            transactions.transactions.map((tx, idx) => {
-              return <TransactionSingle key={idx} tx={tx} />;
-            })
+            <h1>Recent Transactions</h1>
           ) : (
             <h1>No recent transactions</h1>
+          )}
+          {transactions.updated && transactions.transactions.length > 0
+            ? transactions.transactions.map((tx, idx) => {
+                if (tx.type === 'payment') {
+                  return <TransactionSingle key={idx} tx={tx} />;
+                }
+              })
+            : ''}
+          {transactions.updated && transactions.transactions.length > 0 ? (
+            <button
+              className={classes.loadMoreBtn}
+              onClick={this.loadMore}
+              disabled={loadingFinished ? false : true}
+            >
+              {loadingFinished ? 'Load More' : '...'}
+            </button>
+          ) : (
+            ''
           )}
         </div>
       </div>
@@ -199,18 +267,61 @@ function mapStateToProps(state) {
     defaultFiat: state.defaultFiat,
     marketData: state.marketData,
     marketSevens: state.marketSevens,
-    transactions: state.transactions
+    transactions: state.transactions,
+    wallets: state.wallets
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, createTrustlineRequest },
+    { getMarketData, getMarketSevens, createTrustlineRequest, getTransactions },
     dispatch
   );
 }
 
 const styles = theme => ({
+  activationSoloModalPaper: {
+    background: Colors.darkerGray,
+    padding: 35,
+    '& h1': {
+      fontSize: 32,
+      textAlign: 'center',
+      paddingBottom: 25,
+      color: 'white',
+      fontWeight: 300
+    }
+  },
+  transactionsContainer: {
+    width: '100%',
+    padding: '24px 0',
+    margin: '0 auto',
+    background: Colors.darkerGray,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
+  loadMoreBtn: {
+    border: 'none',
+    color: 'white',
+    background: 'none',
+    cursor: 'pointer',
+    '&:focus': {
+      outline: 'none'
+    }
+  },
+  activationSoloModalBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    '& span': {
+      fontSize: 14,
+      color: 'white',
+      marginBottom: 12
+    }
+  },
+  activatinSoloCircle: {
+    color: Colors.darkRed
+  },
   walletFunctions: {
     background: Colors.darkerGray,
     display: 'flex',
@@ -231,6 +342,11 @@ const styles = theme => ({
     border: 'none',
     transition: '.2s',
     cursor: 'pointer',
+    width: 150,
+    alignSelf: 'center',
+    margin: '12px auto 65px',
+    height: 35,
+    fontSize: 18,
     '&:hover': {
       opacity: 0.5,
       transition: '.2s'
@@ -258,7 +374,9 @@ const styles = theme => ({
     }
   },
   tabContainer: {
-    background: Colors.slabGray
+    background: Colors.slabGray,
+    display: 'flex',
+    flexDirection: 'column'
   },
   balance: {
     textAlign: 'center',
@@ -268,8 +386,10 @@ const styles = theme => ({
   },
   balanceTitle: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 16,
     paddingTop: 32,
+    margin: '0 auto',
+    width: '50%',
     color: Colors.lightGray
   },
   fiatValue: {

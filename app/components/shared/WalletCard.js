@@ -55,56 +55,55 @@ class WalletCard extends Component {
 
     return (
       <Grow in timeout={1000}>
-
-      <div className={classes.walletCardContainer}>
-        <Link
-          style={{ textDecoration: 'none', color: 'white' }}
-          to={{
-            pathname: `/single-wallet-screen/${wallet.id}`,
-            state: { walletID: wallet.id }
-          }}
-        >
-          <div className={classes.walletCardHeader}>
-            <ChevronRight classes={{ root: classes.arrow }} />
-            <div className={classes.grayCircle}></div>
-            <div className={classes.walletInfo}>
-              <p className={classes.walletName}>{nickname}</p>
-              <div className={classes.walletBalance}>
-                <div className={classes.balanceLine}>
-                  <span>Total Balance:</span>{' '}
-                  <p>
-                    ~{defaultCurrency.symbol}
-                    {totalBalance.toFixed(2)}{' '}
-                    {defaultCurrency.currency.toUpperCase()}
-                  </p>
-                </div>
-                <div className={classes.balanceLine}>
-                  <span>Tokenized Assets:</span>
-                  <p>0</p>
+        <div className={classes.walletCardContainer}>
+          <Link
+            style={{ textDecoration: 'none', color: 'white' }}
+            to={{
+              pathname: `/single-wallet-screen/${wallet.id}`,
+              state: { walletID: wallet.id }
+            }}
+          >
+            <div className={classes.walletCardHeader}>
+              <ChevronRight classes={{ root: classes.arrow }} />
+              <div className={classes.grayCircle}></div>
+              <div className={classes.walletInfo}>
+                <p className={classes.walletName}>{nickname}</p>
+                <div className={classes.walletBalance}>
+                  <div className={classes.balanceLine}>
+                    <span>Total Balance:</span>{' '}
+                    <p>
+                      {defaultCurrency.symbol}
+                      {totalBalance.toFixed(2)}{' '}
+                      {defaultCurrency.currency.toUpperCase()}
+                    </p>
+                  </div>
+                  <div className={classes.balanceLine}>
+                    <span>Tokenized Assets:</span>
+                    <p>0</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Link>
+          </Link>
 
-        <div className={classes.walletBody}>
-          <div
-            className={classes.walletBodySection}
-            style={{ borderRight: '1px solid gray' }}
-          >
-            <img src={Images.xrp} />
-            <p className={balance.xrp === 0 ? classes.notActivated : ''}>
-              {balance.xrp === 0 ? 'Not Activated' : `${balance.xrp} XRP`}
-            </p>
-          </div>
-          <div className={classes.walletBodySection}>
-            <img src={Images.solo} />
-            <p className={balance.solo === 0 ? classes.notActivated : ''}>
-              {balance.solo === 0 ? 'Not Activated' : balance.solo}
-            </p>
+          <div className={classes.walletBody}>
+            <div
+              className={classes.walletBodySection}
+              style={{ borderRight: '1px solid gray' }}
+            >
+              <img src={Images.xrp} />
+              <p className={balance.xrp === 0 ? classes.notActivated : ''}>
+                {balance.xrp === 0 ? 'Not Activated' : `${balance.xrp} XRP`}
+              </p>
+            </div>
+            <div className={classes.walletBodySection}>
+              <img src={Images.solo} />
+              <p className={!wallet.trustline ? classes.notActivated : ''}>
+                {!wallet.trustline ? 'Not Activated' : balance.solo}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
       </Grow>
     );
   }

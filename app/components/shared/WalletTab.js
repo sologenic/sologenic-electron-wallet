@@ -8,7 +8,8 @@ import Images from '../../constants/Images';
 import {
   getMarketData,
   getMarketSevens,
-  transferXRP
+  transferXRP,
+  getTransactions
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
@@ -19,10 +20,31 @@ class WalletTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isModalOpen: false
+      isModalOpen: false,
+      transactionLimit: 5,
+      loadingFinished: true
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
+    this.loadMore = this.loadMore.bind(this);
+  }
+
+  async loadMore() {
+    const newLimit = this.state.transactionLimit + 5;
+
+    this.setState({
+      loadingFinished: false,
+      transactionLimit: newLimit
+    });
+
+    await this.props.getTransactions({
+      address: this.props.wallet.walletAddress,
+      limit: newLimit
+    });
+
+    this.setState({
+      loadingFinished: true
+    });
   }
 
   async componentDidMount() {
@@ -36,6 +58,11 @@ class WalletTab extends Component {
     this.setState({
       priceColor,
       priceChange
+    });
+
+    await this.props.getTransactions({
+      address: this.props.wallet.walletAddress,
+      limit: this.state.transactionLimit
     });
   }
 
@@ -68,14 +95,19 @@ class WalletTab extends Component {
       transactions
     } = this.props;
 
-    const { isModalOpen, priceChange, priceColor } = this.state;
+    const {
+      isModalOpen,
+      priceChange,
+      priceColor,
+      loadingFinished
+    } = this.state;
 
     let totalBalance = 0;
     let xrpValue = 0;
+    const { xrp } = wallet.balance;
 
     if (typeof marketData.market.last !== 'undefined') {
       const { last } = marketData.market;
-      const { xrp } = wallet.balance;
 
       xrpValue = xrp * last;
       // const soloValue = solo * 0;
@@ -83,11 +115,11 @@ class WalletTab extends Component {
       totalBalance = xrpValue;
     }
 
-    if (xrpValue === 0) {
+    if (xrp === 0) {
       return <div>Deposit to activate</div>;
     }
 
-    if (xrpValue > 0 && xrpValue < 21) {
+    if (xrp > 0 && xrp < 21) {
       return <div>Running low</div>;
     }
 
@@ -99,7 +131,7 @@ class WalletTab extends Component {
           <span> XRP</span>
         </h2>
         <p className={classes.fiatValue}>
-          ~{defaultFiat.symbol}
+          {defaultFiat.symbol}
           {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
         </p>
         <div className={classes.marketInfo}>
@@ -147,11 +179,30 @@ class WalletTab extends Component {
         />
         <div className={classes.transactionsContainer}>
           {transactions.updated && transactions.transactions.length > 0 ? (
-            transactions.transactions.map((tx, idx) => {
-              return <TransactionSingle key={idx} tx={tx} />;
-            })
+            <h1>Recent Transactions</h1>
           ) : (
             <h1>No recent transactions</h1>
+          )}
+          {transactions.updated && transactions.transactions.length > 0
+            ? transactions.transactions.map((tx, idx) => {
+                if (
+                  tx.type === 'payment' &&
+                  tx.specification.source.maxAmount.currency === 'XRP'
+                ) {
+                  return <TransactionSingle key={idx} tx={tx} />;
+                }
+              })
+            : ''}
+          {transactions.updated && transactions.transactions.length > 0 ? (
+            <button
+              className={classes.loadMoreBtn}
+              onClick={this.loadMore}
+              disabled={loadingFinished ? false : true}
+            >
+              {loadingFinished ? 'Load More' : '...'}
+            </button>
+          ) : (
+            ''
           )}
         </div>
       </div>
@@ -170,7 +221,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, transferXRP },
+    { getMarketData, getMarketSevens, transferXRP, getTransactions },
     dispatch
   );
 }
@@ -189,7 +240,24 @@ const styles = theme => ({
       cursor: 'pointer'
     }
   },
-
+  loadMoreBtn: {
+    border: 'none',
+    color: 'white',
+    background: 'none',
+    cursor: 'pointer',
+    '&:focus': {
+      outline: 'none'
+    }
+  },
+  transactionsContainer: {
+    width: '100%',
+    padding: '24px 0',
+    margin: '0 auto',
+    background: Colors.darkerGray,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
   walletAddress: {
     width: '50%',
     display: 'flex',

@@ -10,7 +10,7 @@ import { Close, ExpandMore, Add, GetApp } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import WalletCard from '../components/shared/WalletCard';
 import storage from 'electron-json-storage';
-import {CircularProgress, Grow} from "@material-ui/core";
+import { CircularProgress, Grow } from '@material-ui/core';
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -46,7 +46,14 @@ class HomeScreen extends Component {
     console.log(this.props);
 
     if (!connection.connected) {
-      return <div className={classes.loadingProgress}><CircularProgress classes={{circle: classes.circleProgress}} size={200} /></div>
+      return (
+        <div className={classes.loadingProgress}>
+          <CircularProgress
+            classes={{ circle: classes.circleProgress }}
+            size={200}
+          />
+        </div>
+      );
     }
 
     return (
@@ -56,13 +63,12 @@ class HomeScreen extends Component {
           {wallets.wallets && wallets.wallets.length > 0 ? (
             wallets.wallets.map((wlt, idx) => {
               return (
-                  <WalletCard
-                    nickname={wlt.nickname}
-                    balance={wlt.balance}
-                    wallet={wlt}
-                    key={idx}
-                  />
-              
+                <WalletCard
+                  nickname={wlt.nickname}
+                  balance={wlt.balance}
+                  wallet={wlt}
+                  key={idx}
+                />
               );
             })
           ) : (
@@ -84,10 +90,12 @@ class HomeScreen extends Component {
           </div>
           <div className={classes.addWalletBtn}>
             <p>I Already Have A Wallet</p>
-            <GetApp
-              onClick={this.importWallet}
-              classes={{ root: classes.addBtn1 }}
-            />
+            <Link to="/import-wallet" style={{ color: 'white' }}>
+              <GetApp
+                onClick={this.importWallet}
+                classes={{ root: classes.addBtn1 }}
+              />
+            </Link>
           </div>
           <ExpandMore
             onClick={this.closeAddWallet}
@@ -115,11 +123,11 @@ function mapDispatchToProps(dispatch) {
 
 const styles = theme => ({
   loadingProgress: {
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
+    width: '100%',
+    height: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   circleProgress: {
     color: Colors.darkRed
