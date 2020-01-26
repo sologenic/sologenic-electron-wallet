@@ -25,7 +25,7 @@ export default merge.smart(baseConfig, {
 
   output: {
     path: path.join(__dirname, '..', 'app/dist'),
-    publicPath: 'dist/',
+    publicPath: './dist/',
     filename: 'renderer.prod.js'
   },
 
@@ -166,7 +166,7 @@ export default merge.smart(baseConfig, {
       // Common Image Formats
       {
         test: /\.(?:ico|gif|png|jpg|jpeg|webp)$/,
-        use: 'url-loader'
+        use: 'url-loader'   
       }
     ]
   },

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import {Link} from 'react-router-dom';
@@ -11,12 +11,10 @@ import {
   createTrustlineRequest,
   getTransactions
 } from '../../actions/index';
-import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
-import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
 
-class WalletSoloTab extends Component {
+class WalletTokenTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -26,46 +24,8 @@ class WalletSoloTab extends Component {
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
-    this.activateSoloWallet = this.activateSoloWallet.bind(this);
-    this.loadMore = this.loadMore.bind(this);
   }
 
-  async loadMore() {
-    const newLimit = this.state.transactionLimit + 5;
-
-    this.setState({
-      loadingFinished: false,
-      transactionLimit: newLimit
-    });
-
-    await this.props.getTransactions({
-      address: this.props.wallet.walletAddress,
-      limit: newLimit
-    });
-
-    this.setState({
-      loadingFinished: true
-    });
-  }
-
-  async componentDidMount() {
-    await this.props.getMarketSevens();
-    const priceChange = getPriceChange(
-      this.props.marketData.market.last,
-      this.props.marketData.market.open
-    );
-    const priceColor = getPriceColor(priceChange);
-
-    this.setState({
-      priceColor,
-      priceChange
-    });
-
-    await this.props.getTransactions({
-      address: this.props.wallet.walletAddress,
-      limit: this.state.transactionLimit
-    });
-  }
 
   openAddressModal() {
     this.setState({ isModalOpen: true });
@@ -75,37 +35,7 @@ class WalletSoloTab extends Component {
     this.setState({ isModalOpen: false });
   }
 
-  async activateSoloWallet() {
-    const { wallet } = this.props;
-
-    console.log("SOLO WALLET SINGLE!!!!!",wallet)
-
-    const { privateKey, publicKey, secret } = wallet.details.wallet;
-    const keypair = {
-      privateKey,
-      publicKey
-    };
-
-    this.setState({
-      activationSoloModal: true
-    });
-
-    if (secret) {
-      await this.props.createTrustlineRequest({
-        address: wallet.walletAddress,
-        secret,
-        keypair: '',
-        id: wallet.id
-      });
-    } else if (keypair) {
-      await this.props.createTrustlineRequest({
-        address: wallet.walletAddress,
-        secret: '',
-        keypair,
-        id: wallet.id
-      });
-    }
-  }
+ 
 
   render() {
     const {
@@ -138,87 +68,21 @@ class WalletSoloTab extends Component {
       totalBalance = soloValue;
     }
 
-    if (!wallet.trustline) {
-      return (
-        <div className={classes.tabContainer}>
-          <p className={classes.balanceTitle}>
-            Click below to activate your SOLO wallet. It could take up to 10
-            seconds
-          </p>
-          <button
-            className={classes.actSoloWalletBtn}
-            onClick={this.activateSoloWallet}
-          >
-            Activate
-          </button>
-          <div className={classes.sendReceiveBtns}>
-            <button onClick={() => console.log('receive MONEY!!!!')} disabled>
-              RECEIVE
-            </button>
-            <button disabled
-            className={classes.sendMoneyBtn}
-          >
-            SEND
-          </button>
-          </div>
-          <Dialog
-            open={activationSoloModal}
-            classes={{ paper: classes.activationSoloModalPaper }}
-            // open
-          >
-            <h1 className={classes.activationSoloModalTitle}>
-              Activating SOLO...
-            </h1>
-            <div className={classes.activationSoloModalBody}>
-              <span>Please wait</span>
-              <CircularProgress
-                classes={{ circle: classes.activatinSoloCircle }}
-              />
-            </div>
-          </Dialog>
-        </div>
-      );
-    }
+    
 
     return (
       <div className={classes.tabContainer}>
-        <p className={classes.balanceTitle}>Your Balance:</p>
-        <h2 className={classes.balance}>
-          {wallet.balance.solo}
-          <span> SOLO</span>
-        </h2>
-        <p className={classes.fiatValue}>
-          ~{defaultFiat.symbol}
-          {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
-        </p>
-        <div className={classes.marketInfo}>
-          <div className={classes.marketPrice}>
-            <p>Market Price:</p>
-            <span>
-              {defaultFiat.symbol}
-              {marketData.market.last} {defaultFiat.currency.toUpperCase()}
-            </span>
-          </div>
-          <div className={classes.marketGraph}>
-            <SevenChart
-              color={priceColor}
-              marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
-            />
-            <p style={{ color: priceColor, textAlign: 'center' }}>
-              {priceChange}
-            </p>
-          </div>
-        </div>
+        <p className={classes.balanceTitle}>Tokenized assets trading coming in Q3 2020</p>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => this.props.history.push("/receive-screen")}>
+          <button onClick={() => console.log('')} disabled>
             RECEIVE
           </button>
-          <Link
+          <button
             className={classes.sendMoneyBtn}
-            to={{ pathname: '/send-solo', state: { wallet: wallet } }}
+            disabled
           >
             SEND
-          </Link>
+          </button>
         </div>
         <div className={classes.walletFunctions}>
           <div className={classes.walletAddress}>
@@ -390,7 +254,7 @@ const styles = theme => ({
     textAlign: 'center',
     fontSize: 16,
     paddingTop: 32,
-    margin: '0 auto',
+    margin: '0 auto 48px',
     width: '50%',
     color: Colors.lightGray
   },
@@ -466,5 +330,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(WalletSoloTab)
+  connect(mapStateToProps, mapDispatchToProps)(WalletTokenTab)
 );

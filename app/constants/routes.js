@@ -14,7 +14,8 @@ const routes = {
   SingleWalletScreen: '/single-wallet-screen/:id',
   ChangeWalletNicknameScreen: '/change-wallet-nickname',
   TransferXRPScreen: '/send-xrp',
-  ImportWalletScreen: '/import-wallet'
+  ImportWalletScreen: '/import-wallet',
+  TransferSOLOScreen: '/send-solo'
 };
 
 module.exports = routes;

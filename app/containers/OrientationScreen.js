@@ -6,6 +6,8 @@ import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { connect } from 'react-redux';
 import { ChevronRight } from '@material-ui/icons';
 
+
+
 const labels = {
   1: 'Decentralized SOLO, XRP & Tokenized Assets Wallet',
   2: 'Add, Activate & Manage Multiple Wallets',
@@ -59,7 +61,7 @@ class OrientationScreen extends Component {
           className={`${classes.mainImg} ${step > 1 ? classes.mainImg2 : ''} ${
             step === 4 ? classes.mainImg4 : ''
           }`}
-          src={`./assets/images/orientation/img${step}.png`}
+          src={`./dist/images/orientation/img${step}.png`}
         />
         <div className={classes.bottomDiv}>
           <p>{labels[step]}</p>
@@ -103,7 +105,7 @@ class OrientationScreen extends Component {
         </div>
         <img
           className={classes.imgBg}
-          src={`./assets/images/orientation/bg${step}.png`}
+          src={`./dist/images/orientation/bg${step}.png`}
         />
       </div>
     );

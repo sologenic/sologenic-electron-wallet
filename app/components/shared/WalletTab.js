@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
@@ -153,7 +153,7 @@ class WalletTab extends Component {
           </div>
         </div>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => console.log('receive MONEY!!!!')}>
+          <button onClick={() => this.props.history.push("/receive-screen")}>
             RECEIVE
           </button>
           <Link
@@ -362,5 +362,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(WalletTab)
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(WalletTab))
 );

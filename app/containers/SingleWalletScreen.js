@@ -17,6 +17,7 @@ import Images from '../constants/Images';
 import ScreenHeader from '../components/shared/ScreenHeader';
 import WalletTab from '../components/shared/WalletTab';
 import WalletSoloTab from '../components/shared/WalletSoloTab';
+import WalletTokenTab from "../components/shared/WalletTokenTab";
 import { ArrowBack } from '@material-ui/icons';
 
 // ACTION
@@ -229,6 +230,11 @@ class SingleWalletScreen extends Component {
           )}
           {tabOnView === 'solo' ? (
             <WalletSoloTab wallet={wallet} tabOnView={tabOnView} />
+          ) : (
+            ''
+          )}
+          {tabOnView === 'token' ? (
+            <WalletTokenTab wallet={wallet} tabOnView={tabOnView} />
           ) : (
             ''
           )}

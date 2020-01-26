@@ -37,6 +37,9 @@ export const transferXRP = createAction('transferXRP');
 export const transferXrpSuccess = createAction('transferXrpSuccess');
 export const cleanTransferInProgress = createAction('cleanTransferInProgress');
 
+export const transferSOLO = createAction('transferSOLO');
+export const transferSoloSuccess = createAction('transferSOLOSuccess');
+
 export const changeWalletNickname = createAction('changeWalletNickname');
 export const deleteWallet = createAction('deleteWallet');
 
