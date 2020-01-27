@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
-import {Link} from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import {
   getMarketData,
   getMarketSevens,
@@ -78,7 +78,7 @@ class WalletSoloTab extends Component {
   async activateSoloWallet() {
     const { wallet } = this.props;
 
-    console.log("SOLO WALLET SINGLE!!!!!",wallet)
+    console.log("SOLO WALLET SINGLE!!!!!", wallet)
 
     const { privateKey, publicKey, secret } = wallet.details.wallet;
     const keypair = {
@@ -145,30 +145,46 @@ class WalletSoloTab extends Component {
             Click below to activate your SOLO wallet. It could take up to 10
             seconds
           </p>
-          <button
-            className={classes.actSoloWalletBtn}
-            onClick={this.activateSoloWallet}
-          >
-            Activate
-          </button>
+          <div className={classes.actSoloBtn}>
+            <button
+              className={classes.actSoloWalletBtn}
+              onClick={this.activateSoloWallet}
+            >
+              Activate
+            </button>
+          </div>
           <div className={classes.sendReceiveBtns}>
             <button onClick={() => console.log('receive MONEY!!!!')} disabled>
               RECEIVE
             </button>
             <button disabled
-            className={classes.sendMoneyBtn}
-          >
-            SEND
+              className={classes.sendMoneyBtn}
+            >
+              SEND
           </button>
           </div>
+          <div className={classes.walletFunctions}>
+            <div className={classes.walletAddress}>
+              <label>Wallet Address</label>
+              <input type="text" value={wallet.walletAddress} readOnly />
+            </div>
+            <div className={classes.seeQR}>
+              <img onClick={this.openAddressModal} src={Images.qricon} />
+            </div>
+          </div>
+          <WalletAddressModal
+            data={wallet.walletAddress}
+            isModalOpen={isModalOpen}
+            closeModal={this.closeAddressModal}
+          />
           <Dialog
             open={activationSoloModal}
             classes={{ paper: classes.activationSoloModalPaper }}
-            // open
+          // open
           >
             <h1 className={classes.activationSoloModalTitle}>
               Activating SOLO...
-            </h1>
+          </h1>
             <div className={classes.activationSoloModalBody}>
               <span>Please wait</span>
               <CircularProgress
@@ -210,7 +226,13 @@ class WalletSoloTab extends Component {
           </div>
         </div>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => this.props.history.push("/receive-screen")}>
+          <button onClick={() => this.props.history.push({
+            pathname: "/receive-screen", state: {
+              wallet: wallet,
+              currency: "solo"
+            }
+          })}
+          >
             RECEIVE
           </button>
           <Link
@@ -238,14 +260,14 @@ class WalletSoloTab extends Component {
           {transactions.updated && transactions.transactions.length > 0 ? (
             <h1>Recent Transactions</h1>
           ) : (
-            <h1>No recent transactions</h1>
-          )}
+              <h1>No recent transactions</h1>
+            )}
           {transactions.updated && transactions.transactions.length > 0
             ? transactions.transactions.map((tx, idx) => {
-                if (tx.type === 'payment') {
-                  return <TransactionSingle key={idx} tx={tx} />;
-                }
-              })
+              if (tx.type === 'payment') {
+                return <TransactionSingle key={idx} tx={tx} />;
+              }
+            })
             : ''}
           {transactions.updated && transactions.transactions.length > 0 ? (
             <button
@@ -256,8 +278,8 @@ class WalletSoloTab extends Component {
               {loadingFinished ? 'Load More' : '...'}
             </button>
           ) : (
-            ''
-          )}
+              ''
+            )}
         </div>
       </div>
     );
@@ -337,21 +359,25 @@ const styles = theme => ({
       cursor: 'pointer'
     }
   },
+  actSoloBtn: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    margin: "24px 0"
+  },
   actSoloWalletBtn: {
     background: Colors.darkRed,
-    color: 'white',
     borderRadius: 25,
-    border: 'none',
-    transition: '.2s',
-    cursor: 'pointer',
-    width: 150,
-    alignSelf: 'center',
-    margin: '12px auto 65px',
-    height: 35,
+    border: "none",
+    color: "white",
     fontSize: 18,
-    '&:hover': {
-      opacity: 0.5,
-      transition: '.2s'
+    width: 120,
+    padding: "10px 0",
+    transition: ".2s",
+    cursor: "pointer",
+    "&:hover": {
+      opacity: .6,
+      transition: ".2s"
     }
   },
   walletAddress: {
@@ -466,5 +492,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(WalletSoloTab)
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(WalletSoloTab))
 );

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { withStyles, Slide } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import moment from 'moment';
-import { FileCopy, KeyboardArrowUp, ExpandMore } from '@material-ui/icons';
+import { FileCopy, KeyboardArrowUp, ExpandMore, CallMade, CallReceived } from '@material-ui/icons';
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 class TransactionSingle extends Component {
   constructor(props) {
@@ -31,6 +32,10 @@ class TransactionSingle extends Component {
     } = tx.outcome;
     const { secondLineOpen } = this.state;
 
+
+    const thisWalletReceived = tx.specification.destination.address === this.props.address ? true : false;
+    const otherAddress = tx.specification.destination.address === this.props.address ? tx.specification.source.address : tx.specification.destination.address;
+
     const datetime = moment(timestamp)
       .format('L.LT')
       .split('.');
@@ -39,6 +44,15 @@ class TransactionSingle extends Component {
 
     let status;
     let statusColor;
+    let newFontSize;
+
+    if (tx.specification.source.maxAmount.value.length <= 4) {
+      newFontSize = 16;
+    } else if (tx.specification.source.maxAmount.value.length > 4 && tx.specification.source.maxAmount.value.length < 7) {
+      newFontSize = 14;
+    } else if (tx.specification.source.maxAmount.value.length >= 7) {
+      newFontSize = 12;
+    }
 
     switch (result) {
       case 'tesSUCCESS':
@@ -61,11 +75,11 @@ class TransactionSingle extends Component {
                 classes={{ root: classes.expandIcon }}
               />
             ) : (
-              <ExpandMore
-                onClick={() => this.toggleSecondLine()}
-                classes={{ root: classes.expandIcon }}
-              />
-            )}
+                <ExpandMore
+                  onClick={() => this.toggleSecondLine()}
+                  classes={{ root: classes.expandIcon }}
+                />
+              )}
             <div className={classes.timeContainer}>
               <span
                 className={classes.circle}
@@ -77,9 +91,10 @@ class TransactionSingle extends Component {
               </section>
             </div>
             <div className={classes.amount}>
-              <p style={{ color: statusColor }}>
+              <p style={{ color: statusColor, fontSize: newFontSize }}>
                 {tx.specification.source.maxAmount.currency}{' '}
                 {tx.specification.source.maxAmount.value}
+                {thisWalletReceived ? <CallReceived /> : <CallMade />}
               </p>
             </div>
             <div className={classes.status}>
@@ -96,15 +111,17 @@ class TransactionSingle extends Component {
                 <span>Fee</span>
                 <b>{fee}</b>
               </div>
-              <div className={classes.copyAddress}>
-                <section>
-                  <span>Copy Address</span> <FileCopy />
-                </section>
-              </div>
+              <CopyToClipboard text={otherAddress}>
+                <div className={classes.copyAddress}>
+                  <section>
+                    <span>Copy Address</span> <FileCopy />
+                  </section>
+                </div>
+              </CopyToClipboard>
             </div>
           ) : (
-            ''
-          )}
+              ''
+            )}
         </div>
       </Slide>
     );
@@ -168,7 +185,16 @@ const styles = theme => ({
   },
   amount: {
     borderLeft: `1px solid ${Colors.lightGray}`,
-    borderRight: `1px solid ${Colors.lightGray}`
+    borderRight: `1px solid ${Colors.lightGray}`,
+    "& p": {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      "& svg": {
+        fontSize: 16,
+        marginLeft: 2
+      }
+    }
   },
   firstLine: {
     display: 'flex',
