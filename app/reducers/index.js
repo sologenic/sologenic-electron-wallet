@@ -25,10 +25,10 @@ import {
   getMarketDataSuccess,
   getMarketDataError,
   getMarketSevensSuccess,
-  getCurrentWallet,
   getTransactionsSuccess,
   createTrustlineSuccess,
   transferXrpSuccess,
+  transferSoloSuccess,
   cleanTransferInProgress
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
@@ -46,10 +46,7 @@ const initial = {
   isPinChanging: {
     changing: false
   },
-  currentWallet: {
-    wallet: null,
-    updated: false
-  },
+
   newWallet: null,
   wallets: {
     wallets: [],
@@ -115,6 +112,33 @@ const transferInProgress = createReducer(
         };
       }
     },
+    [transferSoloSuccess]: (state, payload) => {
+      console.log('TRANSFER SUCCESS ->', payload);
+
+      if (payload.result && payload.result.status === 'failed') {
+        return {
+          ...state,
+          transfer: {
+            info: payload,
+            finished: true,
+            success: false,
+            reason: payload.result.reason
+          },
+          updated: true
+        };
+      } else {
+        return {
+          ...state,
+          transfer: {
+            info: payload,
+            finished: true,
+            success: true,
+            reason: ''
+          },
+          updated: true
+        };
+      }
+    },
     [cleanTransferInProgress]: (state, payload) => {
       return {
         ...state,
@@ -133,31 +157,15 @@ const transactions = createReducer(
 
       return {
         ...state,
-        transactions: payload,
+        transactions: {
+          txs: [...payload.txs],
+          currentLedger: payload.currentLedger
+        },
         updated: true
       };
     }
   },
   initial.transactions
-);
-
-const currentWallet = createReducer(
-  {
-    [getCurrentWallet]: (state, payload) => {
-      console.log('GET_WALLET -> ');
-
-      const { id } = payload;
-      const { wallets } = state;
-      const currentWallet = wallets.wallets.find(item => item.id === id);
-
-      return {
-        ...state,
-        wallet: currentWallet,
-        updated: true
-      };
-    }
-  },
-  initial.currentWallet
 );
 
 const marketSevens = createReducer(
@@ -329,12 +337,13 @@ const wallets = createReducer(
     },
     [getBalanceSuccess]: (state, payload) => {
       const { wallets } = state;
-      const { id, amount } = payload;
+      const { id, amountXrp, amountSolo } = payload;
 
       console.log('GET_BALANCE_SUCESS -> ', payload);
       const updatedWallets = wallets.map(item => {
         if (item.id === id) {
-          item.balance.xrp = amount;
+          item.balance.xrp = amountXrp;
+          item.balance.solo = amountSolo;
 
           return item;
         }
@@ -485,7 +494,6 @@ export default function createRootReducer(history) {
     connection: connection,
     marketData: marketData,
     marketSevens: marketSevens,
-    currentWallet: currentWallet,
     transactions: transactions,
     transferInProgress: transferInProgress
   });

@@ -16,13 +16,52 @@ import RecoveryTestScreen from './containers/RecoveryTestScreen';
 import SingleWalletScreen from './containers/SingleWalletScreen';
 import ChangeWalletNicknameScreen from './containers/ChangeWalletNicknameScreen';
 import TransferXRPScreen from './containers/TransferXRPScreen';
+import TransferSOLOScreen from './containers/TransferSOLOScreen';
 import ImportWalletScreen from './containers/ImportWalletScreen';
-import ReceiveScreen from "./containers/ReceiveScreen";
+import ReceiveScreen from './containers/ReceiveScreen';
+import { bindActionCreators } from 'redux';
+import { setConnection, connectToRippleApi } from './actions/index';
 
 class Routes extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
+    this.checkIfOnline = this.checkIfOnline.bind(this);
+  }
+
+  checkIfOnline() {
+    var online = navigator.onLine;
+
+    return online;
+  }
+
+  async componentDidMount() {
+    const online = navigator.onLine;
+    await this.props.setConnection(online);
+
+    console.log(online);
+    // if (online) {
+    //   await this.props.connectToRippleApi();
+    // }
+
+    this.checkOnline = setInterval(async () => {
+      const online = navigator.onLine;
+      await this.props.setConnection(online);
+
+      console.log(online);
+    }, 10000);
+  }
+
+  async componentDidUpdate(prevProps) {
+    if (prevProps.connection.connected !== this.props.connection.connected) {
+      if (this.props.connection.connected) {
+        await this.props.connectToRippleApi();
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.checkOnline);
   }
 
   render() {
@@ -82,6 +121,11 @@ class Routes extends React.Component {
           />
           <Route
             exact
+            path={routes.TransferSOLOScreen}
+            component={TransferSOLOScreen}
+          />
+          <Route
+            exact
             path={routes.ImportWalletScreen}
             component={ImportWalletScreen}
           />
@@ -98,4 +142,8 @@ function mapStateToProps(state) {
   };
 }
 
-export default connect(mapStateToProps, null)(Routes);
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({ setConnection, connectToRippleApi }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Routes);

@@ -17,7 +17,7 @@ import Images from '../constants/Images';
 import ScreenHeader from '../components/shared/ScreenHeader';
 import WalletTab from '../components/shared/WalletTab';
 import WalletSoloTab from '../components/shared/WalletSoloTab';
-import WalletTokenTab from "../components/shared/WalletTokenTab";
+import WalletTokenTab from '../components/shared/WalletTokenTab';
 import { ArrowBack } from '@material-ui/icons';
 
 // ACTION
@@ -65,9 +65,22 @@ class SingleWalletScreen extends Component {
       id: currentWallet.id
     });
 
+    this.balanceInterval = setInterval(() => {
+      console.log('BALANCE FETCHED!!!');
+
+      this.props.getBalance({
+        address: currentWallet.walletAddress,
+        id: currentWallet.id
+      });
+    }, 15000);
+
     this.setState({
       currentWallet
     });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.balanceInterval);
   }
 
   startNicknameChange() {
@@ -191,10 +204,10 @@ class SingleWalletScreen extends Component {
             </button>
             <button onClick={this.startWalletDelete}>Delete Wallet</button>
           </div>
-          <div className={classes.totalBalance}>
+          {/* <div className={classes.totalBalance}>
             <p>Total Balance:</p>
             <span>$0.00</span>
-          </div>
+          </div> */}
           <div className={classes.singleWalletBody}>
             <div className={classes.tabsDiv}>
               <div

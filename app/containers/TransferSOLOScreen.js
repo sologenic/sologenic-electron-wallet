@@ -5,7 +5,11 @@ import { bindActionCreators } from 'redux';
 import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 import ScreenHeader from '../components/shared/ScreenHeader';
-import { transferSOLO, cleanTransferInProgress } from '../actions/index';
+import {
+  transferSOLO,
+  cleanTransferInProgress,
+  getBalance
+} from '../actions/index';
 import { CheckCircle, Close } from '@material-ui/icons';
 
 class TransferXRPScreen extends Component {
@@ -42,12 +46,14 @@ class TransferXRPScreen extends Component {
       prevProps.transferInProgress.updated !==
       this.props.transferInProgress.updated
     ) {
-      if (!this.props.transferInProgress.transfer.success) {
-        this.transferFinishedAndFailed({
-          reason: this.props.transferInProgress.transfer.reason
-        });
-      } else {
-        this.transferFinishedAndSuccess();
+      if (this.props.transferInProgress.updated) {
+        if (!this.props.transferInProgress.transfer.success) {
+          this.transferFinishedAndFailed({
+            reason: this.props.transferInProgress.transfer.reason
+          });
+        } else {
+          this.transferFinishedAndSuccess();
+        }
       }
     }
   }
@@ -87,6 +93,10 @@ class TransferXRPScreen extends Component {
 
   async closeSuccessModal() {
     await this.props.cleanTransferInProgress();
+    await this.props.getBalance({
+      address: this.props.location.state.wallet.walletAddress,
+      id: this.props.location.state.wallet.walletAddress
+    });
 
     this.setState({
       wasTransferSuccess: false
@@ -137,17 +147,31 @@ class TransferXRPScreen extends Component {
       transactionInProgress: true
     });
 
+    this.setState({
+      transactionInProgress: true
+    });
+
     const { wallet } = this.props.location.state;
+    const secret = wallet.details.wallet.secret
+      ? wallet.details.wallet.secret
+      : '';
     const keypair = {
-      privateKey: wallet.details.wallet.privateKey,
-      publicKey: wallet.details.wallet.publicKey
+      privateKey:
+        typeof wallet.details.wallet === 'undefined'
+          ? undefined
+          : wallet.details.wallet.privateKey,
+      publicKey:
+        typeof wallet.details.wallet === 'undefined'
+          ? undefined
+          : wallet.details.wallet.publicKey
     };
 
     await this.props.transferSOLO({
       account: wallet.walletAddress,
       keypair,
       destination: this.state.destination,
-      value: this.state.userInput
+      value: this.state.userInput,
+      secret
     });
   }
 
@@ -201,8 +225,8 @@ class TransferXRPScreen extends Component {
           showBackArrow
         />
         <div className={classes.balanceHeader}>
-          <img src={Images.xrp} />
-          <p>{wallet.balance.xrp} SOLO</p>
+          <img src={Images.solo} />
+          <p>{wallet.balance.solo} SOLO</p>
         </div>
         <div className={classes.inputsContainer}>
           <div
@@ -345,7 +369,10 @@ function mapStateToProps(state) {
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ transferXRP, cleanTransferInProgress }, dispatch);
+  return bindActionCreators(
+    { transferSOLO, cleanTransferInProgress, getBalance },
+    dispatch
+  );
 }
 
 const styles = theme => ({

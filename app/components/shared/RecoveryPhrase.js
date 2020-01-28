@@ -54,6 +54,8 @@ class RecoveryPhrase extends Component {
         isWrongPhrase: true
       });
     } else {
+      console.log('NEW WALLET!!!! ', this.props.newWallet.newWallet.wallet);
+
       this.props.fillNewWallet({
         nickname: this.props.newWallet.newWallet.walletNickname,
         wallet: this.props.newWallet.newWallet.wallet,

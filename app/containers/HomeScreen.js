@@ -22,10 +22,6 @@ class HomeScreen extends Component {
     this.closeAddWallet = this.closeAddWallet.bind(this);
   }
 
-  async componentDidMount() {
-    await this.props.connectToRippleApi();
-  }
-
   openAddWallet() {
     console.log('Clicked!');
     this.setState({
@@ -45,16 +41,16 @@ class HomeScreen extends Component {
 
     console.log(this.props);
 
-    if (!connection.connected) {
-      return (
-        <div className={classes.loadingProgress}>
-          <CircularProgress
-            classes={{ circle: classes.circleProgress }}
-            size={200}
-          />
-        </div>
-      );
-    }
+    // if (!connection.connected) {
+    //   return (
+    //     <div className={classes.loadingProgress}>
+    //       <CircularProgress
+    //         classes={{ circle: classes.circleProgress }}
+    //         size={200}
+    //       />
+    //     </div>
+    //   );
+    // }
 
     return (
       <div className={classes.homeScreenContainer}>
@@ -102,6 +98,18 @@ class HomeScreen extends Component {
             classes={{ root: classes.addBtn2 }}
           />
         </div>
+        <p
+          style={{
+            position: 'absolute',
+            bottom: 10,
+            left: 10,
+            color: this.props.connection.connected
+              ? Colors.freshGreen
+              : Colors.errorBackground
+          }}
+        >
+          {this.props.connection.connected ? 'Connected' : 'Disconnected'}
+        </p>
       </div>
     );
   }

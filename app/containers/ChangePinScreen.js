@@ -55,7 +55,7 @@ class ChangePinScreen extends Component {
           ref={p => (this.pin = p)}
           style={{
             margin: '32px auto',
-            width: '70%',
+            width: '40%',
             display: 'flex',
             justifyContent: 'space-between'
           }}

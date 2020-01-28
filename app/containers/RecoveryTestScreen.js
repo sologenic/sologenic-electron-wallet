@@ -13,7 +13,7 @@ import { withStyles, Dialog, DialogTitle } from '@material-ui/core';
 
 const modalContent = {
   title: 'Wallet Creation Successful',
-  content: 'Now you can start activation your XRP and SOLO wallets',
+  content: 'Activate your wallet to start sending and receiving funds.',
   button: 'View Wallets'
 };
 

@@ -49,7 +49,7 @@ class RootContainer extends Component {
 
   render() {
     if (!this.state.isStoreUpdated) {
-      return <span>Loading...</span>;
+      return <span />;
     }
 
     return (

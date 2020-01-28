@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link, withRouter } from 'react-router-dom';
-import { withStyles, Dialog } from '@material-ui/core';
-import { Help } from "@material-ui/icons";
+import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
+import { Help } from '@material-ui/icons';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import {
@@ -33,17 +33,16 @@ class WalletTab extends Component {
     this.closeWhy21XrpModal = this.closeWhy21XrpModal.bind(this);
   }
 
-
   open21XrpModal() {
     this.setState({
       why21XrpModal: true
-    })
+    });
   }
 
   closeWhy21XrpModal() {
     this.setState({
       why21XrpModal: false
-    })
+    });
   }
 
   async loadMore() {
@@ -64,8 +63,27 @@ class WalletTab extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.connection.connected !== this.props.connection.connected) {
+      if (this.props.connection.connected) {
+        this.props.getMarketData({
+          defaultFiat: this.props.defaultFiat.currency
+        });
+
+        this.props.getMarketSevens();
+
+        this.props.getTransactions({
+          address: this.props.wallet.walletAddress,
+          limit: this.state.transactionLimit
+        });
+      }
+    }
+  }
+
   async componentDidMount() {
-    await this.props.getMarketSevens();
+    if (this.props.connection.connected) {
+      await this.props.getMarketSevens();
+    }
     const priceChange = getPriceChange(
       this.props.marketData.market.last,
       this.props.marketData.market.open
@@ -77,10 +95,12 @@ class WalletTab extends Component {
       priceChange
     });
 
-    await this.props.getTransactions({
-      address: this.props.wallet.walletAddress,
-      limit: this.state.transactionLimit
-    });
+    if (this.props.connection.connected) {
+      await this.props.getTransactions({
+        address: this.props.wallet.walletAddress,
+        limit: this.state.transactionLimit
+      });
+    }
   }
 
   openAddressModal() {
@@ -109,7 +129,8 @@ class WalletTab extends Component {
       defaultFiat,
       marketData,
       marketSevens,
-      transactions
+      transactions,
+      connection
     } = this.props;
 
     const {
@@ -120,11 +141,16 @@ class WalletTab extends Component {
       why21XrpModal
     } = this.state;
 
+    console.log('TRANS_________________', transactions);
+
     let totalBalance = 0;
     let xrpValue = 0;
     const { xrp } = wallet.balance;
 
-    if (typeof marketData.market.last !== 'undefined') {
+    if (
+      marketData.market !== null &&
+      typeof marketData.market.last !== 'undefined'
+    ) {
       const { last } = marketData.market;
 
       xrpValue = xrp * last;
@@ -134,62 +160,69 @@ class WalletTab extends Component {
     }
 
     if (xrp === 0) {
-      return <div className={classes.tabContainer}>
-        <p className={classes.inOrderToActivate}>
-          In order to activate your XRP wallet, you must first send at <b>least 21 XRP</b> to this address
-      </p>
-        <div className={classes.actBtnContainer}>
-          <button
-            className={classes.actXrpWalletBtn}
-            onClick={this.openAddressModal}
+      return (
+        <div className={classes.tabContainer}>
+          <p className={classes.inOrderToActivate}>
+            In order to activate your XRP wallet, you must first send at{' '}
+            <b>least 21 XRP</b> to this address
+          </p>
+          <div className={classes.actBtnContainer}>
+            <button
+              className={classes.actXrpWalletBtn}
+              onClick={this.openAddressModal}
+            >
+              Activate
+            </button>
+          </div>
+          <div className={classes.why21Link}>
+            <p onClick={this.open21XrpModal}>
+              Why 21 XRP <Help />
+            </p>
+          </div>
+          <div className={classes.sendReceiveBtns}>
+            <button onClick={() => console.log('receive MONEY!!!!')} disabled>
+              RECEIVE
+            </button>
+            <button disabled className={classes.sendMoneyBtn}>
+              SEND
+            </button>
+          </div>
+          <Dialog
+            open={why21XrpModal}
+            classes={{ paper: classes.why21XrpModal }}
+            // open
           >
-            Activate
-        </button>
-        </div>
-        <div className={classes.why21Link}>
-          <p onClick={this.open21XrpModal}>Why 21 XRP <Help /></p>
-        </div>
-        <div className={classes.sendReceiveBtns}>
-          <button onClick={() => console.log('receive MONEY!!!!')} disabled>
-            RECEIVE
-        </button>
-          <button disabled
-            className={classes.sendMoneyBtn}
-          >
-            SEND
-      </button>
-        </div>
-        <Dialog
-          open={why21XrpModal}
-          classes={{ paper: classes.why21XrpModal }}
-        // open
-        >
-          <h1 className={classes.activationSoloModalTitle}>
-            Why 21 XRP?
-        </h1>
-          <p>Similar to some bank accounts, Ripple Wallets require a minimum balance of 20 XRP to facilitate use of the XRP Ledger.</p>
-          <p>We ask you to deposit 21 XRP here instead, in order to facilitate the activation of your SOLO Wallet, which you can do as soon as your XRP Wallet is activated.</p>
-          <div className={classes.why21dismissbtn}>
-            <button onClick={this.closeWhy21XrpModal}>DISMISS</button>
+            <h1 className={classes.activationSoloModalTitle}>Why 21 XRP?</h1>
+            <p>
+              Similar to some bank accounts, Ripple Wallets require a minimum
+              balance of 20 XRP to facilitate use of the XRP Ledger.
+            </p>
+            <p>
+              We ask you to deposit 21 XRP here instead, in order to facilitate
+              the activation of your SOLO Wallet, which you can do as soon as
+              your XRP Wallet is activated.
+            </p>
+            <div className={classes.why21dismissbtn}>
+              <button onClick={this.closeWhy21XrpModal}>DISMISS</button>
+            </div>
+          </Dialog>
+          <div className={classes.walletFunctions}>
+            <div className={classes.walletAddress}>
+              <label>Wallet Address</label>
+              <input type="text" value={wallet.walletAddress} readOnly />
+            </div>
+            <div className={classes.seeQR}>
+              <img onClick={this.openAddressModal} src={Images.qricon} />
+            </div>
           </div>
-        </Dialog>
-        <div className={classes.walletFunctions}>
-          <div className={classes.walletAddress}>
-            <label>Wallet Address</label>
-            <input type="text" value={wallet.walletAddress} readOnly />
-          </div>
-          <div className={classes.seeQR}>
-            <img onClick={this.openAddressModal} src={Images.qricon} />
-          </div>
+          <WalletAddressModal
+            data={wallet.walletAddress}
+            isModalOpen={isModalOpen}
+            closeModal={this.closeAddressModal}
+          />
         </div>
-        <WalletAddressModal
-          data={wallet.walletAddress}
-          isModalOpen={isModalOpen}
-          closeModal={this.closeAddressModal}
-        />
-      </div>;
+      );
     }
-
 
     return (
       <div className={classes.tabContainer}>
@@ -198,53 +231,78 @@ class WalletTab extends Component {
           {wallet.balance.xrp}
           <span> XRP</span>
         </h2>
-        <p className={classes.fiatValue}>
-          {defaultFiat.symbol}
-          {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
-        </p>
-        {xrp > 0 && xrp < 21 ?
-          <p className={classes.lowXrpMessage}>Your XRP balance is running low. You need XRP to pay for transactions fees.</p> : ""}
+        {connection.connected ? (
+          <p className={classes.fiatValue}>
+            {defaultFiat.symbol}
+            {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
+          </p>
+        ) : (
+          ''
+        )}
+        {xrp > 0 && xrp < 21 ? (
+          <p className={classes.lowXrpMessage}>
+            Your XRP balance is running low. You need XRP to pay for
+            transactions fees.
+          </p>
+        ) : (
+          ''
+        )}
         <div className={classes.marketInfo}>
           <div className={classes.marketPrice}>
             <p>Market Price:</p>
-            <span>
-              {defaultFiat.symbol}
-              {marketData.market.last} {defaultFiat.currency.toUpperCase()}
-            </span>
+            {!marketData.updated || !connection.connected ? (
+              <CircularProgress
+                size={20}
+                classes={{ circle: classes.marketCircle }}
+              />
+            ) : (
+              <span>
+                {defaultFiat.symbol}
+                {marketData.market.last} {defaultFiat.currency.toUpperCase()}
+              </span>
+            )}
           </div>
-          <div className={classes.marketGraph}>
-            <SevenChart
-              color={priceColor}
-              marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
-            />
-            <p style={{ color: priceColor, textAlign: 'center' }}>
-              {priceChange}
-            </p>
-          </div>
+          {this.props.connection.connected ? (
+            <div className={classes.marketGraph}>
+              <SevenChart
+                color={priceColor}
+                marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
+              />
+
+              <p style={{ color: priceColor, textAlign: 'center' }}>
+                {priceChange}
+              </p>
+            </div>
+          ) : (
+            ''
+          )}
         </div>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => this.props.history.push({
-            pathname: "/receive-screen", state: {
-              wallet: wallet,
-              currency: "xrp"
+          <button
+            onClick={() =>
+              this.props.history.push({
+                pathname: '/receive-screen',
+                state: {
+                  wallet: wallet,
+                  currency: 'xrp'
+                }
+              })
             }
-          })}>
+          >
             RECEIVE
           </button>
-          {xrp > 0 && xrp < 21 ?
-            <button disabled
-              className={classes.sendMoneyBtn}
-            >
+          {(xrp > 0 && xrp < 21) || !this.props.connection.connected ? (
+            <button disabled className={classes.sendMoneyBtn}>
               SEND
             </button>
-            :
+          ) : (
             <Link
               className={classes.sendMoneyBtn}
               to={{ pathname: '/send-xrp', state: { wallet: wallet } }}
             >
               SEND
-          </Link>
-          }
+            </Link>
+          )}
         </div>
         <div className={classes.walletFunctions}>
           <div className={classes.walletAddress}>
@@ -261,22 +319,29 @@ class WalletTab extends Component {
           closeModal={this.closeAddressModal}
         />
         <div className={classes.transactionsContainer}>
-          {transactions.updated && transactions.transactions.length > 0 ? (
+          {transactions.updated && transactions.transactions.txs.length > 0 ? (
             <h1>Recent Transactions</h1>
           ) : (
-              <h1>No recent transactions</h1>
-            )}
-          {transactions.updated && transactions.transactions.length > 0
-            ? transactions.transactions.map((tx, idx) => {
-              if (
-                tx.type === 'payment' &&
-                tx.specification.source.maxAmount.currency === 'XRP'
-              ) {
-                return <TransactionSingle key={idx} tx={tx} address={wallet.walletAddress} />;
-              }
-            })
+            <h1>No recent transactions</h1>
+          )}
+          {transactions.updated && transactions.transactions.txs.length > 0
+            ? transactions.transactions.txs.map((tx, idx) => {
+                if (
+                  tx.type === 'payment' &&
+                  tx.specification.source.maxAmount.currency === 'XRP'
+                ) {
+                  return (
+                    <TransactionSingle
+                      key={idx}
+                      tx={tx}
+                      currentLedger={transactions.transactions.currentLedger}
+                      address={wallet.walletAddress}
+                    />
+                  );
+                }
+              })
             : ''}
-          {transactions.updated && transactions.transactions.length > 0 ? (
+          {transactions.updated && transactions.transactions.txs.length > 0 ? (
             <button
               className={classes.loadMoreBtn}
               onClick={this.loadMore}
@@ -285,8 +350,8 @@ class WalletTab extends Component {
               {loadingFinished ? 'Load More' : '...'}
             </button>
           ) : (
-              ''
-            )}
+            ''
+          )}
         </div>
       </div>
     );
@@ -298,7 +363,8 @@ function mapStateToProps(state) {
     defaultFiat: state.defaultFiat,
     marketData: state.marketData,
     marketSevens: state.marketSevens,
-    transactions: state.transactions
+    transactions: state.transactions,
+    connection: state.connection
   };
 }
 
@@ -312,90 +378,92 @@ function mapDispatchToProps(dispatch) {
 const styles = theme => ({
   why21XrpModal: {
     background: Colors.darkerGray,
-    color: "white",
-    width: "60%",
+    color: 'white',
+    width: '60%',
     borderRadius: 15,
-    "& h1": {
+    '& h1': {
       fontSize: 24,
-      padding: "12px 24px"
+      padding: '12px 24px'
     },
-    "& p": {
+    '& p': {
       fontSize: 14,
-      padding: "12px 24px",
+      padding: '12px 24px'
     }
+  },
+  marketCircle: {
+    color: Colors.lightGray
   },
   lowXrpMessage: {
     color: Colors.errorBackground,
     fontSize: 14,
-    width: "60%",
-    margin: "12px auto",
-    textAlign: "center"
+    width: '60%',
+    margin: '12px auto',
+    textAlign: 'center'
   },
   why21dismissbtn: {
     borderTop: `1px solid ${Colors.lightGray}`,
-    display: "flex",
-    justifyContent: "flex-end",
-    "& button": {
-      background: "none",
-      border: "none",
+    display: 'flex',
+    justifyContent: 'flex-end',
+    '& button': {
+      background: 'none',
+      border: 'none',
       color: Colors.lightGray,
       fontSize: 20,
-      transition: ".2s",
+      transition: '.2s',
       height: 50,
       marginRight: 15,
-      cursor: "pointer",
-      "&:hover": {
+      cursor: 'pointer',
+      '&:hover': {
         color: Colors.gray,
-        transition: ".2s"
-      },
-
+        transition: '.2s'
+      }
     }
   },
   inOrderToActivate: {
     fontSize: 16,
-    textAlign: "center",
-    width: "60%",
-    margin: "0 auto 32px",
+    textAlign: 'center',
+    width: '60%',
+    margin: '0 auto 32px',
     paddingTop: 24
   },
   why21Link: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    margin: "24px 0 32px",
-    "& p": {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    margin: '24px 0 32px',
+    '& p': {
       fontSize: 14,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      textDecoration: "underline",
-      cursor: "pointer",
-      "& svg": {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textDecoration: 'underline',
+      cursor: 'pointer',
+      '& svg': {
         fontSize: 14,
         marginLeft: 5,
-        borderRadius: "50%",
+        borderRadius: '50%'
       }
     }
   },
   actXrpWalletBtn: {
     background: Colors.darkRed,
     borderRadius: 25,
-    border: "none",
-    color: "white",
+    border: 'none',
+    color: 'white',
     fontSize: 18,
     width: 120,
-    padding: "10px 0",
-    transition: ".2s",
-    cursor: "pointer",
-    "&:hover": {
-      opacity: .6,
-      transition: ".2s"
+    padding: '10px 0',
+    transition: '.2s',
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 0.6,
+      transition: '.2s'
     }
   },
   actBtnContainer: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center"
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center'
   },
   walletFunctions: {
     background: Colors.darkerGray,
@@ -460,7 +528,7 @@ const styles = theme => ({
   },
   balanceTitle: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 16,
     paddingTop: 32,
     color: Colors.lightGray
   },
@@ -506,9 +574,9 @@ const styles = theme => ({
         opacity: 0.6,
         transition: '.2s'
       },
-      "&:disabled": {
-        opacity: .6,
-        cursor: "not-allowed"
+      '&:disabled': {
+        opacity: 0.6,
+        cursor: 'not-allowed'
       }
     },
     '& a': {

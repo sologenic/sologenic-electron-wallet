@@ -22,7 +22,8 @@ class WalletSoloTab extends Component {
     this.state = {
       isModalOpen: false,
       activationSoloModal: false,
-      loadingFinished: true
+      loadingFinished: true,
+      transactionLimit: 5
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
@@ -67,6 +68,21 @@ class WalletSoloTab extends Component {
     });
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.connection.connected !== this.props.connection.connected) {
+      if (this.props.connection.connected) {
+        this.props.getMarketData({
+          defaultFiat: this.props.defaultFiat.currency
+        });
+
+        this.props.getTransactions({
+          address: this.props.wallet.walletAddress,
+          limit: this.state.transactionLimit
+        });
+      }
+    }
+  }
+
   openAddressModal() {
     this.setState({ isModalOpen: true });
   }
@@ -78,7 +94,7 @@ class WalletSoloTab extends Component {
   async activateSoloWallet() {
     const { wallet } = this.props;
 
-    console.log("SOLO WALLET SINGLE!!!!!", wallet)
+    console.log('SOLO WALLET SINGLE!!!!!', wallet);
 
     const { privateKey, publicKey, secret } = wallet.details.wallet;
     const keypair = {
@@ -115,7 +131,8 @@ class WalletSoloTab extends Component {
       defaultFiat,
       marketData,
       marketSevens,
-      transactions
+      transactions,
+      connection
     } = this.props;
 
     const {
@@ -128,7 +145,10 @@ class WalletSoloTab extends Component {
 
     let totalBalance = 0;
 
-    if (typeof marketData.market.last !== 'undefined') {
+    if (
+      marketData.market !== null &&
+      typeof marketData.market.last !== 'undefined'
+    ) {
       const { last } = marketData.market;
       const { solo } = wallet.balance;
 
@@ -142,13 +162,14 @@ class WalletSoloTab extends Component {
       return (
         <div className={classes.tabContainer}>
           <p className={classes.balanceTitle}>
-            Click below to activate your SOLO wallet. It could take up to 10
-            seconds
+            In order to activate your SOLO wallet, you must first send at{' '}
+            <b>least 21 XRP</b> to this address.
           </p>
           <div className={classes.actSoloBtn}>
             <button
               className={classes.actSoloWalletBtn}
               onClick={this.activateSoloWallet}
+              disabled={wallet.balance.xrp > 21 ? false : true}
             >
               Activate
             </button>
@@ -157,11 +178,9 @@ class WalletSoloTab extends Component {
             <button onClick={() => console.log('receive MONEY!!!!')} disabled>
               RECEIVE
             </button>
-            <button disabled
-              className={classes.sendMoneyBtn}
-            >
+            <button disabled className={classes.sendMoneyBtn}>
               SEND
-          </button>
+            </button>
           </div>
           <div className={classes.walletFunctions}>
             <div className={classes.walletAddress}>
@@ -180,11 +199,11 @@ class WalletSoloTab extends Component {
           <Dialog
             open={activationSoloModal}
             classes={{ paper: classes.activationSoloModalPaper }}
-          // open
+            // open
           >
             <h1 className={classes.activationSoloModalTitle}>
               Activating SOLO...
-          </h1>
+            </h1>
             <div className={classes.activationSoloModalBody}>
               <span>Please wait</span>
               <CircularProgress
@@ -203,44 +222,69 @@ class WalletSoloTab extends Component {
           {wallet.balance.solo}
           <span> SOLO</span>
         </h2>
-        <p className={classes.fiatValue}>
-          ~{defaultFiat.symbol}
-          {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
-        </p>
+        {connection.connected ? (
+          <p className={classes.fiatValue}>
+            {defaultFiat.symbol}
+            {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
+          </p>
+        ) : (
+          ''
+        )}
         <div className={classes.marketInfo}>
           <div className={classes.marketPrice}>
             <p>Market Price:</p>
-            <span>
-              {defaultFiat.symbol}
-              {marketData.market.last} {defaultFiat.currency.toUpperCase()}
-            </span>
+            {!marketData.updated || !connection.connected ? (
+              <CircularProgress
+                size={20}
+                classes={{ circle: classes.marketCircle }}
+              />
+            ) : (
+              <span>
+                {defaultFiat.symbol}
+                {marketData.market.last} {defaultFiat.currency.toUpperCase()}
+              </span>
+            )}
           </div>
-          <div className={classes.marketGraph}>
+          {/* <div className={classes.marketGraph}>
             <SevenChart
               color={priceColor}
               marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
             />
-            <p style={{ color: priceColor, textAlign: 'center' }}>
-              {priceChange}
-            </p>
-          </div>
+            {this.props.connection.connected ? (
+              <p style={{ color: priceColor, textAlign: 'center' }}>
+                {priceChange}
+              </p>
+            ) : (
+              ''
+            )}
+          </div> */}
         </div>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => this.props.history.push({
-            pathname: "/receive-screen", state: {
-              wallet: wallet,
-              currency: "solo"
+          <button
+            onClick={() =>
+              this.props.history.push({
+                pathname: '/receive-screen',
+                state: {
+                  wallet: wallet,
+                  currency: 'solo'
+                }
+              })
             }
-          })}
           >
             RECEIVE
           </button>
-          <Link
-            className={classes.sendMoneyBtn}
-            to={{ pathname: '/send-solo', state: { wallet: wallet } }}
-          >
-            SEND
-          </Link>
+          {!this.props.connection.connected ? (
+            <button disabled className={classes.sendMoneyBtn}>
+              SEND
+            </button>
+          ) : (
+            <Link
+              className={classes.sendMoneyBtn}
+              to={{ pathname: '/send-solo', state: { wallet: wallet } }}
+            >
+              SEND
+            </Link>
+          )}
         </div>
         <div className={classes.walletFunctions}>
           <div className={classes.walletAddress}>
@@ -257,19 +301,30 @@ class WalletSoloTab extends Component {
           closeModal={this.closeAddressModal}
         />
         <div className={classes.transactionsContainer}>
-          {transactions.updated && transactions.transactions.length > 0 ? (
+          {transactions.updated && transactions.transactions.txs.length > 0 ? (
             <h1>Recent Transactions</h1>
           ) : (
-              <h1>No recent transactions</h1>
-            )}
-          {transactions.updated && transactions.transactions.length > 0
-            ? transactions.transactions.map((tx, idx) => {
-              if (tx.type === 'payment') {
-                return <TransactionSingle key={idx} tx={tx} />;
-              }
-            })
+            <h1>No recent transactions</h1>
+          )}
+          {transactions.updated && transactions.transactions.txs.length > 0
+            ? transactions.transactions.txs.map((tx, idx) => {
+                if (
+                  tx.type === 'payment' &&
+                  tx.specification.source.maxAmount.currency ===
+                    '534F4C4F00000000000000000000000000000000'
+                ) {
+                  return (
+                    <TransactionSingle
+                      key={idx}
+                      tx={tx}
+                      currentLedger={transactions.transactions.currentLedger}
+                      address={wallet.walletAddress}
+                    />
+                  );
+                }
+              })
             : ''}
-          {transactions.updated && transactions.transactions.length > 0 ? (
+          {transactions.updated && transactions.transactions.txs.length > 0 ? (
             <button
               className={classes.loadMoreBtn}
               onClick={this.loadMore}
@@ -278,8 +333,8 @@ class WalletSoloTab extends Component {
               {loadingFinished ? 'Load More' : '...'}
             </button>
           ) : (
-              ''
-            )}
+            ''
+          )}
         </div>
       </div>
     );
@@ -292,7 +347,8 @@ function mapStateToProps(state) {
     marketData: state.marketData,
     marketSevens: state.marketSevens,
     transactions: state.transactions,
-    wallets: state.wallets
+    wallets: state.wallets,
+    connection: state.connection
   };
 }
 
@@ -314,6 +370,9 @@ const styles = theme => ({
       color: 'white',
       fontWeight: 300
     }
+  },
+  marketCircle: {
+    color: Colors.lightGray
   },
   transactionsContainer: {
     width: '100%',
@@ -360,24 +419,28 @@ const styles = theme => ({
     }
   },
   actSoloBtn: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    margin: "24px 0"
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    margin: '24px 0'
   },
   actSoloWalletBtn: {
     background: Colors.darkRed,
     borderRadius: 25,
-    border: "none",
-    color: "white",
+    border: 'none',
+    color: 'white',
     fontSize: 18,
     width: 120,
-    padding: "10px 0",
-    transition: ".2s",
-    cursor: "pointer",
-    "&:hover": {
-      opacity: .6,
-      transition: ".2s"
+    padding: '10px 0',
+    transition: '.2s',
+    cursor: 'pointer',
+    '&:hover': {
+      opacity: 0.6,
+      transition: '.2s'
+    },
+    '&:disabled': {
+      opacity: 0.7,
+      cursor: 'not-allowed'
     }
   },
   walletAddress: {
@@ -393,7 +456,7 @@ const styles = theme => ({
       color: 'white',
       background: 'none',
       border: 'none',
-      fontSize: 18
+      fontSize: 16
     },
     '& label': {
       fontSize: 14,
@@ -462,9 +525,9 @@ const styles = theme => ({
         opacity: 0.6,
         transition: '.2s'
       },
-      "&:disabled": {
-        opacity: .7,
-        cursor: "not-allowed"
+      '&:disabled': {
+        opacity: 0.7,
+        cursor: 'not-allowed'
       }
     },
     '& a': {

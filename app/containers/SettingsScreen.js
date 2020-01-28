@@ -6,6 +6,7 @@ import routes from '../constants/routes.js';
 // MUI IMPORTS
 import { withStyles } from '@material-ui/core/styles';
 import { CheckCircle, ExpandMore, ChevronRight } from '@material-ui/icons';
+import { Fade } from '@material-ui/core';
 
 // APP COMPONENTS
 import ScreeHeader from '../components/shared/ScreenHeader.js';
@@ -66,97 +67,117 @@ class SettingsScreen extends Component {
     const fiats = ['usd', 'cad', 'gbp', 'eur', 'jpy', 'aed'];
 
     return (
-      <div>
-        <ScreeHeader
-          title="Settings"
-          showSettings={false}
-          showBackArrow={true}
-        />
-        {selectFiatMenuOpen ? (
-          <div className={classes.modalBkg}>
-            <div className={classes.selectFiatMenu}>
-              <p>Select Currency</p>
-              <div className={classes.selectFiatContainer}>
-                {fiats.map((item, idx) => {
-                  return (
-                    <span
-                      key={idx}
-                      className={`${
-                        item === selectedFiat ? classes.activeFiat : ''
-                      } ${classes.singleFiat}`}
-                      onClick={() => this.setSelectedFiat(item)}
-                    >
-                      {item.toUpperCase()}
-                      {item === defaultFiat.currency ? <CheckCircle /> : ''}
-                    </span>
-                  );
-                })}
-              </div>
-              <div className={classes.btnContainers}>
-                <button
-                  className={`${classes.modalBtn} ${classes.cancelBtn}`}
-                  onClick={this.closeChangeCurrencyModal}
-                >
-                  CANCEL
-                </button>
-                <button
-                  className={`${classes.modalBtn} ${classes.confirmBtn}`}
-                  onClick={this.confirmSelectedFiat}
-                >
-                  CONFIRM
-                </button>
+      <Fade in>
+        <div>
+          <ScreeHeader
+            title="Settings"
+            showSettings={false}
+            showBackArrow={true}
+          />
+          {selectFiatMenuOpen ? (
+            <div className={classes.modalBkg}>
+              <div className={classes.selectFiatMenu}>
+                <p>Select Currency</p>
+                <div className={classes.selectFiatContainer}>
+                  {fiats.map((item, idx) => {
+                    return (
+                      <span
+                        key={idx}
+                        className={`${
+                          item === selectedFiat ? classes.activeFiat : ''
+                        } ${classes.singleFiat}`}
+                        onClick={() => this.setSelectedFiat(item)}
+                      >
+                        {item.toUpperCase()}
+                        {item === defaultFiat.currency ? <CheckCircle /> : ''}
+                      </span>
+                    );
+                  })}
+                </div>
+                <div className={classes.btnContainers}>
+                  <button
+                    className={`${classes.modalBtn} ${classes.cancelBtn}`}
+                    onClick={this.closeChangeCurrencyModal}
+                  >
+                    CANCEL
+                  </button>
+                  <button
+                    className={`${classes.modalBtn} ${classes.confirmBtn}`}
+                    onClick={this.confirmSelectedFiat}
+                  >
+                    CONFIRM
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          ''
-        )}
-        <div className={classes.settingsFields}>
-          <div className={classes.inputWrapper}>
-            <label>Set Default Fiat Currency</label>
-            <div
-              onClick={this.openChangeCurrencyModal.bind(this)}
-              className={classes.dropdownCurrency}
-            >
-              <span>{defaultFiat.currency.toUpperCase()}</span>
-              <ExpandMore />
+          ) : (
+            ''
+          )}
+          <div className={classes.settingsFields}>
+            <div className={classes.inputWrapper}>
+              <label>Set Default Fiat Currency</label>
+              <div
+                onClick={this.openChangeCurrencyModal.bind(this)}
+                className={classes.dropdownCurrency}
+              >
+                <span>{defaultFiat.currency.toUpperCase()}</span>
+                <ExpandMore />
+              </div>
             </div>
-          </div>
-          <div className={classes.inputWrapper}>
-            <label>Security</label>
-            <Link className={classes.settingsLink} to={routes.ChangePinScreen}>
-              <div className={classes.dropdownCurrency}>
-                <span>Change Pin</span>
-                <ChevronRight />
-              </div>
-            </Link>
-          </div>
-          <div className={classes.inputWrapper}>
-            <label>Legal</label>
-            <Link className={classes.settingsLink} to={routes.ChangePinScreen}>
-              <div className={classes.dropdownCurrency}>
-                <span>Terms & Conditions</span>
-                <ChevronRight />
-              </div>
-            </Link>
-            <Link className={classes.settingsLink} to={routes.ChangePinScreen}>
-              <div className={classes.dropdownCurrency}>
-                <span>Privacy Policy</span>
-                <ChevronRight />
-              </div>
-            </Link>
-          </div>
-          <div className={classes.inputWrapper}>
-            <label>Support</label>
-            <Link className={classes.settingsLink} to={routes.ChangePinScreen}>
-              <div className={classes.dropdownCurrency}>
-                <span>Contact Us</span>
-                <ChevronRight />
-              </div>
-            </Link>
+            <div className={classes.inputWrapper}>
+              <label>Security</label>
+              <Link
+                className={classes.settingsLink}
+                to={routes.ChangePinScreen}
+              >
+                <div className={classes.dropdownCurrency}>
+                  <span>Change Pin</span>
+                  <ChevronRight />
+                </div>
+              </Link>
+            </div>
+            <div className={classes.inputWrapper}>
+              <label>Legal</label>
+              <a
+                className={classes.settingsLink}
+                href="https://sologenic.com/terms-and-conditions"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <div className={classes.dropdownCurrency}>
+                  <span>Terms & Conditions</span>
+                  <ChevronRight />
+                </div>
+              </a>
+              <a
+                className={classes.settingsLink}
+                href="https://sologenic.com/privacy-policy"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <div className={classes.dropdownCurrency}>
+                  <span>Privacy Policy</span>
+                  <ChevronRight />
+                </div>
+              </a>
+            </div>
+            <div className={classes.inputWrapper}>
+              <label>Support</label>
+              <a
+                className={classes.settingsLink}
+                href="https://github.com/sologenic"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <div className={classes.dropdownCurrency}>
+                  <span>Report an issue</span>
+                  <ChevronRight />
+                </div>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      </Fade>
     );
   }
 }

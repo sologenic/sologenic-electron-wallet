@@ -6,7 +6,7 @@ import Images from '../../constants/Images';
 import { Link } from 'react-router-dom';
 
 // MUI COMPONENTS
-import { withStyles, Grow } from '@material-ui/core';
+import { withStyles, Grow, CircularProgress } from '@material-ui/core';
 import { ChevronRight } from '@material-ui/icons';
 
 // ACTIONS
@@ -20,13 +20,28 @@ class WalletCard extends Component {
 
   async componentDidMount() {
     const { id, walletAddress } = this.props.wallet;
-    await this.props.getBalance({
-      address: walletAddress,
-      id
-    });
-    await this.props.getMarketData({
-      defaultFiat: this.props.defaultCurrency.currency
-    });
+
+    console.log('WALLET CARD', this.props);
+
+    if (this.props.connection.connected) {
+      await this.props.getBalance({
+        address: walletAddress,
+        id
+      });
+      await this.props.getMarketData({
+        defaultFiat: this.props.defaultCurrency.currency
+      });
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.connection.connected !== this.props.connection.connected) {
+      if (this.props.connection.connected) {
+        this.props.getMarketData({
+          defaultFiat: this.props.defaultCurrency.currency
+        });
+      }
+    }
   }
 
   render() {
@@ -36,14 +51,18 @@ class WalletCard extends Component {
       balance,
       defaultCurrency,
       wallet,
-      marketData
+      marketData,
+      connection
     } = this.props;
 
     console.log('Wallet Card', this.props);
 
     let totalBalance = 0;
 
-    if (typeof marketData.market.last !== 'undefined') {
+    if (
+      marketData.market !== null &&
+      typeof marketData.market.last !== 'undefined'
+    ) {
       const { last } = marketData.market;
       const { xrp, solo } = wallet.balance;
 
@@ -71,11 +90,18 @@ class WalletCard extends Component {
                 <div className={classes.walletBalance}>
                   <div className={classes.balanceLine}>
                     <span>Total Balance:</span>{' '}
-                    <p>
-                      {defaultCurrency.symbol}
-                      {totalBalance.toFixed(2)}{' '}
-                      {defaultCurrency.currency.toUpperCase()}
-                    </p>
+                    {!marketData.updated || !connection.connected ? (
+                      <CircularProgress
+                        size={15}
+                        classes={{ circle: classes.totalBalanceCircle }}
+                      />
+                    ) : (
+                      <p>
+                        {defaultCurrency.symbol}
+                        {totalBalance.toFixed(2)}{' '}
+                        {defaultCurrency.currency.toUpperCase()}
+                      </p>
+                    )}
                   </div>
                   <div className={classes.balanceLine}>
                     <span>Tokenized Assets:</span>
@@ -99,7 +125,7 @@ class WalletCard extends Component {
             <div className={classes.walletBodySection}>
               <img src={Images.solo} />
               <p className={!wallet.trustline ? classes.notActivated : ''}>
-                {!wallet.trustline ? 'Not Activated' : balance.solo}
+                {!wallet.trustline ? 'Not Activated' : `${balance.solo} SOLO`}
               </p>
             </div>
           </div>
@@ -113,7 +139,8 @@ function mapStateToProps(state) {
   return {
     defaultCurrency: state.defaultFiat,
     wallets: state.wallets,
-    marketData: state.marketData
+    marketData: state.marketData,
+    connection: state.connection
   };
 }
 
@@ -160,6 +187,9 @@ const styles = theme => ({
   },
   walletName: {
     fontSize: 18
+  },
+  totalBalanceCircle: {
+    color: Colors.lightGray
   },
   balanceLine: {
     display: 'flex',

@@ -2,8 +2,14 @@ import React, { Component } from 'react';
 import { withStyles, Slide } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import moment from 'moment';
-import { FileCopy, KeyboardArrowUp, ExpandMore, CallMade, CallReceived } from '@material-ui/icons';
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import {
+  FileCopy,
+  KeyboardArrowUp,
+  ExpandMore,
+  CallMade,
+  CallReceived
+} from '@material-ui/icons';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class TransactionSingle extends Component {
   constructor(props) {
@@ -22,7 +28,7 @@ class TransactionSingle extends Component {
   }
 
   render() {
-    const { classes, tx } = this.props;
+    const { classes, tx, currentLedger } = this.props;
     const {
       timestamp,
       deliveredAmount,
@@ -32,9 +38,14 @@ class TransactionSingle extends Component {
     } = tx.outcome;
     const { secondLineOpen } = this.state;
 
-
-    const thisWalletReceived = tx.specification.destination.address === this.props.address ? true : false;
-    const otherAddress = tx.specification.destination.address === this.props.address ? tx.specification.source.address : tx.specification.destination.address;
+    const thisWalletReceived =
+      tx.specification.destination.address === this.props.address
+        ? true
+        : false;
+    const otherAddress =
+      tx.specification.destination.address === this.props.address
+        ? tx.specification.source.address
+        : tx.specification.destination.address;
 
     const datetime = moment(timestamp)
       .format('L.LT')
@@ -45,10 +56,20 @@ class TransactionSingle extends Component {
     let status;
     let statusColor;
     let newFontSize;
+    let currencyName =
+      tx.specification.source.maxAmount.currency === 'XRP'
+        ? 'XRP'
+        : tx.specification.source.maxAmount.currency ===
+          '534F4C4F00000000000000000000000000000000'
+        ? 'Ƨ'
+        : '';
 
     if (tx.specification.source.maxAmount.value.length <= 4) {
       newFontSize = 16;
-    } else if (tx.specification.source.maxAmount.value.length > 4 && tx.specification.source.maxAmount.value.length < 7) {
+    } else if (
+      tx.specification.source.maxAmount.value.length > 4 &&
+      tx.specification.source.maxAmount.value.length < 7
+    ) {
       newFontSize = 14;
     } else if (tx.specification.source.maxAmount.value.length >= 7) {
       newFontSize = 12;
@@ -63,6 +84,17 @@ class TransactionSingle extends Component {
         status = 'Failed';
         statusColor = Colors.errorBackground;
         break;
+      case 'tecPATH_DRY':
+        status = 'Failed';
+        statusColor = Colors.errorBackground;
+        break;
+      case 'tecPATH_PARTIAL':
+        status = 'Failed';
+        statusColor = Colors.errorBackground;
+        break;
+      default:
+        status = 'Failed';
+        statusColor = Colors.errorBackground;
     }
 
     return (
@@ -75,11 +107,11 @@ class TransactionSingle extends Component {
                 classes={{ root: classes.expandIcon }}
               />
             ) : (
-                <ExpandMore
-                  onClick={() => this.toggleSecondLine()}
-                  classes={{ root: classes.expandIcon }}
-                />
-              )}
+              <ExpandMore
+                onClick={() => this.toggleSecondLine()}
+                classes={{ root: classes.expandIcon }}
+              />
+            )}
             <div className={classes.timeContainer}>
               <span
                 className={classes.circle}
@@ -92,9 +124,15 @@ class TransactionSingle extends Component {
             </div>
             <div className={classes.amount}>
               <p style={{ color: statusColor, fontSize: newFontSize }}>
-                {tx.specification.source.maxAmount.currency}{' '}
-                {tx.specification.source.maxAmount.value}
-                {thisWalletReceived ? <CallReceived /> : <CallMade />}
+                <span style={{ fontSize: 12, color: Colors.lightGray }}>
+                  {thisWalletReceived ? '+' : '-'}
+                  {currencyName}
+                </span>{' '}
+                {tx.outcome.deliveredAmount
+                  ? tx.outcome.deliveredAmount.value
+                  : tx.specification.source.maxAmount.currency === 'XRP'
+                  ? Number(tx.specification.source.maxAmount.value)
+                  : Number(tx.specification.source.maxAmount.value) - 1}
               </p>
             </div>
             <div className={classes.status}>
@@ -105,7 +143,7 @@ class TransactionSingle extends Component {
             <div className={classes.secondLine}>
               <div className={classes.confirmations}>
                 <span>Confirmations</span>
-                <b>{ledgerVersion}</b>
+                <b>{currentLedger - ledgerVersion}</b>
               </div>
               <div className={classes.fee}>
                 <span>Fee</span>
@@ -120,8 +158,8 @@ class TransactionSingle extends Component {
               </CopyToClipboard>
             </div>
           ) : (
-              ''
-            )}
+            ''
+          )}
         </div>
       </Slide>
     );
@@ -186,13 +224,16 @@ const styles = theme => ({
   amount: {
     borderLeft: `1px solid ${Colors.lightGray}`,
     borderRight: `1px solid ${Colors.lightGray}`,
-    "& p": {
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      "& svg": {
+    '& p': {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      '& svg': {
         fontSize: 16,
         marginLeft: 2
+      },
+      '& span': {
+        marginRight: 2
       }
     }
   },

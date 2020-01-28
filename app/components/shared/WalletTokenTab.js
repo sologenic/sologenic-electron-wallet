@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { withStyles } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   getMarketData,
   getMarketSevens,
@@ -26,7 +26,6 @@ class WalletTokenTab extends Component {
     this.closeAddressModal = this.closeAddressModal.bind(this);
   }
 
-
   openAddressModal() {
     this.setState({ isModalOpen: true });
   }
@@ -34,8 +33,6 @@ class WalletTokenTab extends Component {
   closeAddressModal() {
     this.setState({ isModalOpen: false });
   }
-
- 
 
   render() {
     const {
@@ -56,31 +53,16 @@ class WalletTokenTab extends Component {
       loadingFinished
     } = this.state;
 
-    let totalBalance = 0;
-
-    if (typeof marketData.market.last !== 'undefined') {
-      const { last } = marketData.market;
-      const { solo } = wallet.balance;
-
-      const soloValue = solo * last;
-      // const soloValue = solo * 0;
-
-      totalBalance = soloValue;
-    }
-
-    
-
     return (
       <div className={classes.tabContainer}>
-        <p className={classes.balanceTitle}>Tokenized assets trading coming in Q3 2020</p>
+        <p className={classes.balanceTitle}>
+          Tokenized assets are coming in Q3 2020
+        </p>
         <div className={classes.sendReceiveBtns}>
           <button onClick={() => console.log('')} disabled>
             RECEIVE
           </button>
-          <button
-            className={classes.sendMoneyBtn}
-            disabled
-          >
+          <button className={classes.sendMoneyBtn} disabled>
             SEND
           </button>
         </div>
@@ -98,31 +80,6 @@ class WalletTokenTab extends Component {
           isModalOpen={isModalOpen}
           closeModal={this.closeAddressModal}
         />
-        <div className={classes.transactionsContainer}>
-          {transactions.updated && transactions.transactions.length > 0 ? (
-            <h1>Recent Transactions</h1>
-          ) : (
-            <h1>No recent transactions</h1>
-          )}
-          {transactions.updated && transactions.transactions.length > 0
-            ? transactions.transactions.map((tx, idx) => {
-                if (tx.type === 'payment') {
-                  return <TransactionSingle key={idx} tx={tx} />;
-                }
-              })
-            : ''}
-          {transactions.updated && transactions.transactions.length > 0 ? (
-            <button
-              className={classes.loadMoreBtn}
-              onClick={this.loadMore}
-              disabled={loadingFinished ? false : true}
-            >
-              {loadingFinished ? 'Load More' : '...'}
-            </button>
-          ) : (
-            ''
-          )}
-        </div>
       </div>
     );
   }
@@ -300,9 +257,9 @@ const styles = theme => ({
         opacity: 0.6,
         transition: '.2s'
       },
-      "&:disabled": {
-        opacity: .7,
-        cursor: "not-allowed"
+      '&:disabled': {
+        opacity: 0.7,
+        cursor: 'not-allowed'
       }
     },
     '& a': {

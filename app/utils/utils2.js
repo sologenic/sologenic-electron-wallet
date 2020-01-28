@@ -1,7 +1,7 @@
 import qrcode from 'qrcode-generator';
 import Colors from '../constants/Colors';
 import { Wallet, Utils } from 'xpring-common-js';
-import * as s from 'sologenic-xrpl-stream-js-non-redis';
+import * as s from 'sologenic-xrpl-stream-js';
 
 export const countWords = words => {
   const arrayOfWords = words
@@ -122,6 +122,11 @@ export const sologenic = new s.SologenicTxHandler(
   {
     queueType: 'hash',
     hash: {}
+    // queueType: 'redis',
+    // redis: {
+    //   host: '127.0.0.1',
+    //   port: 6380
+    // }
   }
 );
 
