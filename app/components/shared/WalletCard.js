@@ -12,6 +12,9 @@ import { ChevronRight } from '@material-ui/icons';
 // ACTIONS
 import { getBalance, getMarketData } from '../../actions/index';
 
+// UTILS
+import { format } from '../../utils/utils2';
+
 class WalletCard extends Component {
   constructor(props) {
     super(props);
@@ -31,7 +34,18 @@ class WalletCard extends Component {
       await this.props.getMarketData({
         defaultFiat: this.props.defaultCurrency.currency
       });
+
+      this.fetchBalances(() => {
+        console.log('WALLET CARD FETCH --->');
+        this.props.getMarketData({
+          defaultFiat: this.props.defaultCurrency.currency
+        });
+      }, 10000);
     }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.fetchBalances);
   }
 
   componentDidUpdate(prevProps) {

@@ -41,7 +41,11 @@ class PinScreen extends Component {
       <div className={classes.pinScreenContainer}>
         <img src={Images.soloWhite} />
         <h1>Wallet</h1>
-        <h2>{isPinWrong ? 'Wrong PIN' : 'Enter Your PIN'}</h2>
+        {isPinWrong ? (
+          <h2 style={{ color: Colors.errorBackground }}>Wrong PIN</h2>
+        ) : (
+          <h2>Enter Your PIN</h2>
+        )}
         <PinInput
           length={4}
           initialValue=""

@@ -6,8 +6,6 @@ import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { connect } from 'react-redux';
 import { ChevronRight } from '@material-ui/icons';
 
-
-
 const labels = {
   1: 'Decentralized SOLO, XRP & Tokenized Assets Wallet',
   2: 'Add, Activate & Manage Multiple Wallets',
@@ -49,6 +47,10 @@ class OrientationScreen extends Component {
     if (isPinSet) {
       this.props.history.push('/pin-screen');
     }
+
+    // if (isPinSet) {
+    //   this.props.history.push('/terms-screen');
+    // }
   }
 
   render() {

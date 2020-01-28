@@ -2,6 +2,7 @@ import qrcode from 'qrcode-generator';
 import Colors from '../constants/Colors';
 import { Wallet, Utils } from 'xpring-common-js';
 import * as s from 'sologenic-xrpl-stream-js';
+import numbro from 'numbro';
 
 export const countWords = words => {
   const arrayOfWords = words
@@ -199,3 +200,77 @@ export const transferXrp = (account, destination, value) => {
     Amount: `${valueAmount}`
   });
 };
+
+function getPositionOfLeadingZeros(data) {
+  var a = data.split('.');
+
+  if (typeof a[1] === 'undefined') {
+    return 0;
+  }
+  a = a[1];
+  a = a.split('');
+  a.shift();
+  a.shift();
+  a.reverse();
+  // .split("")
+  // .shift()
+  // .shift()
+  // .reverse()
+  // .join("");
+
+  // // 0.12230000
+  // // 12230000
+  // for (var i = 0; i < a.length; i++) {
+  //   if (a[i] !== "0") {
+  //     break;
+  //   }
+  // }
+
+  // data = data
+  //   .split("")
+  //   .reverse()
+  //   .join("");
+  var position = 0;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] !== '0') {
+      break;
+    }
+    position++;
+  }
+  var result = data.length - position;
+  if (position > 7) {
+    return a.length - 7;
+  } else {
+    return result;
+  }
+}
+
+// Format Numbers
+export function format(value, precision) {
+  var p = '0,0.';
+  for (var i = 0; i < precision; i++) {
+    p += '0';
+  }
+
+  var styledVolume = numbro(value).format(p);
+  var position = getPositionOfLeadingZeros(styledVolume);
+  var a = styledVolume.substring(0, position);
+  var b = styledVolume.substring(position);
+
+  if (a === '') {
+    return <span>0</span>;
+  }
+
+  a = a.split('.');
+
+  return (
+    <span style={{ letterSpacing: 0.2 }}>
+      <span>{a[0]}</span>
+      <span className="number-format" style={{ display: 'inline-block' }}>
+        .
+      </span>
+      <span>{a[1].replace('.', '')}</span>
+      <span className="decimal-format">{b}</span>
+    </span>
+  );
+}
