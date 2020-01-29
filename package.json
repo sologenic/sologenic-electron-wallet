@@ -1,6 +1,6 @@
 {
-  "name": "electron-react-boilerplate",
-  "productName": "ElectronReact",
+  "name": "x-pad",
+  "productName": "X - Pad",
   "version": "0.18.1",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
   "scripts": {
@@ -57,8 +57,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "X - PAD",
+    "appId": "org.develar.xpad",
     "files": [
       "dist/",
       "node_modules/",
@@ -228,7 +228,6 @@
     "flow-bin": "^0.113.0",
     "flow-runtime": "^0.17.0",
     "flow-typed": "^2.6.2",
-    "husky": "^3.1.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^24.9.0",
     "lint-staged": "^9.5.0",
@@ -267,6 +266,7 @@
     "apisauce": "^1.1.1",
     "connected-react-router": "^6.6.1",
     "core-js": "^3.5.0",
+    "crypto": "^1.0.1",
     "devtron": "^1.4.0",
     "electron-debug": "^3.0.1",
     "electron-json-storage": "^4.1.8",
@@ -275,6 +275,7 @@
     "history": "^4.10.1",
     "mathjs": "^6.5.0",
     "moment": "^2.24.0",
+    "node-forge": "^0.9.1",
     "numbro": "^2.1.2",
     "qrcode-generator": "^1.4.4",
     "react": "^16.12.0",

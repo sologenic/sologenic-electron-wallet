@@ -59,14 +59,12 @@ class SingleWalletScreen extends Component {
       item => item.id === pathElmnts[2]
     );
 
-    console.log('Single Screen', currentWallet);
     await this.props.getBalance({
       address: currentWallet.walletAddress,
       id: currentWallet.id
     });
 
     this.balanceInterval = setInterval(() => {
-      console.log('BALANCE FETCHED!!!');
 
       this.props.getBalance({
         address: currentWallet.walletAddress,

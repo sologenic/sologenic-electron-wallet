@@ -7,6 +7,9 @@ import storage from 'electron-json-storage';
 import { withStyles } from '@material-ui/core';
 import { Error } from '@material-ui/icons';
 
+// ENCRYPT
+import { encrypt, salt } from '../../utils/encryption';
+
 // ACTIONS
 import { fillNewWallet, openModal } from '../../actions/index';
 
@@ -56,9 +59,40 @@ class RecoveryPhrase extends Component {
     } else {
       console.log('NEW WALLET!!!! ', this.props.newWallet.newWallet.wallet);
 
+      const privateKey = this.props.newWallet.newWallet.wallet.wallet
+        .privateKey;
+      const walletAddress = this.props.newWallet.newWallet.rippleClassicAddress;
+      const passphrase = this.props.newWallet.newWallet.passphraseProvisional;
+
+      console.log(
+        'CREATED ARGSSSS!!!!!!!!!!!',
+        privateKey,
+        walletAddress,
+        passphrase
+      );
+
+      const salt = Math.random()
+        .toString(36)
+        .slice(2);
+      const encryptedPrivateKey = encrypt(
+        privateKey,
+        salt,
+        walletAddress,
+        passphrase
+      );
+
+      console.log('ENCRYP', encryptedPrivateKey);
+
       this.props.fillNewWallet({
         nickname: this.props.newWallet.newWallet.walletNickname,
-        wallet: this.props.newWallet.newWallet.wallet,
+        // wallet: this.props.newWallet.newWallet.wallet,
+        wallet: {
+          wallet: {
+            privateKey: encryptedPrivateKey,
+            publicKey: this.props.newWallet.newWallet.wallet.wallet.publicKey
+          },
+          walletSalt: salt
+        },
         walletAddress: this.props.newWallet.newWallet.walletAddress,
         rippleClassicAddress: this.props.newWallet.newWallet
           .rippleClassicAddress

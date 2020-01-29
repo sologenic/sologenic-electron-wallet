@@ -41,7 +41,6 @@ class ScreenHeader extends Component {
       walletOptions
     } = this.props;
 
-    console.log('HEADER ->', history);
 
     // if (!showSettings) {
     return (

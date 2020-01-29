@@ -24,7 +24,6 @@ class WalletCard extends Component {
   async componentDidMount() {
     const { id, walletAddress } = this.props.wallet;
 
-    console.log('WALLET CARD', this.props);
 
     if (this.props.connection.connected) {
       await this.props.getBalance({
@@ -36,7 +35,6 @@ class WalletCard extends Component {
       });
 
       this.fetchBalances(() => {
-        console.log('WALLET CARD FETCH --->');
         this.props.getMarketData({
           defaultFiat: this.props.defaultCurrency.currency
         });
@@ -69,7 +67,6 @@ class WalletCard extends Component {
       connection
     } = this.props;
 
-    console.log('Wallet Card', this.props);
 
     let totalBalance = 0;
 

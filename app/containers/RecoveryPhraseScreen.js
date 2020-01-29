@@ -44,7 +44,7 @@ class RecoveryPhraseScreen extends Component {
     return (
       <div className={classes.recoveryPhraseScreenContainer}>
         <ScreenHeader
-          title="Your Recovery Phrase"
+          title="Your Recovery Words"
           showBackArrow={true}
           showSettings={false}
         />
@@ -63,8 +63,8 @@ class RecoveryPhraseScreen extends Component {
         </div>
         <div className={classes.writtenDown}>
           <span>
-            I have written down my passphrase, and I understand that without it
-            I will not have access to my wallet should I lose it
+            I have written down my words, and I understand that without them I
+            will not have access to my wallet should I lose it
           </span>
           <Radio
             classes={{ root: classes.radio }}

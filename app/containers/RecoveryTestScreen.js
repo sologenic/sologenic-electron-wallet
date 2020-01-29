@@ -35,7 +35,7 @@ class RecoveryTestScreen extends Component {
     return (
       <div>
         <ScreenHeader
-          title="Recovery Phrase Test"
+          title="Recovery Words Test"
           showBackArrow={true}
           showSettings={false}
         />

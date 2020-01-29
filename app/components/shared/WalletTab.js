@@ -141,7 +141,6 @@ class WalletTab extends Component {
       why21XrpModal
     } = this.state;
 
-    console.log('TRANS_________________', transactions);
 
     let totalBalance = 0;
     let xrpValue = 0;

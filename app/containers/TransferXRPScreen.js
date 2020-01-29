@@ -10,7 +10,13 @@ import {
   cleanTransferInProgress,
   getBalance
 } from '../actions/index';
-import { CheckCircle, Close } from '@material-ui/icons';
+import {
+  CheckCircle,
+  Close,
+  Visibility,
+  VisibilityOff
+} from '@material-ui/icons';
+import { decrypt } from '../utils/encryption';
 
 class TransferXRPScreen extends Component {
   constructor(props) {
@@ -25,7 +31,8 @@ class TransferXRPScreen extends Component {
       transactionInProgress: false,
       wasTransferSuccess: false,
       errorInTransfer: false,
-      reason: ''
+      reason: '',
+      pass: ''
     };
     this.calculateFiat = this.calculateFiat.bind(this);
     this.onFocus = this.onFocus.bind(this);
@@ -109,10 +116,11 @@ class TransferXRPScreen extends Component {
     const amount = this.state.userInput;
     const destination = this.refs.destinationAddress.value.trim();
     const tag = this.refs.destinationTag.value.trim();
+    const password = this.refs.password.value.trim();
 
     console.log('SEND XRP', this.props.location.state.wallet);
 
-    if (amount === '' || destination === '') {
+    if (amount === '' || destination === '' || password === '') {
       this.setState({
         openValidationModal: true
       });
@@ -127,6 +135,7 @@ class TransferXRPScreen extends Component {
       this.setState({
         destination: destination,
         destinationTag: tag,
+        pass: password,
         openSummaryModal: true
       });
       // this.props.transferXRP({
@@ -150,9 +159,12 @@ class TransferXRPScreen extends Component {
     });
 
     const { wallet } = this.props.location.state;
+    const { pass } = this.state;
+
     const secret = wallet.details.wallet.secret
       ? wallet.details.wallet.secret
       : '';
+
     const keypair = {
       privateKey:
         typeof wallet.details.wallet === 'undefined'
@@ -163,13 +175,26 @@ class TransferXRPScreen extends Component {
           ? undefined
           : wallet.details.wallet.publicKey
     };
+    const salt = wallet.details.walletSalt;
+
+    const secretDecrypted =
+      secret === ''
+        ? ''
+        : await decrypt(secret, salt, wallet.walletAddress, pass);
+    const privateDecrypted =
+      typeof keypair.privateKey === 'undefined'
+        ? undefined
+        : await decrypt(keypair.privateKey, salt, wallet.walletAddress, pass);
 
     await this.props.transferXRP({
       account: wallet.walletAddress,
-      keypair,
+      keypair: {
+        publicKey: keypair.publicKey,
+        privateKey: privateDecrypted
+      },
       destination: this.state.destination,
       value: this.state.userInput,
-      secret
+      secret: secretDecrypted
     });
   }
 
@@ -255,10 +280,15 @@ class TransferXRPScreen extends Component {
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
           >
             <label>Destination Tag</label>
-            <input type="text" ref="destinationTag" />
+            <input type="text" ref="destinationTag" placeholder="Optional" />
           </div>
-          <div className={classes.optionalDiv}>
-            <span style={{ color: Colors.freshGreen }}>Optional</span>
+
+          <div
+            className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
+            style={{ position: 'relative' }}
+          >
+            <label>Wallet Passphrase</label>
+            <input type="password" ref="password" />
           </div>
         </div>
         <div className={classes.sendBtn}>
@@ -270,7 +300,10 @@ class TransferXRPScreen extends Component {
         >
           <div className={classes.validationMessage}>
             <h1>Error</h1>
-            <p>"Amount to Send" or "Destination Address" cannot be empty!</p>
+            <p>
+              "Amount to Send", "Destination Address" or "Wallet Passphrase"
+              cannot be empty!
+            </p>
           </div>
           <div className={classes.dismissBtn}>
             <button onClick={this.closeValidationModal}>DISMISS</button>

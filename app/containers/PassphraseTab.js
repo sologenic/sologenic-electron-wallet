@@ -9,12 +9,14 @@ import {
 } from '../utils/utils2';
 import { createTrustlineRequest, fillNewWallet } from '../actions/index';
 import { withStyles, Fade, Dialog } from '@material-ui/core';
+import { encrypt } from '../utils/encryption';
 
 class PassphraseTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openErrorInPhraseModal: false
+      openErrorInPhraseModal: false,
+      openAlreadyExistsModal: false
     };
 
     this.checkPassphrase = this.checkPassphrase.bind(this);
@@ -22,6 +24,13 @@ class PassphraseTab extends Component {
     this.closeErrorInPassphraseModal = this.closeErrorInPassphraseModal.bind(
       this
     );
+    this.closeAlreadyExistsModal = this.closeAlreadyExistsModal.bind(this);
+  }
+
+  closeAlreadyExistsModal() {
+    this.setState({
+      openAlreadyExistsModal: false
+    });
   }
 
   checkPassphrase() {
@@ -57,27 +66,60 @@ class PassphraseTab extends Component {
       importedWalletAddress
     );
 
-    await this.props.fillNewWallet({
-      nickname: '',
-      wallet: { mnemonic: phrase, wallet: importedWallet },
-      walletAddress: rippleClassicAddress,
-      rippleClassicAddress: rippleClassicAddress
-    });
+    const privateKey = importedWallet.privateKey;
+    const walletAddress = rippleClassicAddress;
+    const passphrase = this.refs.passwordForImported.value.trim();
 
-    await this.props.createTrustlineRequest({
-      address: rippleClassicAddress,
-      secret: '',
-      keypair: {
-        publicKey: importedWallet.publicKey,
-        privateKey: importedWallet.privateKey
-      },
-      id: rippleClassicAddress
-    });
+    const salt = Math.random()
+      .toString(36)
+      .slice(2);
+
+    const encryptedPrivateKey = encrypt(
+      privateKey,
+      salt,
+      walletAddress,
+      passphrase
+    );
+
+    const { wallets } = this.props.wallets;
+
+    const itAlreadyExists = wallets.filter(item => item.id === walletAddress);
+
+    console.log('PASSPHRASE', itAlreadyExists);
+
+    if (itAlreadyExists.length === 0) {
+      await this.props.fillNewWallet({
+        nickname: '',
+        wallet: {
+          wallet: {
+            publicKey: importedWallet.publicKey,
+            privateKey: encryptedPrivateKey
+          },
+          walletSalt: salt
+        },
+        walletAddress: rippleClassicAddress,
+        rippleClassicAddress: rippleClassicAddress
+      });
+
+      await this.props.createTrustlineRequest({
+        address: rippleClassicAddress,
+        secret: '',
+        keypair: {
+          publicKey: importedWallet.publicKey,
+          privateKey: importedWallet.privateKey
+        },
+        id: rippleClassicAddress
+      });
+    } else {
+      this.setState({
+        openAlreadyExistsModal: true
+      });
+    }
   }
 
   render() {
     const { classes } = this.props;
-    const { openErrorInPhraseModal } = this.state;
+    const { openErrorInPhraseModal, openAlreadyExistsModal } = this.state;
 
     return (
       <Fade in>
@@ -95,6 +137,7 @@ class PassphraseTab extends Component {
             className={classes.phraseTextarea}
             placeholder="Passphrase"
           ></textarea>
+          <input type="password" ref="passwordForImported" />
           <button onClick={this.checkPassphrase}>Add Wallet</button>
           <Dialog
             open={openErrorInPhraseModal}
@@ -112,6 +155,16 @@ class PassphraseTab extends Component {
               </button>
             </div>
           </Dialog>
+          <Dialog
+            open={openAlreadyExistsModal}
+            classes={{ paper: classes.phraseErrorModal }}
+          >
+            <h1>Error</h1>
+            <p>This wallet already exists.</p>
+            <div className={classes.dismissBtn}>
+              <button onClick={this.closeAlreadyExistsModal}>DISMISS</button>
+            </div>
+          </Dialog>
         </div>
       </Fade>
     );
@@ -119,7 +172,9 @@ class PassphraseTab extends Component {
 }
 
 function mapStateToProps(state) {
-  return {};
+  return {
+    wallets: state.wallets
+  };
 }
 
 function mapDispatchToProps(dispatch) {

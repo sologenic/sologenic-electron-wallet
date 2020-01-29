@@ -89,7 +89,6 @@ class OrientationScreen extends Component {
             <button
               className={classes.getStartedBtn}
               onClick={() => {
-                console.log('clicked');
                 this.props.history.push('/terms-conditions');
               }}
               disabled={step === 4 ? false : true}

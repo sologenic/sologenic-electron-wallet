@@ -32,7 +32,6 @@ class ReceiveScreen extends Component {
         const { wallet } = location.state;
 
         const img = location.state.currency === "xrp" ? Images.xrp : location.state.currency === "solo" ? Images.solo : Images.tokenizedAsset;
-        console.log("RECEIVE SCREEN", this.props);
 
         return (
             <Fade in>

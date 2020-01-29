@@ -9,7 +9,7 @@ import ScreenHeader from '../components/shared/ScreenHeader.js';
 
 // MUI COMPONENTS
 import { withStyles } from '@material-ui/core';
-import { ChevronRight } from '@material-ui/icons';
+import { ChevronRight, VisibilityOff, Visibility } from '@material-ui/icons';
 
 // WALLET
 import {
@@ -22,8 +22,29 @@ import {
 class AddWalletScreen extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { isShown: false };
     this.createWallet = this.createWallet.bind(this);
+    this.showPassword = this.showPassword.bind(this);
+    this.hidePassword = this.hidePassword.bind(this);
+  }
+
+  showPassword() {
+    const input = this.refs.walletPassphrase;
+
+    input.type = 'text';
+
+    this.setState({
+      isShown: true
+    });
+  }
+
+  hidePassword() {
+    const input = this.refs.walletPassphrase;
+    input.type = 'password';
+
+    this.setState({
+      isShown: false
+    });
   }
 
   createWallet() {
@@ -35,16 +56,21 @@ class AddWalletScreen extends Component {
     );
     const nickname = this.refs.walletNickname.value.trim();
 
-    this.props.generateNewWallet({
-      result,
-      nickname,
-      walletAddress,
-      rippleClassicAddress
-    });
+    if (this.refs.walletPassphrase.value.trim() === '') {
+      console.log('NEED PASSPHRASE!!!!!!!!!!!');
+    } else {
+      this.props.generateNewWallet({
+        result,
+        nickname,
+        walletAddress,
+        rippleClassicAddress,
+        passphraseProvisional: this.refs.walletPassphrase.value.trim()
+      });
 
-    this.props.history.push({
-      pathname: '/recovery-phrase-screen'
-    });
+      this.props.history.push({
+        pathname: '/recovery-phrase-screen'
+      });
+    }
   }
 
   render() {
@@ -62,6 +88,41 @@ class AddWalletScreen extends Component {
             placeholder="Wallet Nickname"
             ref="walletNickname"
           />
+        </div>
+        <div
+          className={classes.inputContainer}
+          style={{ position: 'relative' }}
+        >
+          <input
+            type="password"
+            placeholder="Wallet Passphrase"
+            ref="walletPassphrase"
+          />
+          {this.state.isShown ? (
+            <VisibilityOff
+              onClick={this.hidePassword}
+              style={{
+                position: 'absolute',
+                right: '25%',
+                top: '50%',
+                fontSize: 20,
+                transform: 'translateY(-50%)',
+                cursor: 'pointer'
+              }}
+            />
+          ) : (
+            <Visibility
+              onClick={this.showPassword}
+              style={{
+                position: 'absolute',
+                right: '25%',
+                top: '50%',
+                fontSize: 20,
+                transform: 'translateY(-50%)',
+                cursor: 'pointer'
+              }}
+            />
+          )}
         </div>
         <div className={classes.nextBtnContainer}>
           <button onClick={this.createWallet}>

@@ -15,6 +15,7 @@ import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
 import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
+import { decrypt } from '../../utils/encryption';
 
 class WalletSoloTab extends Component {
   constructor(props) {
@@ -22,13 +23,33 @@ class WalletSoloTab extends Component {
     this.state = {
       isModalOpen: false,
       activationSoloModal: false,
+      activationSoloModalFirst: false,
       loadingFinished: true,
       transactionLimit: 5
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
-    this.activateSoloWallet = this.activateSoloWallet.bind(this);
+    this.activateSoloWalletModalFirst = this.activateSoloWalletModalFirst.bind(
+      this
+    );
     this.loadMore = this.loadMore.bind(this);
+    this.confirmStartActivation = this.confirmStartActivation.bind(this);
+  }
+
+  confirmStartActivation() {
+    this.setState({
+      activationSoloModal: true,
+      activationSoloModalFirst: false
+    });
+    this.activateSoloWallet();
+  }
+
+  activateSoloWalletModalFirst() {
+    this.setState({
+      activationSoloModalFirst: true
+    });
+
+    // this.activateSoloWallet();
   }
 
   async loadMore() {
@@ -94,33 +115,60 @@ class WalletSoloTab extends Component {
   async activateSoloWallet() {
     const { wallet } = this.props;
 
-    console.log('SOLO WALLET SINGLE!!!!!', wallet);
+    const pass = this.refs.activateSoloPass.value.trim();
 
-    const { privateKey, publicKey, secret } = wallet.details.wallet;
+    const salt = wallet.details.walletSalt;
+
+    const secret = wallet.details.wallet.secret
+      ? wallet.details.wallet.secret
+      : '';
+
     const keypair = {
-      privateKey,
-      publicKey
+      privateKey:
+        typeof wallet.details.wallet.privateKey === 'undefined'
+          ? undefined
+          : wallet.details.wallet.privateKey,
+      publicKey:
+        typeof wallet.details.wallet.publicKey === 'undefined'
+          ? undefined
+          : wallet.details.wallet.publicKey
     };
+
+    const secretDecrypted =
+      secret === '' ? '' : decrypt(secret, salt, wallet.walletAddress, pass);
+
+    console.log(
+      'BEFORE DECRYPTING',
+      keypair.privateKey,
+      salt,
+      wallet.walletAddress,
+      pass
+    );
+
+    const privateKeyDecrypted =
+      typeof keypair.privateKey === 'undefined'
+        ? undefined
+        : decrypt(keypair.privateKey, salt, wallet.walletAddress, pass);
+    // const { privateKey, publicKey, secret } = wallet.details.wallet;
+    // const { walletSalt } = wallet.details;
+    // const keypair = {
+    //   privateKey,
+    //   publicKey
+    // };
 
     this.setState({
       activationSoloModal: true
     });
 
-    if (secret) {
-      await this.props.createTrustlineRequest({
-        address: wallet.walletAddress,
-        secret,
-        keypair: '',
-        id: wallet.id
-      });
-    } else if (keypair) {
-      await this.props.createTrustlineRequest({
-        address: wallet.walletAddress,
-        secret: '',
-        keypair,
-        id: wallet.id
-      });
-    }
+    await this.props.createTrustlineRequest({
+      address: wallet.walletAddress,
+      secret: secretDecrypted,
+      keypair: {
+        publicKey: keypair.publicKey,
+        privateKey: privateKeyDecrypted
+      },
+      id: wallet.id
+    });
   }
 
   render() {
@@ -140,7 +188,8 @@ class WalletSoloTab extends Component {
       priceChange,
       priceColor,
       activationSoloModal,
-      loadingFinished
+      loadingFinished,
+      activationSoloModalFirst
     } = this.state;
 
     let totalBalance = 0;
@@ -168,7 +217,7 @@ class WalletSoloTab extends Component {
           <div className={classes.actSoloBtn}>
             <button
               className={classes.actSoloWalletBtn}
-              onClick={this.activateSoloWallet}
+              onClick={this.activateSoloWalletModalFirst}
               disabled={wallet.balance.xrp > 21 ? false : true}
             >
               Activate
@@ -196,6 +245,22 @@ class WalletSoloTab extends Component {
             isModalOpen={isModalOpen}
             closeModal={this.closeAddressModal}
           />
+          <Dialog
+            open={activationSoloModalFirst}
+            classes={{ paper: classes.activationSoloModalPaper }}
+            // open
+          >
+            <h1 className={classes.activationSoloModalTitle}>
+              Type your Wallet Passphrase
+            </h1>
+            <div className={classes.activationSoloModalBody}>
+              <input type="password" ref="activateSoloPass" />
+            </div>
+            <div className={classes.confirmActivationBtnContainer}>
+              <button onClick={this.confirmStartActivation}>SUBMIT</button>
+            </div>
+          </Dialog>
+
           <Dialog
             open={activationSoloModal}
             classes={{ paper: classes.activationSoloModalPaper }}
@@ -362,13 +427,13 @@ function mapDispatchToProps(dispatch) {
 const styles = theme => ({
   activationSoloModalPaper: {
     background: Colors.darkerGray,
-    padding: 35,
+    // padding: 35,
     '& h1': {
-      fontSize: 32,
+      fontSize: 24,
       textAlign: 'center',
-      paddingBottom: 25,
       color: 'white',
-      fontWeight: 300
+      fontWeight: 300,
+      padding: '24px 24px 12px'
     }
   },
   marketCircle: {
@@ -400,6 +465,34 @@ const styles = theme => ({
       fontSize: 14,
       color: 'white',
       marginBottom: 12
+    },
+    '& input': {
+      background: Colors.slabGray,
+      border: 'none',
+      borderRadius: 25,
+      height: 50,
+      padding: '0 16px',
+      color: 'white',
+      fontSize: 16,
+      width: '60%',
+      marginBottom: 12,
+      '&:focus': {
+        outline: 'none'
+      }
+    }
+  },
+  confirmActivationBtnContainer: {
+    height: 50,
+    display: 'flex',
+    justifyContent: 'flex-end',
+    borderTop: `1px solid ${Colors.lightGray}`,
+    '& button': {
+      border: 'none',
+      background: 'none',
+      color: Colors.freshGreen,
+      fontSize: 20,
+      cursor: 'pointer',
+      marginRight: 15
     }
   },
   activatinSoloCircle: {

@@ -34,7 +34,6 @@ class SevenChart extends Component {
         };
       });
 
-      console.log('SEVEN DATA', formattedData);
     }
 
     const testData = [{ value: 0.2023 }, { value: 0.207 }, { value: 0.2102 }];

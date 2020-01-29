@@ -79,9 +79,7 @@ function* transferXRPSaga() {
 }
 
 const transferXrp = (account, destination, value) => {
-  const valueAmount = value / 0.000001;
-
-  console.log('TRANSFER XRP 12');
+  const valueAmount = Number(value) / 0.000001;
 
   return sologenic.submit({
     TransactionType: 'Payment',
@@ -94,6 +92,15 @@ const transferXrp = (account, destination, value) => {
 function* transferXRPCall(data) {
   try {
     const { account, keypair, destination, value, secret } = data.payload;
+
+    var isValidSecret;
+
+    if (secret !== '') {
+      isValidSecret = sologenic.getRippleApi().isValidSecret(secret);
+      // yield put(transferXrpSuccess());
+      console.log('SECRET CHECK!!!!!!!!!', isValidSecret);
+    }
+
     // const secret = keypair ? keypair : '';
     console.log('BEFORE YIELD SET ACCOUNT', data.payload);
     yield call(setAccount, account, secret, keypair);
@@ -116,8 +123,6 @@ function* transferSOLOSaga() {
 }
 
 const transferSolo = (account, destination, value) => {
-  console.log('TRANSFER SOLO 12');
-
   return sologenic.submit({
     TransactionType: 'Payment',
     Account: account,

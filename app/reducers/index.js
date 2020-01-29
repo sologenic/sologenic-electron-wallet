@@ -86,8 +86,6 @@ const initial = {
 const transferInProgress = createReducer(
   {
     [transferXrpSuccess]: (state, payload) => {
-      console.log('TRANSFER SUCCESS ->', payload);
-
       if (payload.result && payload.result.status === 'failed') {
         return {
           ...state,
@@ -113,8 +111,6 @@ const transferInProgress = createReducer(
       }
     },
     [transferSoloSuccess]: (state, payload) => {
-      console.log('TRANSFER SUCCESS ->', payload);
-
       if (payload.result && payload.result.status === 'failed') {
         return {
           ...state,
@@ -153,8 +149,6 @@ const transferInProgress = createReducer(
 const transactions = createReducer(
   {
     [getTransactionsSuccess]: (state, payload) => {
-      console.log(payload);
-
       return {
         ...state,
         transactions: {
@@ -171,7 +165,6 @@ const transactions = createReducer(
 const marketSevens = createReducer(
   {
     [getMarketSevensSuccess]: (state, payload) => {
-      console.log('MARKET 7 REDUCER', state);
       return {
         ...state,
         sevens: payload,
@@ -254,7 +247,6 @@ const wallets = createReducer(
   {
     [fillNewWallet]: (state, payload) => {
       const { wallets } = state;
-      console.log('STORE WALLETS', payload);
       const payload2 = payload;
 
       const newWallet = {
@@ -293,8 +285,6 @@ const wallets = createReducer(
       };
     },
     [changeWalletNickname]: (state, payload) => {
-      console.log('Changing Wallet Name', payload);
-
       const { wallet, newName } = payload;
       const { wallets } = state;
       let walletsCopy = [...wallets];
@@ -339,7 +329,6 @@ const wallets = createReducer(
       const { wallets } = state;
       const { id, amountXrp, amountSolo } = payload;
 
-      console.log('GET_BALANCE_SUCESS -> ', payload);
       const updatedWallets = wallets.map(item => {
         if (item.id === id) {
           item.balance.xrp = amountXrp;
@@ -398,7 +387,8 @@ const newWallet = createReducer(
           wallet: payload.result,
           walletNickname: payload.nickname,
           walletAddress: payload.walletAddress,
-          rippleClassicAddress: payload.rippleClassicAddress
+          rippleClassicAddress: payload.rippleClassicAddress,
+          passphraseProvisional: payload.passphraseProvisional
         }
       };
     }

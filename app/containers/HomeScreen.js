@@ -23,13 +23,11 @@ class HomeScreen extends Component {
   }
 
   openAddWallet() {
-    console.log('Clicked!');
     this.setState({
       addWalletOpen: true
     });
   }
   closeAddWallet() {
-    console.log('Clicked!');
     this.setState({
       addWalletOpen: false
     });

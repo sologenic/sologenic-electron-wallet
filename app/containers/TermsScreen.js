@@ -21,8 +21,6 @@ class TermsScreen extends Component {
 
   acceptTerms() {
     this.setState({ termsAccepted: true });
-    console.log("GET DATA PATH",storage.getDataPath());
-    console.log("GET DEFAULT DATA PATH", storage.getDefaultDataPath());
     storage.set('terms', { accepted: true }, function(err) {
       if (err) {
         console.log(err);

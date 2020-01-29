@@ -9,6 +9,7 @@ import {
 } from '../utils/utils2';
 import { createTrustlineRequest, fillNewWallet } from '../actions/index';
 import { withStyles, Fade, Dialog } from '@material-ui/core';
+import { encrypt } from '../utils/encryption';
 
 class PassphraseTab extends Component {
   constructor(props) {
@@ -45,14 +46,22 @@ class PassphraseTab extends Component {
   }
 
   async startImporting(address, secret, nickname) {
-    console.log('START IMPORTING', nickname);
+
+    const pass = this.refs.importedPassword.value.trim();
+
+    const salt = Math.random()
+      .toString(36)
+      .slice(2);
+
+    const encryptedPrivateKey = encrypt(secret, salt, address, pass);
 
     await this.props.fillNewWallet({
       nickname: nickname,
       wallet: {
         wallet: {
-          secret
-        }
+          secret: encryptedPrivateKey
+        },
+        walletSalt: salt
       },
       walletAddress: address,
       rippleClassicAddress: address
@@ -83,6 +92,11 @@ class PassphraseTab extends Component {
             type="text"
             ref="walletNickname"
             placeholder="Wallet Nickname"
+          />
+          <input
+            type="password"
+            ref="importedPassword"
+            placeholder="Wallet Password"
           />
           <span>Optional</span>
           <button onClick={this.validateInputs}>Add Wallet</button>
