@@ -32,7 +32,11 @@ import {
   transferXRP,
   transferXrpSuccess,
   transferSOLO,
-  transferSoloSuccess
+  transferSoloSuccess,
+  getSoloPrice,
+  fillSoloPrice,
+  fetchRippleFee,
+  fillRippleFee
 } from '../actions/index';
 import { createSevensObj, sologenic } from '../utils/utils2.js';
 import configVars from '../utils/config';
@@ -40,6 +44,16 @@ import { create } from 'apisauce';
 
 const api = create({
   baseURL: 'https://api.coinfield.com/v1/',
+  headers: {
+    post: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+  },
+  timeout: 10000
+});
+
+const ops = create({
+  baseURL: 'https://ops.coinfield.com',
   headers: {
     post: {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -70,6 +84,26 @@ function* testingCall() {
     console.log('HELLO, SAGA READY!!!!');
   } catch (e) {
     console.log('EEEE');
+  }
+}
+
+// FETCH RIPPLE FEE
+function* fetchRippleFeeSaga() {
+  yield takeLatest(`${fetchRippleFee}`, fetchRippleFeeCall);
+}
+
+function* fetchRippleFeeCall() {
+  try {
+    const ripple = yield sologenic.getRippleApi();
+    const rippleFee = yield ripple.getFee();
+
+    console.log('FEE SAGA', rippleFee);
+
+    if (rippleFee) {
+      yield put(fillRippleFee(rippleFee));
+    }
+  } catch (e) {
+    console.log('FETCH_RIPPLE_SAGA_ERROR', e);
   }
 }
 
@@ -205,21 +239,47 @@ function* createTrustlineCall(data) {
 
     yield call(setAccount, address, secret, keypair);
 
-    const tx = yield call(setTrustline, address);
+    const ripple = sologenic.getRippleApi();
+    const ts = yield ripple.getTrustlines(address, {
+      counterparty: configVars.soloIssuer
+    });
 
-    console.log('tx ------->>>', tx);
-    const response = yield tx.promise;
-
-    console.log('TRUSTLINE RESPONSE ->>>>>>>>', response);
-
-    if (response) {
+    if (ts.length > 0) {
       yield put(createTrustlineSuccess(id));
     } else {
-      yield put(createTrustlineError());
+      const tx = yield call(setTrustline, address);
+
+      console.log('tx ------->>>', tx);
+      const response = yield tx.promise;
+
+      if (response) {
+        yield put(createTrustlineSuccess(id));
+      }
     }
   } catch (e) {
     console.log('CREATE_TRUSTLINE_ERROR ->', e);
     yield put(createTrustlineError());
+  }
+}
+
+// GET SOLO PRICE
+function* getSoloPriceSaga() {
+  yield takeLatest(`${getSoloPrice}`, getSoloPriceCall);
+}
+
+const getSoloPriceOps = () => ops.get('/solo_rates.json');
+
+function* getSoloPriceCall() {
+  try {
+    const response = yield call(getSoloPriceOps);
+
+    if (response) {
+      yield put(fillSoloPrice(response.data));
+    }
+
+    console.log('SOLO RATES', response);
+  } catch (e) {
+    console.log('GET_SOLO_PRICE_ERROR', e);
   }
 }
 
@@ -401,6 +461,8 @@ export default function* rootSaga() {
     fork(getTransactionsSaga),
     fork(createTrustlineSaga),
     fork(transferXRPSaga),
-    fork(transferSOLOSaga)
+    fork(transferSOLOSaga),
+    fork(getSoloPriceSaga),
+    fork(fetchRippleFeeSaga)
   ]);
 }

@@ -8,10 +8,14 @@ import ScreenHeader from '../components/shared/ScreenHeader';
 import {
   transferSOLO,
   cleanTransferInProgress,
-  getBalance
+  getBalance,
+  fetchRippleFee
 } from '../actions/index';
 import { CheckCircle, Close } from '@material-ui/icons';
 import { decrypt } from '../utils/encryption';
+import { format } from '../utils/utils2';
+// import { multiply, evaluate } from 'mathjs';
+import { all as mathAll, create as mathCreate } from 'mathjs';
 
 class TransferXRPScreen extends Component {
   constructor(props) {
@@ -26,7 +30,8 @@ class TransferXRPScreen extends Component {
       transactionInProgress: false,
       wasTransferSuccess: false,
       errorInTransfer: false,
-      reason: ''
+      reason: '',
+      burnAmountState: 0
     };
     this.calculateFiat = this.calculateFiat.bind(this);
     this.onFocus = this.onFocus.bind(this);
@@ -72,7 +77,8 @@ class TransferXRPScreen extends Component {
     this.setState({
       errorInTransfer: true,
       reason: readableReason,
-      openSummaryModal: false
+      openSummaryModal: false,
+      transactionInProgrees: false
     });
   }
 
@@ -81,35 +87,38 @@ class TransferXRPScreen extends Component {
 
     this.setState({
       errorInTransfer: false,
-      reason: ''
+      reason: '',
+      transactionInProgress: false
     });
   }
 
   transferFinishedAndSuccess() {
     this.setState({
       wasTransferSuccess: true,
-      openSummaryModal: false
+      openSummaryModal: false,
+      transactionInProgress: false
     });
   }
 
   async closeSuccessModal() {
     await this.props.cleanTransferInProgress();
+    this.setState({
+      wasTransferSuccess: false,
+      transactionInProgress: false
+    });
     await this.props.getBalance({
       address: this.props.location.state.wallet.walletAddress,
       id: this.props.location.state.wallet.walletAddress
     });
 
-    this.setState({
-      wasTransferSuccess: false
-    });
+    this.props.history.goBack();
   }
 
-  startSending() {
+  async startSending() {
     const amount = this.state.userInput;
     const destination = this.refs.destinationAddress.value.trim();
     const tag = this.refs.destinationTag.value.trim();
     const password = this.refs.password.value.trim();
-
 
     if (amount === '' || destination === '' || password === '') {
       this.setState({
@@ -122,12 +131,28 @@ class TransferXRPScreen extends Component {
       //   privateKey: wallet.details.wallet.privateKey,
       //   publicKey: wallet.details.wallet.publicKey
       // };
+      const math = mathCreate(mathAll, {
+        epsilon: 1e-12,
+        number: 'BigNumber',
+        precision: 64
+      });
+
+      console.log('NUMBER AMOUNT', Number(amount));
+
+      const burnAmountPrev = math.multiply(amount, 0.9999);
+
+      console.log(burnAmountPrev);
+
+      const burnAmountState = amount - burnAmountPrev;
+
+      await this.props.fetchRippleFee();
 
       this.setState({
         destination: destination,
         destinationTag: tag,
         openSummaryModal: true,
-        pass: password
+        pass: password,
+        burnAmountState
       });
       // this.props.transferXRP({
       //   account: wallet.walletAddress,
@@ -200,8 +225,8 @@ class TransferXRPScreen extends Component {
 
     var t = text.replace(/[^0-9.]/g, '');
 
-    const fiatPrice = Number(t) * this.props.marketData.market.last;
-
+    const fiatPrice =
+      Number(t) * this.props.soloPrice.price[this.props.defaultFiat.currency];
 
     this.setState({
       userInput: t,
@@ -214,7 +239,7 @@ class TransferXRPScreen extends Component {
   }
 
   render() {
-    const { classes, location, defaultFiat } = this.props;
+    const { classes, location, defaultFiat, rippleFee } = this.props;
     const { wallet } = location.state;
     const {
       userInput,
@@ -226,7 +251,8 @@ class TransferXRPScreen extends Component {
       transactionInProgress,
       wasTransferSuccess,
       errorInTransfer,
-      reason
+      reason,
+      burnAmountState
     } = this.state;
 
     return (
@@ -239,7 +265,7 @@ class TransferXRPScreen extends Component {
         />
         <div className={classes.balanceHeader}>
           <img src={Images.solo} />
-          <p>{wallet.balance.solo} SOLO</p>
+          <p>{format(wallet.balance.solo, 4)} SOLO</p>
         </div>
         <div className={classes.inputsContainer}>
           <div
@@ -257,7 +283,7 @@ class TransferXRPScreen extends Component {
           </div>
           <p className={classes.amountInFiat}>
             <em>{defaultFiat.symbol}</em>
-            {amountInFiat.toFixed(2)}{' '}
+            {format(amountInFiat, 2)}{' '}
             <b>{defaultFiat.currency.toUpperCase()}</b>
           </p>
           <div
@@ -276,7 +302,7 @@ class TransferXRPScreen extends Component {
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
             style={{ position: 'relative' }}
           >
-            <label>Wallet Passphrase</label>
+            <label>Wallet Password</label>
             <input type="password" ref="password" />
           </div>
         </div>
@@ -306,6 +332,16 @@ class TransferXRPScreen extends Component {
             <p>
               {defaultFiat.symbol} {amountInFiat.toFixed(2)}{' '}
               {defaultFiat.currency.toUpperCase()}
+            </p>
+            <span style={{ color: 'white', marginTop: 8 }}>Tx Fee:</span>
+            <p>
+              <span style={{ color: Colors.lightGray, fontSize: 10 }}>XRP</span>
+              {rippleFee.fee}
+            </p>
+            <span style={{ color: 'white', marginTop: 8 }}>Burn Amount:</span>
+            <p>
+              <span style={{ color: Colors.lightGray, fontSize: 10 }}>Ƨ</span>
+              {burnAmountState}
             </p>
           </div>
           <div className={classes.summaryDestination}>
@@ -381,13 +417,15 @@ function mapStateToProps(state) {
   return {
     defaultFiat: state.defaultFiat,
     marketData: state.marketData,
-    transferInProgress: state.transferInProgress
+    transferInProgress: state.transferInProgress,
+    soloPrice: state.soloPrice,
+    rippleFee: state.rippleFee
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { transferSOLO, cleanTransferInProgress, getBalance },
+    { transferSOLO, cleanTransferInProgress, getBalance, fetchRippleFee },
     dispatch
   );
 }

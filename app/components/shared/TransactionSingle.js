@@ -28,7 +28,7 @@ class TransactionSingle extends Component {
   }
 
   render() {
-    const { classes, tx, currentLedger } = this.props;
+    const { classes, tx, currentLedger, currency } = this.props;
     const {
       timestamp,
       deliveredAmount,
@@ -99,18 +99,19 @@ class TransactionSingle extends Component {
 
     return (
       <Slide in direction="right" mountOnEnter unmountOnExit>
-        <div className={classes.txWrapper}>
+        <div
+          className={classes.txWrapper}
+          onClick={() => this.toggleSecondLine()}
+          style={{ cursor: 'pointer' }}
+        >
           <div className={classes.firstLine}>
             {secondLineOpen ? (
               <KeyboardArrowUp
-                onClick={() => this.toggleSecondLine()}
+                // onClick={() => this.toggleSecondLine()}
                 classes={{ root: classes.expandIcon }}
               />
             ) : (
-              <ExpandMore
-                onClick={() => this.toggleSecondLine()}
-                classes={{ root: classes.expandIcon }}
-              />
+              <ExpandMore classes={{ root: classes.expandIcon }} />
             )}
             <div className={classes.timeContainer}>
               <span
@@ -128,11 +129,18 @@ class TransactionSingle extends Component {
                   {thisWalletReceived ? '+' : '-'}
                   {currencyName}
                 </span>{' '}
-                {tx.outcome.deliveredAmount
+                {/* {tx.outcome.deliveredAmount
                   ? tx.outcome.deliveredAmount.value
                   : tx.specification.source.maxAmount.currency === 'XRP'
                   ? Number(tx.specification.source.maxAmount.value)
-                  : Number(tx.specification.source.maxAmount.value) - 1}
+                  : Number(tx.specification.source.maxAmount.value) - 1} */}
+                {!thisWalletReceived && currency === 'solo'
+                  ? tx.specification.source.maxAmount.value
+                  : !thisWalletReceived && currency === 'xrp'
+                  ? tx.specification.source.maxAmount.value
+                  : thisWalletReceived
+                  ? tx.outcome.deliveredAmount.value
+                  : ''}
               </p>
             </div>
             <div className={classes.status}>
@@ -146,16 +154,47 @@ class TransactionSingle extends Component {
                 <b>{currentLedger - ledgerVersion}</b>
               </div>
               <div className={classes.fee}>
-                <span>Fee</span>
-                <b>{fee}</b>
+                {!thisWalletReceived ? (
+                  <section>
+                    <span>Tx Fee</span>
+                    <b>
+                      <span style={{ color: Colors.lightGray, fontSize: 10 }}>
+                        XRP
+                      </span>
+                      {fee}
+                    </b>
+                  </section>
+                ) : (
+                  ''
+                )}
               </div>
-              <CopyToClipboard text={otherAddress}>
+              <div className={classes.burnAmount}>
+                {!thisWalletReceived && currency === 'solo' ? (
+                  <section>
+                    <span>Burn Amount</span>
+                    <b>
+                      <span style={{ color: Colors.lightGray, fontSize: 10 }}>
+                        Ƨ
+                      </span>
+                      {Number(
+                        tx.outcome.deliveredAmount
+                          ? Number(tx.specification.source.maxAmount.value) *
+                              0.0001
+                          : ''
+                      )}
+                    </b>
+                  </section>
+                ) : (
+                  ''
+                )}
+              </div>
+              {/* <CopyToClipboard text={otherAddress}>
                 <div className={classes.copyAddress}>
                   <section>
                     <span>Copy Address</span> <FileCopy />
                   </section>
                 </div>
-              </CopyToClipboard>
+              </CopyToClipboard> */}
             </div>
           ) : (
             ''
@@ -214,11 +253,37 @@ const styles = theme => ({
     flexDirection: 'column',
     borderLeft: `1px solid ${Colors.lightGray}`,
     borderRight: `1px solid ${Colors.lightGray}`,
+    justifyContent: 'center',
+    alignItems: 'center',
     '& span': {
       fontSize: 12
     },
-    '& p': {
-      fontSize: 14
+    '& b': {
+      fontSize: 14,
+      marginTop: 5
+    },
+    '& section': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }
+  },
+  burnAmount: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    '& span': {
+      fontSize: 12
+    },
+    '& b': {
+      fontSize: 14,
+      marginTop: 5
+    },
+    '& section': {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
     }
   },
   amount: {

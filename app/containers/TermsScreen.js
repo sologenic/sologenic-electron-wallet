@@ -91,6 +91,8 @@ class TermsScreen extends Component {
             <h2>SOLOGENIC DECENTRALIZED WALLET</h2>
           </div>
           <div className={classes.licenseContainer}>
+            <h3>GNU General PUBLIC LICENSE</h3>
+            <h3>Version 3, 29 June 2007</h3>
             <h2>License Agreement</h2>
             <p>Copyright (C) 2007 Free Software Foundation, Inc. <a href="https://fsf.org/" target="_blank" rel="noopener noreferrer">https://fsf.org/</a>{" "}
   Everyone is permitted to copy and distribute verbatim copies
@@ -694,6 +696,10 @@ const styles = theme => ({
     },
     "& h4": {
       textAlign: "center"
+    },
+    "& h3": {
+      textAlign: "center",
+      marginTop: 12,
     }
   },
   termsLicense: {

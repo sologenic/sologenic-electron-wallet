@@ -29,7 +29,9 @@ import {
   createTrustlineSuccess,
   transferXrpSuccess,
   transferSoloSuccess,
-  cleanTransferInProgress
+  cleanTransferInProgress,
+  fillSoloPrice,
+  fillRippleFee
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -65,6 +67,10 @@ const initial = {
     market: {},
     updated: false
   },
+  soloPrice: {
+    price: null,
+    updated: false
+  },
   marketSevens: {
     sevens: {},
     updated: false
@@ -80,8 +86,40 @@ const initial = {
       success: false
     },
     updated: false
+  },
+  rippleFee: {
+    fee: null,
+    updated: false
   }
 };
+
+const rippleFee = createReducer(
+  {
+    [fillRippleFee]: (state, payload) => {
+      console.log('FEE REDUCER', payload);
+
+      return {
+        ...state,
+        fee: payload,
+        updated: true
+      };
+    }
+  },
+  initial.rippleFee
+);
+
+const soloPrice = createReducer(
+  {
+    [fillSoloPrice]: (state, payload) => {
+      return {
+        ...state,
+        price: payload,
+        updated: true
+      };
+    }
+  },
+  initial.soloPrice
+);
 
 const transferInProgress = createReducer(
   {
@@ -485,6 +523,8 @@ export default function createRootReducer(history) {
     marketData: marketData,
     marketSevens: marketSevens,
     transactions: transactions,
-    transferInProgress: transferInProgress
+    transferInProgress: transferInProgress,
+    soloPrice: soloPrice,
+    rippleFee: rippleFee
   });
 }

@@ -5,7 +5,7 @@ import { withStyles, Fade } from '@material-ui/core';
 import Colors from '../constants/Colors';
 import ScreenHeader from '../components/shared/ScreenHeader';
 import PassphraseTab from './PassphraseTab';
-import WalletAndAddressTab from "./WalletAndAddressTab";
+import WalletAndAddressTab from './WalletAndAddressTab';
 
 class ImportWalletScreen extends Component {
   constructor(props) {
@@ -39,7 +39,7 @@ class ImportWalletScreen extends Component {
               onClick={() => this.changeTab('passphrase')}
               className={tabOnView === 'passphrase' ? classes.activeTab : ''}
             >
-              Passphrase
+              Recovery Words
             </div>
             <div
               onClick={() => this.changeTab('address-secret')}
@@ -50,11 +50,7 @@ class ImportWalletScreen extends Component {
               Wallet Address + Secret
             </div>
           </div>
-          {tabOnView === 'passphrase' ? (
-            <PassphraseTab />
-          ) : (
-            ''
-          )}
+          {tabOnView === 'passphrase' ? <PassphraseTab /> : ''}
           {tabOnView === 'address-secret' ? <WalletAndAddressTab /> : ''}
         </div>
       </Fade>
@@ -93,7 +89,6 @@ const styles = themes => ({
   activeTab: {
     borderBottom: '3px solid white'
   }
-  
 });
 
 export default withStyles(styles)(

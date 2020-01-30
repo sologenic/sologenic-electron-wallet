@@ -10,13 +10,14 @@ import {
 import { createTrustlineRequest, fillNewWallet } from '../actions/index';
 import { withStyles, Fade, Dialog } from '@material-ui/core';
 import { encrypt } from '../utils/encryption';
-
+import { withRouter } from 'react-router-dom';
 class PassphraseTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
       openErrorInPhraseModal: false,
-      openAlreadyExistsModal: false
+      openAlreadyExistsModal: false,
+      importSuccessfulModal: false
     };
 
     this.checkPassphrase = this.checkPassphrase.bind(this);
@@ -110,6 +111,10 @@ class PassphraseTab extends Component {
         },
         id: rippleClassicAddress
       });
+
+      this.setState({
+        importSuccessfulModal: true
+      });
     } else {
       this.setState({
         openAlreadyExistsModal: true
@@ -119,13 +124,17 @@ class PassphraseTab extends Component {
 
   render() {
     const { classes } = this.props;
-    const { openErrorInPhraseModal, openAlreadyExistsModal } = this.state;
+    const {
+      openErrorInPhraseModal,
+      openAlreadyExistsModal,
+      importSuccessfulModal
+    } = this.state;
 
     return (
       <Fade in>
         <div className={classes.passphraseTab}>
           <p>
-            Enter the 12 word passphrase that was given to you when you created
+            Enter the 12 recovery words that was given to you when you created
             your wallet.
           </p>
           <p>
@@ -135,9 +144,20 @@ class PassphraseTab extends Component {
           <textarea
             ref="passphrase"
             className={classes.phraseTextarea}
-            placeholder="Passphrase"
+            placeholder="Recovery Words"
           ></textarea>
-          <input type="password" ref="passwordForImported" />
+          <p style={{ marginTop: 32, marginBottom: 5 }}>
+            Choose a NEW password for this wallet.
+          </p>
+          <input
+            type="password"
+            ref="passwordForImported"
+            placeholder="New Password"
+          />
+          <p className={classes.footnote} style={{ textAlign: 'left' }}>
+            Note: You will need this password to make transactions with this
+            wallet.
+          </p>
           <button onClick={this.checkPassphrase}>Add Wallet</button>
           <Dialog
             open={openErrorInPhraseModal}
@@ -160,9 +180,24 @@ class PassphraseTab extends Component {
             classes={{ paper: classes.phraseErrorModal }}
           >
             <h1>Error</h1>
-            <p>This wallet already exists.</p>
+            <p>You already imported this wallet.</p>
             <div className={classes.dismissBtn}>
               <button onClick={this.closeAlreadyExistsModal}>DISMISS</button>
+            </div>
+          </Dialog>
+          <Dialog
+            open={importSuccessfulModal}
+            classes={{ paper: classes.phraseErrorModal }}
+          >
+            <h1>Success</h1>
+            <p>Wallet has been imported.</p>
+            <div className={classes.dismissBtn}>
+              <button
+                style={{ color: Colors.freshGreen }}
+                onClick={() => this.props.history.push('/dashboard')}
+              >
+                VIEW WALLETS
+              </button>
             </div>
           </Dialog>
         </div>
@@ -213,7 +248,22 @@ const styles = theme => ({
         opacity: 0.7,
         transition: '.2s'
       }
+    },
+    '& input': {
+      color: 'white',
+      width: '60%',
+      border: 'none',
+      padding: '16px 16px',
+      fontSize: 16,
+      background: Colors.darkGray,
+      borderRadius: 25
     }
+  },
+  footnote: {
+    width: '50%',
+    margin: '5px auto 0',
+    fontSize: 14,
+    color: Colors.gray
   },
   phraseTextarea: {
     width: '70%',
@@ -265,5 +315,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(PassphraseTab)
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(PassphraseTab))
 );

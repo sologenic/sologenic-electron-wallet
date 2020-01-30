@@ -10,7 +10,7 @@ import { withStyles, Grow, CircularProgress } from '@material-ui/core';
 import { ChevronRight } from '@material-ui/icons';
 
 // ACTIONS
-import { getBalance, getMarketData } from '../../actions/index';
+import { getBalance, getMarketData, getSoloPrice } from '../../actions/index';
 
 // UTILS
 import { format } from '../../utils/utils2';
@@ -24,26 +24,30 @@ class WalletCard extends Component {
   async componentDidMount() {
     const { id, walletAddress } = this.props.wallet;
 
-
     if (this.props.connection.connected) {
       await this.props.getBalance({
         address: walletAddress,
         id
       });
+
       await this.props.getMarketData({
         defaultFiat: this.props.defaultCurrency.currency
       });
 
-      this.fetchBalances(() => {
-        this.props.getMarketData({
+      await this.props.getSoloPrice();
+
+      this.fetchMarketPrices = setInterval(async () => {
+        await this.props.getMarketData({
           defaultFiat: this.props.defaultCurrency.currency
         });
+
+        await this.props.getSoloPrice();
       }, 10000);
     }
   }
 
   componentWillUnmount() {
-    clearInterval(this.fetchBalances);
+    clearInterval(this.fetchMarketPrices);
   }
 
   componentDidUpdate(prevProps) {
@@ -64,21 +68,28 @@ class WalletCard extends Component {
       defaultCurrency,
       wallet,
       marketData,
-      connection
+      connection,
+      soloPrice
     } = this.props;
-
 
     let totalBalance = 0;
 
     if (
       marketData.market !== null &&
-      typeof marketData.market.last !== 'undefined'
+      typeof marketData.market.last !== 'undefined' &&
+      soloPrice.price !== null
     ) {
       const { last } = marketData.market;
       const { xrp, solo } = wallet.balance;
+      const price = soloPrice.price[defaultCurrency.currency];
 
       const xrpValue = xrp * last;
-      const soloValue = solo * 0;
+      let soloValue;
+      if (typeof solo === 'undefined') {
+        soloValue = 0;
+      } else {
+        soloValue = solo * price;
+      }
 
       totalBalance = xrpValue + soloValue;
     }
@@ -101,7 +112,9 @@ class WalletCard extends Component {
                 <div className={classes.walletBalance}>
                   <div className={classes.balanceLine}>
                     <span>Total Balance:</span>{' '}
-                    {!marketData.updated || !connection.connected ? (
+                    {!marketData.updated ||
+                    !connection.connected ||
+                    soloPrice.price === null ? (
                       <CircularProgress
                         size={15}
                         classes={{ circle: classes.totalBalanceCircle }}
@@ -109,7 +122,7 @@ class WalletCard extends Component {
                     ) : (
                       <p>
                         {defaultCurrency.symbol}
-                        {totalBalance.toFixed(2)}{' '}
+                        {format(totalBalance, 2)}{' '}
                         {defaultCurrency.currency.toUpperCase()}
                       </p>
                     )}
@@ -130,13 +143,17 @@ class WalletCard extends Component {
             >
               <img src={Images.xrp} />
               <p className={balance.xrp === 0 ? classes.notActivated : ''}>
-                {balance.xrp === 0 ? 'Not Activated' : `${balance.xrp} XRP`}
+                {balance.xrp === 0
+                  ? 'Not Activated'
+                  : `${format(balance.xrp, 4)} XRP`}
               </p>
             </div>
             <div className={classes.walletBodySection}>
               <img src={Images.solo} />
               <p className={!wallet.trustline ? classes.notActivated : ''}>
-                {!wallet.trustline ? 'Not Activated' : `${balance.solo} SOLO`}
+                {!wallet.trustline
+                  ? 'Not Activated'
+                  : `${format(balance.solo, 4)} SOLO`}
               </p>
             </div>
           </div>
@@ -151,12 +168,16 @@ function mapStateToProps(state) {
     defaultCurrency: state.defaultFiat,
     wallets: state.wallets,
     marketData: state.marketData,
-    connection: state.connection
+    connection: state.connection,
+    soloPrice: state.soloPrice
   };
 }
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ getBalance, getMarketData }, dispatch);
+  return bindActionCreators(
+    { getBalance, getMarketData, getSoloPrice },
+    dispatch
+  );
 }
 const styles = theme => ({
   walletCardContainer: {

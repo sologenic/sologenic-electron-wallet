@@ -8,7 +8,8 @@ import ScreenHeader from '../components/shared/ScreenHeader';
 import {
   transferXRP,
   cleanTransferInProgress,
-  getBalance
+  getBalance,
+  fetchRippleFee
 } from '../actions/index';
 import {
   CheckCircle,
@@ -89,30 +90,35 @@ class TransferXRPScreen extends Component {
 
     this.setState({
       errorInTransfer: false,
-      reason: ''
+      reason: '',
+      transactionInProgress: false
     });
   }
 
   transferFinishedAndSuccess() {
     this.setState({
       wasTransferSuccess: true,
-      openSummaryModal: false
+      openSummaryModal: false,
+      transactionInProgress: false
     });
   }
 
   async closeSuccessModal() {
     await this.props.cleanTransferInProgress();
+
+    this.setState({
+      wasTransferSuccess: false,
+      transactionInProgress: false
+    });
     await this.props.getBalance({
       address: this.props.location.state.wallet.walletAddress,
       id: this.props.location.state.wallet.walletAddress
     });
 
-    this.setState({
-      wasTransferSuccess: false
-    });
+    this.props.history.goBack();
   }
 
-  startSending() {
+  async startSending() {
     const amount = this.state.userInput;
     const destination = this.refs.destinationAddress.value.trim();
     const tag = this.refs.destinationTag.value.trim();
@@ -131,6 +137,7 @@ class TransferXRPScreen extends Component {
       //   privateKey: wallet.details.wallet.privateKey,
       //   publicKey: wallet.details.wallet.publicKey
       // };
+      await this.props.fetchRippleFee();
 
       this.setState({
         destination: destination,
@@ -224,7 +231,10 @@ class TransferXRPScreen extends Component {
   }
 
   render() {
-    const { classes, location, defaultFiat } = this.props;
+    const { classes, location, defaultFiat, rippleFee } = this.props;
+
+    console.log('FEeeeeeeeeee', rippleFee);
+
     const { wallet } = location.state;
     const {
       userInput,
@@ -287,7 +297,7 @@ class TransferXRPScreen extends Component {
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
             style={{ position: 'relative' }}
           >
-            <label>Wallet Passphrase</label>
+            <label>Wallet Password</label>
             <input type="password" ref="password" />
           </div>
         </div>
@@ -321,6 +331,8 @@ class TransferXRPScreen extends Component {
               {defaultFiat.symbol} {amountInFiat.toFixed(2)}{' '}
               {defaultFiat.currency.toUpperCase()}
             </p>
+            <span style={{ color: 'white', marginTop: 8 }}>Tx Fee:</span>
+            <p>{rippleFee.fee}</p>
           </div>
           <div className={classes.summaryDestination}>
             <span>To Address:</span>
@@ -395,13 +407,14 @@ function mapStateToProps(state) {
   return {
     defaultFiat: state.defaultFiat,
     marketData: state.marketData,
-    transferInProgress: state.transferInProgress
+    transferInProgress: state.transferInProgress,
+    rippleFee: state.rippleFee
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { transferXRP, cleanTransferInProgress, getBalance },
+    { transferXRP, cleanTransferInProgress, getBalance, fetchRippleFee },
     dispatch
   );
 }

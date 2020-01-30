@@ -9,13 +9,15 @@ import {
   getMarketData,
   getMarketSevens,
   createTrustlineRequest,
-  getTransactions
+  getTransactions,
+  getSoloPrice
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
 import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
 import { decrypt } from '../../utils/encryption';
+import { format } from '../../utils/utils2';
 
 class WalletSoloTab extends Component {
   constructor(props) {
@@ -34,6 +36,13 @@ class WalletSoloTab extends Component {
     );
     this.loadMore = this.loadMore.bind(this);
     this.confirmStartActivation = this.confirmStartActivation.bind(this);
+    this.cancelConfirmActivation = this.cancelConfirmActivation.bind(this);
+  }
+
+  cancelConfirmActivation() {
+    this.setState({
+      activationSoloModalFirst: false
+    });
   }
 
   confirmStartActivation() {
@@ -83,10 +92,20 @@ class WalletSoloTab extends Component {
       priceChange
     });
 
+    await this.props.getSoloPrice();
+
+    this.soloInterval = setInterval(async () => {
+      await this.props.getSoloPrice();
+    }, 10000);
+
     await this.props.getTransactions({
       address: this.props.wallet.walletAddress,
       limit: this.state.transactionLimit
     });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.soloInterval);
   }
 
   componentDidUpdate(prevProps) {
@@ -100,6 +119,8 @@ class WalletSoloTab extends Component {
           address: this.props.wallet.walletAddress,
           limit: this.state.transactionLimit
         });
+
+        this.props.getSoloPrice();
       }
     }
   }
@@ -137,14 +158,6 @@ class WalletSoloTab extends Component {
     const secretDecrypted =
       secret === '' ? '' : decrypt(secret, salt, wallet.walletAddress, pass);
 
-    console.log(
-      'BEFORE DECRYPTING',
-      keypair.privateKey,
-      salt,
-      wallet.walletAddress,
-      pass
-    );
-
     const privateKeyDecrypted =
       typeof keypair.privateKey === 'undefined'
         ? undefined
@@ -180,7 +193,8 @@ class WalletSoloTab extends Component {
       marketData,
       marketSevens,
       transactions,
-      connection
+      connection,
+      soloPrice
     } = this.props;
 
     const {
@@ -194,14 +208,13 @@ class WalletSoloTab extends Component {
 
     let totalBalance = 0;
 
-    if (
-      marketData.market !== null &&
-      typeof marketData.market.last !== 'undefined'
-    ) {
-      const { last } = marketData.market;
+    console.log('SOLLO PRICE', soloPrice.price);
+
+    if (soloPrice.price !== null) {
+      const price = soloPrice.price[defaultFiat.currency];
       const { solo } = wallet.balance;
 
-      const soloValue = solo * last;
+      const soloValue = solo * price;
       // const soloValue = solo * 0;
 
       totalBalance = soloValue;
@@ -257,6 +270,7 @@ class WalletSoloTab extends Component {
               <input type="password" ref="activateSoloPass" />
             </div>
             <div className={classes.confirmActivationBtnContainer}>
+              <button onClick={this.cancelConfirmActivation}>CANCEL</button>
               <button onClick={this.confirmStartActivation}>SUBMIT</button>
             </div>
           </Dialog>
@@ -264,7 +278,6 @@ class WalletSoloTab extends Component {
           <Dialog
             open={activationSoloModal}
             classes={{ paper: classes.activationSoloModalPaper }}
-            // open
           >
             <h1 className={classes.activationSoloModalTitle}>
               Activating SOLO...
@@ -272,7 +285,10 @@ class WalletSoloTab extends Component {
             <div className={classes.activationSoloModalBody}>
               <span>Please wait</span>
               <CircularProgress
-                classes={{ circle: classes.activatinSoloCircle }}
+                classes={{
+                  circle: classes.activatinSoloCircle,
+                  root: classes.rootCircle
+                }}
               />
             </div>
           </Dialog>
@@ -284,13 +300,13 @@ class WalletSoloTab extends Component {
       <div className={classes.tabContainer}>
         <p className={classes.balanceTitle}>Your Balance:</p>
         <h2 className={classes.balance}>
-          {wallet.balance.solo}
+          {format(wallet.balance.solo, 4)}
           <span> SOLO</span>
         </h2>
-        {connection.connected ? (
+        {connection.connected && soloPrice.price !== null ? (
           <p className={classes.fiatValue}>
             {defaultFiat.symbol}
-            {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
+            {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
           </p>
         ) : (
           ''
@@ -298,15 +314,18 @@ class WalletSoloTab extends Component {
         <div className={classes.marketInfo}>
           <div className={classes.marketPrice}>
             <p>Market Price:</p>
-            {!marketData.updated || !connection.connected ? (
+            {soloPrice.price === null || !connection.connected ? (
               <CircularProgress
                 size={20}
-                classes={{ circle: classes.marketCircle }}
+                classes={{
+                  circle: classes.marketCircle
+                }}
               />
             ) : (
               <span>
                 {defaultFiat.symbol}
-                {marketData.market.last} {defaultFiat.currency.toUpperCase()}
+                {soloPrice.price[defaultFiat.currency]}{' '}
+                {defaultFiat.currency.toUpperCase()}
               </span>
             )}
           </div>
@@ -367,7 +386,7 @@ class WalletSoloTab extends Component {
         />
         <div className={classes.transactionsContainer}>
           {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <h1>Recent Transactions</h1>
+            <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
           ) : (
             <h1>No recent transactions</h1>
           )}
@@ -384,6 +403,7 @@ class WalletSoloTab extends Component {
                       tx={tx}
                       currentLedger={transactions.transactions.currentLedger}
                       address={wallet.walletAddress}
+                      currency="solo"
                     />
                   );
                 }
@@ -413,13 +433,20 @@ function mapStateToProps(state) {
     marketSevens: state.marketSevens,
     transactions: state.transactions,
     wallets: state.wallets,
-    connection: state.connection
+    connection: state.connection,
+    soloPrice: state.soloPrice
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, createTrustlineRequest, getTransactions },
+    {
+      getMarketData,
+      getMarketSevens,
+      createTrustlineRequest,
+      getTransactions,
+      getSoloPrice
+    },
     dispatch
   );
 }
@@ -427,13 +454,14 @@ function mapDispatchToProps(dispatch) {
 const styles = theme => ({
   activationSoloModalPaper: {
     background: Colors.darkerGray,
+    borderRadius: 15,
     // padding: 35,
     '& h1': {
       fontSize: 24,
       textAlign: 'center',
       color: 'white',
       fontWeight: 300,
-      padding: '24px 24px 12px'
+      padding: '32px 24px'
     }
   },
   marketCircle: {
@@ -475,7 +503,7 @@ const styles = theme => ({
       color: 'white',
       fontSize: 16,
       width: '60%',
-      marginBottom: 12,
+      marginBottom: 32,
       '&:focus': {
         outline: 'none'
       }
@@ -492,11 +520,17 @@ const styles = theme => ({
       color: Colors.freshGreen,
       fontSize: 20,
       cursor: 'pointer',
-      marginRight: 15
+      marginRight: 15,
+      '&:first-of-type': {
+        color: Colors.lightGray
+      }
     }
   },
   activatinSoloCircle: {
     color: Colors.darkRed
+  },
+  rootCircle: {
+    marginBottom: 24
   },
   walletFunctions: {
     background: Colors.darkerGray,

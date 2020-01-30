@@ -95,7 +95,7 @@ class AddWalletScreen extends Component {
         >
           <input
             type="password"
-            placeholder="Wallet Passphrase"
+            placeholder="Wallet Password"
             ref="walletPassphrase"
           />
           {this.state.isShown ? (
@@ -124,6 +124,10 @@ class AddWalletScreen extends Component {
             />
           )}
         </div>
+        <p className={classes.footnote}>
+          Note: You will need this password to make transactions with this
+          wallet.
+        </p>
         <div className={classes.nextBtnContainer}>
           <button onClick={this.createWallet}>
             <p>Next</p>
@@ -161,6 +165,12 @@ const styles = theme => ({
         outline: 'none'
       }
     }
+  },
+  footnote: {
+    width: '50%',
+    margin: '5px auto 0',
+    fontSize: 14,
+    color: Colors.gray
   },
   inputContainer: {
     display: 'flex',

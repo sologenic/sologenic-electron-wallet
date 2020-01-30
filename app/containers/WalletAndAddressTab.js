@@ -10,12 +10,15 @@ import {
 import { createTrustlineRequest, fillNewWallet } from '../actions/index';
 import { withStyles, Fade, Dialog } from '@material-ui/core';
 import { encrypt } from '../utils/encryption';
+import { withRouter } from 'react-router-dom';
 
 class PassphraseTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openWrongInfoModal: false
+      openWrongInfoModal: false,
+      openAlreadyExistsModal: false,
+      importSuccessfulModal: false
     };
     this.startImporting = this.startImporting.bind(this);
     this.validateInputs = this.validateInputs.bind(this);
@@ -46,7 +49,6 @@ class PassphraseTab extends Component {
   }
 
   async startImporting(address, secret, nickname) {
-
     const pass = this.refs.importedPassword.value.trim();
 
     const salt = Math.random()
@@ -55,29 +57,49 @@ class PassphraseTab extends Component {
 
     const encryptedPrivateKey = encrypt(secret, salt, address, pass);
 
-    await this.props.fillNewWallet({
-      nickname: nickname,
-      wallet: {
-        wallet: {
-          secret: encryptedPrivateKey
-        },
-        walletSalt: salt
-      },
-      walletAddress: address,
-      rippleClassicAddress: address
-    });
+    const { wallets } = this.props.wallets;
 
-    await this.props.createTrustlineRequest({
-      address,
-      secret,
-      keypair: '',
-      id: address
-    });
+    const itAlreadyExists = wallets.filter(item => item.id === address);
+
+    console.log('Address & Secret -------->', itAlreadyExists);
+
+    if (itAlreadyExists.length === 0) {
+      await this.props.fillNewWallet({
+        nickname: nickname,
+        wallet: {
+          wallet: {
+            secret: encryptedPrivateKey
+          },
+          walletSalt: salt
+        },
+        walletAddress: address,
+        rippleClassicAddress: address
+      });
+
+      await this.props.createTrustlineRequest({
+        address,
+        secret,
+        keypair: '',
+        id: address
+      });
+
+      this.setState({
+        importSuccessfulModal: true
+      });
+    } else {
+      this.setState({
+        openAlreadyExistsModal: true
+      });
+    }
   }
 
   render() {
     const { classes } = this.props;
-    const { openWrongInfoModal } = this.state;
+    const {
+      openWrongInfoModal,
+      openAlreadyExistsModal,
+      importSuccessfulModal
+    } = this.state;
 
     return (
       <Fade in>
@@ -93,12 +115,18 @@ class PassphraseTab extends Component {
             ref="walletNickname"
             placeholder="Wallet Nickname"
           />
+          <p style={{ marginBottom: 5 }}>
+            Choose a NEW password for this wallet
+          </p>
           <input
             type="password"
             ref="importedPassword"
             placeholder="Wallet Password"
           />
-          <span>Optional</span>
+          <p className={classes.footnote}>
+            Note: You will need this password to make transactions with this
+            wallet.
+          </p>
           <button onClick={this.validateInputs}>Add Wallet</button>
           <Dialog
             open={openWrongInfoModal}
@@ -113,6 +141,31 @@ class PassphraseTab extends Component {
               <button onClick={this.dismissErrorModal}>DISMISS</button>
             </div>
           </Dialog>
+          <Dialog
+            open={openAlreadyExistsModal}
+            classes={{ paper: classes.phraseErrorModal }}
+          >
+            <h1>Error</h1>
+            <p>You already imported this wallet.</p>
+            <div className={classes.dismissBtn}>
+              <button onClick={this.closeAlreadyExistsModal}>DISMISS</button>
+            </div>
+          </Dialog>
+          <Dialog
+            open={importSuccessfulModal}
+            classes={{ paper: classes.phraseErrorModal }}
+          >
+            <h1>Success</h1>
+            <p>Wallet has been imported.</p>
+            <div className={classes.dismissBtn}>
+              <button
+                style={{ color: Colors.freshGreen }}
+                onClick={() => this.props.history.push('/dashboard')}
+              >
+                VIEW WALLETS
+              </button>
+            </div>
+          </Dialog>
         </div>
       </Fade>
     );
@@ -120,7 +173,9 @@ class PassphraseTab extends Component {
 }
 
 function mapStateToProps(state) {
-  return {};
+  return {
+    wallets: state.wallets
+  };
 }
 
 function mapDispatchToProps(dispatch) {
@@ -165,15 +220,17 @@ const styles = theme => ({
       padding: '16px 16px',
       fontSize: 16,
       width: '100%',
+      marginBottom: 16,
       '&::placeholder': {
         fontSize: 16
       },
-      '&:nth-of-type(2)': {
-        margin: '16px'
+      '&:last-of-type': {
+        marginBottom: 0
       },
+
       '&:focus': {
-        outline: 'none',
-        boxShadow: '0 0 10px black'
+        outline: 'none'
+        // boxShadow: '0 0 10px black'
       }
     },
     '& span': {
@@ -182,6 +239,13 @@ const styles = theme => ({
       alignSelf: 'flex-start',
       marginTop: 5
     }
+  },
+
+  footnote: {
+    width: '100%',
+    margin: '5px auto 0',
+    fontSize: 14,
+    color: Colors.gray
   },
   errorModal: {
     background: Colors.darkerGray,
@@ -226,5 +290,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(PassphraseTab)
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(PassphraseTab))
 );

@@ -46,6 +46,12 @@ class SingleWalletScreen extends Component {
     this.deleteWallet = this.deleteWallet.bind(this);
     this.closeDeleteModal = this.closeDeleteModal.bind(this);
     this.changeTab = this.changeTab.bind(this);
+    this.closeOptions = this.closeOptions.bind(this);
+  }
+
+  closeOptions(e) {
+    e.stopPropagation();
+    this.props.closeOptions();
   }
 
   async componentDidMount() {
@@ -65,7 +71,6 @@ class SingleWalletScreen extends Component {
     });
 
     this.balanceInterval = setInterval(() => {
-
       this.props.getBalance({
         address: currentWallet.walletAddress,
         id: currentWallet.id
@@ -269,7 +274,8 @@ function mapDispatchToProps(dispatch) {
       closeOptions,
       deleteWallet,
       getBalance,
-      getTransactions
+      getTransactions,
+      closeOptions
     },
     dispatch
   );

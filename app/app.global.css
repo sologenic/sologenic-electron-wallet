@@ -141,5 +141,9 @@ body {
 }
 
 button:focus {
-  outline: none
+  outline: none;
+}
+
+input:focus {
+  outline: none;
 }

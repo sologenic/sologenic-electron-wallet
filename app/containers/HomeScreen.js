@@ -6,7 +6,14 @@ import ScreeHeader from '../components/shared/ScreenHeader.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { testingSaga, connectToRippleApi, connection } from '../actions/index';
-import { Close, ExpandMore, Add, GetApp } from '@material-ui/icons';
+import {
+  Close,
+  ExpandMore,
+  Add,
+  GetApp,
+  Wifi,
+  WifiOff
+} from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import WalletCard from '../components/shared/WalletCard';
 import storage from 'electron-json-storage';
@@ -106,7 +113,7 @@ class HomeScreen extends Component {
               : Colors.errorBackground
           }}
         >
-          {this.props.connection.connected ? 'Connected' : 'Disconnected'}
+          {this.props.connection.connected ? <Wifi /> : <WifiOff />}
         </p>
       </div>
     );

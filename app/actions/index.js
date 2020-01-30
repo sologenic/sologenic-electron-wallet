@@ -36,9 +36,14 @@ export const createTrustlineError = createAction('createTrustlineError');
 export const transferXRP = createAction('transferXRP');
 export const transferXrpSuccess = createAction('transferXrpSuccess');
 export const cleanTransferInProgress = createAction('cleanTransferInProgress');
+export const fetchRippleFee = createAction('fetchRippleFee');
+export const fillRippleFee = createAction('fillRippleFee');
 
 export const transferSOLO = createAction('transferSOLO');
 export const transferSoloSuccess = createAction('transferSOLOSuccess');
+
+export const getSoloPrice = createAction('getSoloPrice');
+export const fillSoloPrice = createAction('fillSoloPrice');
 
 export const changeWalletNickname = createAction('changeWalletNickname');
 export const deleteWallet = createAction('deleteWallet');

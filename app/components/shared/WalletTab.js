@@ -16,6 +16,7 @@ import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
 import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
+import { format } from '../../utils/utils2';
 
 class WalletTab extends Component {
   constructor(props) {
@@ -141,7 +142,6 @@ class WalletTab extends Component {
       why21XrpModal
     } = this.state;
 
-
     let totalBalance = 0;
     let xrpValue = 0;
     const { xrp } = wallet.balance;
@@ -227,13 +227,13 @@ class WalletTab extends Component {
       <div className={classes.tabContainer}>
         <p className={classes.balanceTitle}>Your Balance:</p>
         <h2 className={classes.balance}>
-          {wallet.balance.xrp}
+          {format(wallet.balance.xrp, 4)}
           <span> XRP</span>
         </h2>
         {connection.connected ? (
           <p className={classes.fiatValue}>
             {defaultFiat.symbol}
-            {totalBalance.toFixed(2)} {defaultFiat.currency.toUpperCase()}
+            {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
           </p>
         ) : (
           ''
@@ -319,7 +319,7 @@ class WalletTab extends Component {
         />
         <div className={classes.transactionsContainer}>
           {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <h1>Recent Transactions</h1>
+            <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
           ) : (
             <h1>No recent transactions</h1>
           )}
@@ -335,6 +335,7 @@ class WalletTab extends Component {
                       tx={tx}
                       currentLedger={transactions.transactions.currentLedger}
                       address={wallet.walletAddress}
+                      currency="xrp"
                     />
                   );
                 }

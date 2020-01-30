@@ -13,7 +13,7 @@ export const countWords = words => {
 };
 
 export const generateQRCode = data => {
-  const typeNumber = 4;
+  const typeNumber = 0;
   const errorCorrectionLevel = 'L';
   const QRCode = qrcode(typeNumber, errorCorrectionLevel);
   QRCode.addData(data);
@@ -247,30 +247,16 @@ function getPositionOfLeadingZeros(data) {
 
 // Format Numbers
 export function format(value, precision) {
-  var p = '0,0.';
-  for (var i = 0; i < precision; i++) {
-    p += '0';
+  const regex = new RegExp('^-?\\d+(?:\\.\\d{0,' + precision + '})?', 'g');
+  const a = value.toString().match(regex)[0];
+  const dot = a.indexOf('.');
+
+  if (dot === -1) {
+    return a + '.' + '0'.repeat(precision);
   }
 
-  var styledVolume = numbro(value).format(p);
-  var position = getPositionOfLeadingZeros(styledVolume);
-  var a = styledVolume.substring(0, position);
-  var b = styledVolume.substring(position);
-
-  if (a === '') {
-    return <span>0</span>;
-  }
-
-  a = a.split('.');
-
-  return (
-    <span style={{ letterSpacing: 0.2 }}>
-      <span>{a[0]}</span>
-      <span className="number-format" style={{ display: 'inline-block' }}>
-        .
-      </span>
-      <span>{a[1].replace('.', '')}</span>
-      <span className="decimal-format">{b}</span>
-    </span>
-  );
+  const b = precision - (a.length - dot) + 1;
+  return b > 0
+    ? a + '0'.repeat(b).replace(/\d(?=(\d{3})+\.)/g, '$&,')
+    : a.replace(/\d(?=(\d{3})+\.)/g, '$&,');
 }

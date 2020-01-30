@@ -5,8 +5,13 @@ import routes from '../constants/routes.js';
 
 // MUI IMPORTS
 import { withStyles } from '@material-ui/core/styles';
-import { CheckCircle, ExpandMore, ChevronRight } from '@material-ui/icons';
-import { Fade } from '@material-ui/core';
+import {
+  CheckCircle,
+  ExpandMore,
+  ChevronRight,
+  Warning
+} from '@material-ui/icons';
+import { Fade, Dialog } from '@material-ui/core';
 
 // APP COMPONENTS
 import ScreeHeader from '../components/shared/ScreenHeader.js';
@@ -19,7 +24,12 @@ import Colors from '../constants/Colors';
 import Images from '../constants/Images';
 
 // ACTIONS
-import { setDefaultFiatCurrency } from '../actions/index.js';
+import {
+  setDefaultFiatCurrency,
+  setTerms,
+  setPinCode,
+  fillWallets
+} from '../actions/index.js';
 
 // STORAGE
 import storage from 'electron-json-storage';
@@ -29,11 +39,29 @@ class SettingsScreen extends Component {
     super(props);
     this.state = {
       selectFiatMenuOpen: false,
-      selectedFiat: ''
+      selectedFiat: '',
+      openResetDataModal: false,
+      wrongPin: false,
+      deletingInProgress: false
     };
     this.setSelectedFiat = this.setSelectedFiat.bind(this);
     this.confirmSelectedFiat = this.confirmSelectedFiat.bind(this);
     this.closeChangeCurrencyModal = this.closeChangeCurrencyModal.bind(this);
+    this.openResetDataModal = this.openResetDataModal.bind(this);
+    this.closeResetDataModal = this.closeResetDataModal.bind(this);
+    this.confirmDeletion = this.confirmDeletion.bind(this);
+  }
+
+  openResetDataModal() {
+    this.setState({
+      openResetDataModal: true
+    });
+  }
+
+  closeResetDataModal() {
+    this.setState({
+      openResetDataModal: false
+    });
   }
 
   openChangeCurrencyModal() {
@@ -61,9 +89,44 @@ class SettingsScreen extends Component {
     this.setState({ selectFiatMenuOpen: false });
   }
 
+  async confirmDeletion() {
+    const pin = this.refs.deletePin.value.trim();
+
+    const correctPin = this.props.pinCode.pin;
+
+    if (pin !== correctPin) {
+      console.log('WRONG PIN!');
+      this.setState({
+        wrongPin: true
+      });
+    } else {
+      console.log('DELETING!!!');
+
+      this.setState({
+        deletingInProgress: true
+      });
+
+      await this.props.setPinCode('');
+      await this.props.setTerms(false);
+      await this.props.fillWallets({ wallets: [] });
+      await this.props.setDefaultFiatCurrency('usd');
+
+      await storage.clear();
+
+      setTimeout(() => {
+        this.props.history.push('/');
+      }, 2000);
+    }
+  }
+
   render() {
     const { classes, defaultFiat } = this.props;
-    const { selectFiatMenuOpen, selectedFiat } = this.state;
+    const {
+      selectFiatMenuOpen,
+      selectedFiat,
+      openResetDataModal,
+      wrongPin
+    } = this.state;
     const fiats = ['usd', 'cad', 'gbp', 'eur', 'jpy', 'aed'];
 
     return (
@@ -175,7 +238,45 @@ class SettingsScreen extends Component {
                 </div>
               </a>
             </div>
+            <div className={classes.inputWrapper}>
+              <label>Reset</label>
+              <div
+                className={classes.dropdownCurrency}
+                onClick={this.openResetDataModal}
+              >
+                <span>Reset Data</span>
+                <ChevronRight />
+              </div>
+            </div>
           </div>
+          <Dialog
+            open={openResetDataModal}
+            classes={{ paper: classes.resetDataModal }}
+          >
+            <h1>Are you sure?</h1>
+            <div
+              className={classes.infoCompartment}
+              style={{ cursor: 'pointer' }}
+            >
+              <p>
+                Continuing to Reset your data will permanently erase your
+                wallets, keys, passwords, etc.
+              </p>
+              <Warning />
+            </div>
+            <div className={classes.enterPin}>
+              {wrongPin ? (
+                <p style={{ color: Colors.errorBackground }}>Wrong Pin</p>
+              ) : (
+                <p>Enter Your Pin</p>
+              )}
+              <input type="password" ref="deletePin" />
+            </div>
+            <div className={classes.confirmDeletionBtn}>
+              <button onClick={this.closeResetDataModal}>CANCEL</button>
+              <button onClick={this.confirmDeletion}>CONFIRM</button>
+            </div>
+          </Dialog>
         </div>
       </Fade>
     );
@@ -192,6 +293,62 @@ const styles = theme => ({
     '& label': {
       paddingLeft: 24,
       fontSize: 12
+    }
+  },
+  infoCompartment: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0 24px 24px',
+
+    '& p': {
+      width: '60%'
+    },
+    '& svg': {
+      fontSize: 50,
+      color: Colors.errorBackground
+    }
+  },
+  enterPin: {
+    padding: '0 24px',
+    '& input': {
+      marginTop: 12,
+      marginBottom: 12,
+      border: 'none',
+      background: Colors.slabGray,
+      color: 'white',
+      borderRadius: 15,
+      padding: 12,
+      width: 150
+    }
+  },
+  resetDataModal: {
+    background: Colors.darkerGray,
+    color: 'white',
+    borderRadius: 15,
+    '& h1': {
+      fontSize: 28,
+      padding: '32px 24px'
+    },
+    '& p': {
+      fontSize: 16
+    }
+  },
+  confirmDeletionBtn: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    borderTop: `1px solid ${Colors.gray}`,
+    '& button': {
+      border: 'none',
+      background: 'none',
+      fontSize: 18,
+      marginRight: 16,
+      color: Colors.freshGreen,
+      cursor: 'pointer',
+      height: 50,
+      '&:first-of-type': {
+        color: Colors.lightGray
+      }
     }
   },
   modalBkg: {
@@ -291,14 +448,18 @@ const styles = theme => ({
 
 function mapStateToProps(state) {
   return {
-    defaultFiat: state.defaultFiat
+    defaultFiat: state.defaultFiat,
+    pinCode: state.pinCode
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
-      setDefaultFiatCurrency: setDefaultFiatCurrency
+      setDefaultFiatCurrency: setDefaultFiatCurrency,
+      setPinCode: setPinCode,
+      setTerms: setTerms,
+      fillWallets: fillWallets
     },
     dispatch
   );

@@ -25,7 +25,8 @@ class ScreenHeader extends Component {
     this.props.openOptions();
   }
 
-  closeOptionsModal() {
+  closeOptionsModal(e) {
+    e.stopPropagation();
     this.props.closeOptions();
   }
 
@@ -40,7 +41,6 @@ class ScreenHeader extends Component {
       showWalletOptions,
       walletOptions
     } = this.props;
-
 
     // if (!showSettings) {
     return (
@@ -64,7 +64,7 @@ class ScreenHeader extends Component {
           <MoreVert
             onClick={
               walletOptions.isOpen
-                ? this.closeOptionsModal
+                ? e => this.closeOptionsModal(e)
                 : this.openOptionsModal
             }
             classes={{ root: classes.optionsLink }}

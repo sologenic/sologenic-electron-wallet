@@ -21,7 +21,6 @@ class RootContainer extends Component {
   }
 
   async componentDidMount() {
-
     await storage.getAll((err, data) => {
       console.log('Storage', data);
       if (Object.entries(data).length > 0) {
