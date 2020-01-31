@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link, withRouter } from 'react-router-dom';
-import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
-import { Help } from '@material-ui/icons';
+import { withStyles, Dialog, CircularProgress, Fade } from '@material-ui/core';
+import { Help, FileCopy } from '@material-ui/icons';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import {
@@ -17,6 +17,7 @@ import WalletAddressModal from './WalletAddressModal';
 import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
 import { format } from '../../utils/utils2';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class WalletTab extends Component {
   constructor(props) {
@@ -25,7 +26,8 @@ class WalletTab extends Component {
       isModalOpen: false,
       transactionLimit: 5,
       loadingFinished: true,
-      why21XrpModal: false
+      why21XrpModal: false,
+      showCopyNotification: false
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
@@ -64,7 +66,7 @@ class WalletTab extends Component {
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.connection.connected !== this.props.connection.connected) {
       if (this.props.connection.connected) {
         this.props.getMarketData({
@@ -77,6 +79,19 @@ class WalletTab extends Component {
           address: this.props.wallet.walletAddress,
           limit: this.state.transactionLimit
         });
+      }
+    }
+
+    if (prevState.showCopyNotification !== this.state.showCopyNotification) {
+      if (this.state.showCopyNotification) {
+        setTimeout(
+          function() {
+            this.setState({
+              showCopyNotification: false
+            });
+          }.bind(this),
+          1500
+        );
       }
     }
   }
@@ -139,7 +154,8 @@ class WalletTab extends Component {
       priceChange,
       priceColor,
       loadingFinished,
-      why21XrpModal
+      why21XrpModal,
+      showCopyNotification
     } = this.state;
 
     let totalBalance = 0;
@@ -179,9 +195,7 @@ class WalletTab extends Component {
             </p>
           </div>
           <div className={classes.sendReceiveBtns}>
-            <button onClick={() => console.log('receive MONEY!!!!')} disabled>
-              RECEIVE
-            </button>
+            <button disabled>RECEIVE</button>
             <button disabled className={classes.sendMoneyBtn}>
               SEND
             </button>
@@ -211,6 +225,12 @@ class WalletTab extends Component {
               <input type="text" value={wallet.walletAddress} readOnly />
             </div>
             <div className={classes.seeQR}>
+              <CopyToClipboard
+                text={wallet.walletAddress}
+                onCopy={() => this.setState({ showCopyNotification: true })}
+              >
+                <FileCopy />
+              </CopyToClipboard>
               <img onClick={this.openAddressModal} src={Images.qricon} />
             </div>
           </div>
@@ -219,6 +239,30 @@ class WalletTab extends Component {
             isModalOpen={isModalOpen}
             closeModal={this.closeAddressModal}
           />
+          {showCopyNotification ? (
+            <Fade in>
+              <p
+                style={{
+                  padding: '8px 0',
+                  borderRadius: 5,
+                  background: 'white',
+                  boxShadow: '0 0 15px black',
+                  color: 'black',
+                  position: 'fixed',
+                  width: 100,
+                  bottom: 24,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  textAlign: 'center',
+                  fontSize: 12
+                }}
+              >
+                Address Copied!
+              </p>
+            </Fade>
+          ) : (
+            ''
+          )}
         </div>
       );
     }
@@ -240,7 +284,7 @@ class WalletTab extends Component {
         )}
         {xrp > 0 && xrp < 21 ? (
           <p className={classes.lowXrpMessage}>
-            Your XRP balance is running low. You need XRP to pay for
+            Your XRP balance is running low. You need at least 21 XRP to pay for
             transactions fees.
           </p>
         ) : (
@@ -309,6 +353,12 @@ class WalletTab extends Component {
             <input type="text" value={wallet.walletAddress} readOnly />
           </div>
           <div className={classes.seeQR}>
+            <CopyToClipboard
+              text={wallet.walletAddress}
+              onCopy={() => this.setState({ showCopyNotification: true })}
+            >
+              <FileCopy />
+            </CopyToClipboard>
             <img onClick={this.openAddressModal} src={Images.qricon} />
           </div>
         </div>
@@ -353,6 +403,30 @@ class WalletTab extends Component {
             ''
           )}
         </div>
+        {showCopyNotification ? (
+          <Fade in>
+            <p
+              style={{
+                padding: '8px 0',
+                borderRadius: 5,
+                background: 'white',
+                boxShadow: '0 0 15px black',
+                color: 'black',
+                position: 'fixed',
+                width: 100,
+                bottom: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                textAlign: 'center',
+                fontSize: 12
+              }}
+            >
+              Address Copied!
+            </p>
+          </Fade>
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -392,6 +466,19 @@ const styles = theme => ({
   },
   marketCircle: {
     color: Colors.lightGray
+  },
+  seeQR: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginLeft: 5,
+    '& img': {
+      width: 20,
+      cursor: 'pointer'
+    },
+    '& svg': {
+      fontSize: 15,
+      cursor: 'pointer'
+    }
   },
   lowXrpMessage: {
     color: Colors.errorBackground,
@@ -470,13 +557,8 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 24,
-    '& img': {
-      marginLeft: 10,
-      width: 35,
-      height: 'auto',
-      cursor: 'pointer'
-    }
+    paddingTop: 24
+    //
   },
   loadMoreBtn: {
     border: 'none',

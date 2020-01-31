@@ -31,7 +31,10 @@ import {
   transferSoloSuccess,
   cleanTransferInProgress,
   fillSoloPrice,
-  fillRippleFee
+  fillRippleFee,
+  createTrustlineError,
+  cleanTrustlineError,
+  cleanDefaultFiat
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -90,14 +93,39 @@ const initial = {
   rippleFee: {
     fee: null,
     updated: false
+  },
+  trustlineError: {
+    error: false,
+    updated: false
   }
 };
+
+const trustlineError = createReducer(
+  {
+    [createTrustlineError]: (state, payload) => {
+      return {
+        ...state,
+        error: true,
+        reason: payload.reason
+          ? payload.reason
+          : 'Something went wrong! Please try again later!',
+        updated: true
+      };
+    },
+    [cleanTrustlineError]: (state, payload) => {
+      return {
+        ...state,
+        error: false,
+        updated: false
+      };
+    }
+  },
+  initial.trustlineError
+);
 
 const rippleFee = createReducer(
   {
     [fillRippleFee]: (state, payload) => {
-      console.log('FEE REDUCER', payload);
-
       return {
         ...state,
         fee: payload,
@@ -479,6 +507,15 @@ const defaultFiat = createReducer(
         currency: payload,
         symbol: symbol
       };
+    },
+    [cleanDefaultFiat]: (state, payload) => {
+      storage.remove('defaultCurrency');
+
+      return {
+        ...state,
+        currency: 'usd',
+        symbol: '$'
+      };
     }
   },
   initial.defaultFiat
@@ -525,6 +562,7 @@ export default function createRootReducer(history) {
     transactions: transactions,
     transferInProgress: transferInProgress,
     soloPrice: soloPrice,
-    rippleFee: rippleFee
+    rippleFee: rippleFee,
+    trustlineError: trustlineError
   });
 }

@@ -31,21 +31,3 @@ exports.decrypt = decrypt = (encrypted, salt, address, passphrase) => {
 const salt = Math.random()
   .toString(36)
   .slice(2);
-
-console.log(
-  this.encrypt(
-    'PRIVATE KEY123',
-    salt,
-    'rGfRVfHBdAiwveepHTy1vJbqugUfmdYMSP',
-    'aB123456'
-  )
-);
-
-console.log(
-  this.decrypt(
-    'rBuyaAXf8G9uqVxpHdVSBg==',
-    salt,
-    'rGfRVfHBdAiwveepHTy1vJbqugUfmdYMSP',
-    'aB123456'
-  )
-);

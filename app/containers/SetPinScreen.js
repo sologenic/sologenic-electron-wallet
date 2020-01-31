@@ -99,9 +99,6 @@ class SetPinScreen extends Component {
             initialValue=""
             secret
             focus
-            onChange={(v, i) => {
-              console.log(v);
-            }}
             type="numeric"
             onComplete={(v, i) => {
               this.setFirstPin(v);

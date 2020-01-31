@@ -180,14 +180,14 @@ const styles = theme => ({
   },
   imgBg: {
     width: '100%',
-    height: 'auto',
+    height: '65%',
     position: 'absolute',
     bottom: 0,
     zIndex: -1,
     left: 0
   },
   mainImg: {
-    width: '40%',
+    width: '60%',
     height: 'auto',
     position: 'absolute',
     top: 20,
@@ -195,11 +195,11 @@ const styles = theme => ({
     transform: 'translateX(-50%)'
   },
   mainImg2: {
-    width: '30%',
+    width: '60%',
     top: 16
   },
   mainImg4: {
-    width: '40%',
+    width: '75%',
     top: 32
   },
   notActiveDot: {

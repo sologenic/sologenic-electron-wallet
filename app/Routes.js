@@ -39,7 +39,6 @@ class Routes extends React.Component {
     const online = navigator.onLine;
     await this.props.setConnection(online);
 
-    console.log(online);
     // if (online) {
     //   await this.props.connectToRippleApi();
     // }
@@ -47,8 +46,6 @@ class Routes extends React.Component {
     this.checkOnline = setInterval(async () => {
       const online = navigator.onLine;
       await this.props.setConnection(online);
-
-      console.log(online);
     }, 10000);
   }
 

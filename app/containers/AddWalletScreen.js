@@ -49,7 +49,6 @@ class AddWalletScreen extends Component {
 
   createWallet() {
     const result = generateNewRandomWallet();
-    console.log('New WALLET', result);
     const walletAddress = getAddress(result);
     const rippleClassicAddress = getRippleClassicAddressFromXAddress(
       walletAddress
@@ -57,7 +56,6 @@ class AddWalletScreen extends Component {
     const nickname = this.refs.walletNickname.value.trim();
 
     if (this.refs.walletPassphrase.value.trim() === '') {
-      console.log('NEED PASSPHRASE!!!!!!!!!!!');
     } else {
       this.props.generateNewWallet({
         result,

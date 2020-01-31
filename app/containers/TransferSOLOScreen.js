@@ -31,7 +31,9 @@ class TransferXRPScreen extends Component {
       wasTransferSuccess: false,
       errorInTransfer: false,
       reason: '',
-      burnAmountState: 0
+      sameAddress: false,
+      burnAmountState: 0,
+      userInputTag: ''
     };
     this.calculateFiat = this.calculateFiat.bind(this);
     this.onFocus = this.onFocus.bind(this);
@@ -45,6 +47,35 @@ class TransferXRPScreen extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this);
     this.transferFinishedAndFailed = this.transferFinishedAndFailed.bind(this);
     this.closeFailModal = this.closeFailModal.bind(this);
+    this.checkIfSameAddress = this.checkIfSameAddress.bind(this);
+    this.checkInteger = this.checkInteger.bind(this);
+  }
+
+  checkInteger() {
+    const text = this.refs.destinationTag.value.trim();
+    const t = text.replace(/[^0-9.]/g, '');
+
+    this.setState({
+      userInputTag: t
+    });
+  }
+
+  checkIfSameAddress() {
+    const address = this.refs.destinationAddress.value.trim();
+
+    const senderAddress = this.props.location.state.wallet.walletAddress;
+
+    const isSameAddress = address === senderAddress ? true : false;
+
+    if (isSameAddress) {
+      this.setState({
+        sameAddress: true
+      });
+    } else {
+      this.setState({
+        sameAddress: false
+      });
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -65,13 +96,25 @@ class TransferXRPScreen extends Component {
   }
 
   transferFinishedAndFailed(reason) {
-    console.log('TX FAILED!!!!!!!!', reason);
     let readableReason;
 
     switch (reason.reason) {
       case 'tecUNFUNDED_PAYMENT':
         readableReason = 'Not Enough Funds';
         break;
+      case 'localWRONG_PASSWORD':
+        readableReason = 'Wrong Wallet Password';
+        break;
+      case 'checksum_invalid':
+        readableReason =
+          'The Destination Address is invalid, check it and try again.';
+        break;
+      case 'tecPATH_DRY':
+        readableReason =
+          'It is possible that your wallet has not enough funds, or the other wallet has not activated its SOLO Wallet yet.';
+        break;
+      default:
+        readableReason = 'Something went wrong! Please try again later!';
     }
 
     this.setState({
@@ -125,25 +168,13 @@ class TransferXRPScreen extends Component {
         openValidationModal: true
       });
     } else {
-      // console.log('SENDING');
-      // const { wallet } = this.props.location.state;
-      // const keypair = {
-      //   privateKey: wallet.details.wallet.privateKey,
-      //   publicKey: wallet.details.wallet.publicKey
-      // };
       const math = mathCreate(mathAll, {
         epsilon: 1e-12,
         number: 'BigNumber',
         precision: 64
       });
 
-      console.log('NUMBER AMOUNT', Number(amount));
-
-      const burnAmountPrev = math.multiply(amount, 0.9999);
-
-      console.log(burnAmountPrev);
-
-      const burnAmountState = amount - burnAmountPrev;
+      const burnAmountState = math.multiply(amount, 0.0001);
 
       await this.props.fetchRippleFee();
 
@@ -154,12 +185,6 @@ class TransferXRPScreen extends Component {
         pass: password,
         burnAmountState
       });
-      // this.props.transferXRP({
-      //   account: wallet.walletAddress,
-      //   keypair,
-      //   destination: destination,
-      //   value: amount
-      // });
     }
   }
 
@@ -210,7 +235,8 @@ class TransferXRPScreen extends Component {
       },
       destination: this.state.destination,
       value: this.state.userInput,
-      secret: secretDecrypted
+      secret: secretDecrypted,
+      tag: this.state.destinationTag
     });
   }
 
@@ -224,13 +250,11 @@ class TransferXRPScreen extends Component {
     const text = e.currentTarget.value.trim();
 
     var t = text.replace(/[^0-9.]/g, '');
-
-    const fiatPrice =
-      Number(t) * this.props.soloPrice.price[this.props.defaultFiat.currency];
+    const fiatPrice = Number(t) * this.props.marketData.market.last;
 
     this.setState({
       userInput: t,
-      amountInFiat: fiatPrice
+      amountInFiat: Number.isNaN(fiatPrice) ? 0 : fiatPrice
     });
   }
 
@@ -252,7 +276,9 @@ class TransferXRPScreen extends Component {
       wasTransferSuccess,
       errorInTransfer,
       reason,
-      burnAmountState
+      burnAmountState,
+      sameAddress,
+      userInputTag
     } = this.state;
 
     return (
@@ -289,14 +315,33 @@ class TransferXRPScreen extends Component {
           <div
             className={`${classes.destinationAddress} ${classes.sendInputWrapper}`}
           >
-            <label>Destination Address</label>
-            <input type="text" ref="destinationAddress" />
+            {sameAddress ? (
+              <label style={{ color: Colors.errorBackground }}>
+                This is your own address
+              </label>
+            ) : (
+              <label>Destination Address</label>
+            )}
+            <input
+              type="text"
+              ref="destinationAddress"
+              style={{
+                color: sameAddress ? Colors.errorBackground : 'white'
+              }}
+              onBlur={this.checkIfSameAddress}
+            />
           </div>
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
           >
             <label>Destination Tag</label>
-            <input type="text" ref="destinationTag" placeholder="Optional" />
+            <input
+              type="text"
+              value={userInputTag}
+              ref="destinationTag"
+              placeholder="Optional"
+              onChange={this.checkInteger}
+            />
           </div>
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
@@ -307,7 +352,9 @@ class TransferXRPScreen extends Component {
           </div>
         </div>
         <div className={classes.sendBtn}>
-          <button onClick={this.startSending}>SEND</button>
+          <button onClick={this.startSending} disabled={sameAddress}>
+            SEND
+          </button>
         </div>
         <Dialog
           open={openValidationModal}
@@ -330,7 +377,7 @@ class TransferXRPScreen extends Component {
             <span>Amount to Send:</span>
             <h2>{userInput} SOLO</h2>
             <p>
-              {defaultFiat.symbol} {amountInFiat.toFixed(2)}{' '}
+              {defaultFiat.symbol} {format(amountInFiat, 2)}{' '}
               {defaultFiat.currency.toUpperCase()}
             </p>
             <span style={{ color: 'white', marginTop: 8 }}>Tx Fee:</span>
@@ -341,7 +388,7 @@ class TransferXRPScreen extends Component {
             <span style={{ color: 'white', marginTop: 8 }}>Burn Amount:</span>
             <p>
               <span style={{ color: Colors.lightGray, fontSize: 10 }}>Ƨ</span>
-              {burnAmountState}
+              {format(burnAmountState, 5)}
             </p>
           </div>
           <div className={classes.summaryDestination}>
@@ -440,7 +487,7 @@ const styles = theme => ({
     '& p': {
       fontSize: 16,
       color: 'white',
-      width: '80%'
+      width: '60%'
     },
     '& svg': {
       background: Colors.errorBackground,
@@ -466,7 +513,7 @@ const styles = theme => ({
     color: 'white',
     fontSize: 24,
     // textAlign: 'center',
-    padding: '27px 100px'
+    padding: '32px 24px'
   },
   successBtnContainer: {
     display: 'flex',
@@ -561,7 +608,9 @@ const styles = theme => ({
     }
   },
   validationModal: {
-    background: Colors.darkerGray
+    background: Colors.darkerGray,
+    borderRadius: 15,
+    width: '60%'
   },
   confirmationWrapper: {
     margin: '10px 36px 10px 0'

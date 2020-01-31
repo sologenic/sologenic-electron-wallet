@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles } from '@material-ui/core';
+import { withStyles, Fade } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import { Link } from 'react-router-dom';
@@ -13,6 +13,8 @@ import {
 } from '../../actions/index';
 import WalletAddressModal from './WalletAddressModal';
 import TransactionSingle from './TransactionSingle';
+import { FileCopy } from '@material-ui/icons';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class WalletTokenTab extends Component {
   constructor(props) {
@@ -20,7 +22,8 @@ class WalletTokenTab extends Component {
     this.state = {
       isModalOpen: false,
       activationSoloModal: false,
-      loadingFinished: true
+      loadingFinished: true,
+      showCopyNotification: false
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
@@ -50,7 +53,8 @@ class WalletTokenTab extends Component {
       priceChange,
       priceColor,
       activationSoloModal,
-      loadingFinished
+      loadingFinished,
+      showCopyNotification
     } = this.state;
 
     return (
@@ -59,9 +63,7 @@ class WalletTokenTab extends Component {
           Tokenized assets are coming in Q3 2020
         </p>
         <div className={classes.sendReceiveBtns}>
-          <button onClick={() => console.log('')} disabled>
-            RECEIVE
-          </button>
+          <button disabled>RECEIVE</button>
           <button className={classes.sendMoneyBtn} disabled>
             SEND
           </button>
@@ -72,6 +74,12 @@ class WalletTokenTab extends Component {
             <input type="text" value={wallet.walletAddress} readOnly />
           </div>
           <div className={classes.seeQR}>
+            <CopyToClipboard
+              text={wallet.walletAddress}
+              onCopy={() => this.setState({ showCopyNotification: true })}
+            >
+              <FileCopy />
+            </CopyToClipboard>
             <img onClick={this.openAddressModal} src={Images.qricon} />
           </div>
         </div>
@@ -80,6 +88,30 @@ class WalletTokenTab extends Component {
           isModalOpen={isModalOpen}
           closeModal={this.closeAddressModal}
         />
+        {showCopyNotification ? (
+          <Fade in>
+            <p
+              style={{
+                padding: '8px 0',
+                borderRadius: 5,
+                background: 'white',
+                boxShadow: '0 0 15px black',
+                color: 'black',
+                position: 'fixed',
+                width: 100,
+                bottom: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                textAlign: 'center',
+                fontSize: 12
+              }}
+            >
+              Address Copied!
+            </p>
+          </Fade>
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -150,13 +182,7 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 24,
-    '& img': {
-      marginLeft: 10,
-      width: 35,
-      height: 'auto',
-      cursor: 'pointer'
-    }
+    paddingTop: 24
   },
   actSoloWalletBtn: {
     background: Colors.darkRed,
@@ -175,6 +201,19 @@ const styles = theme => ({
       transition: '.2s'
     }
   },
+  seeQR: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginLeft: 5,
+    '& img': {
+      width: 20,
+      cursor: 'pointer'
+    },
+    '& svg': {
+      fontSize: 15,
+      cursor: 'pointer'
+    }
+  },
   walletAddress: {
     width: '50%',
     display: 'flex',
@@ -188,7 +227,7 @@ const styles = theme => ({
       color: 'white',
       background: 'none',
       border: 'none',
-      fontSize: 18
+      fontSize: 16
     },
     '& label': {
       fontSize: 14,

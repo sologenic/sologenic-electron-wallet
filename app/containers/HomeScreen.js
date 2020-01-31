@@ -5,7 +5,7 @@ import Images from '../constants/Images';
 import ScreeHeader from '../components/shared/ScreenHeader.js';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { testingSaga, connectToRippleApi, connection } from '../actions/index';
+import { connectToRippleApi, connection } from '../actions/index';
 import {
   Close,
   ExpandMore,
@@ -43,19 +43,6 @@ class HomeScreen extends Component {
   render() {
     const { classes, wallets, connection } = this.props;
     const { addWalletOpen } = this.state;
-
-    console.log(this.props);
-
-    // if (!connection.connected) {
-    //   return (
-    //     <div className={classes.loadingProgress}>
-    //       <CircularProgress
-    //         classes={{ circle: classes.circleProgress }}
-    //         size={200}
-    //       />
-    //     </div>
-    //   );
-    // }
 
     return (
       <div className={classes.homeScreenContainer}>
@@ -127,7 +114,6 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
-      testingSaga,
       connectToRippleApi
     },
     dispatch

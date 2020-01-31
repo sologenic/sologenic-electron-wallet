@@ -28,7 +28,8 @@ import {
   setDefaultFiatCurrency,
   setTerms,
   setPinCode,
-  fillWallets
+  fillWallets,
+  cleanDefaultFiat
 } from '../actions/index.js';
 
 // STORAGE
@@ -95,21 +96,18 @@ class SettingsScreen extends Component {
     const correctPin = this.props.pinCode.pin;
 
     if (pin !== correctPin) {
-      console.log('WRONG PIN!');
       this.setState({
         wrongPin: true
       });
     } else {
-      console.log('DELETING!!!');
-
       this.setState({
         deletingInProgress: true
       });
 
       await this.props.setPinCode('');
       await this.props.setTerms(false);
-      await this.props.fillWallets({ wallets: [] });
-      await this.props.setDefaultFiatCurrency('usd');
+      await this.props.fillWallets([]);
+      await this.props.cleanDefaultFiat();
 
       await storage.clear();
 
@@ -259,8 +257,8 @@ class SettingsScreen extends Component {
               style={{ cursor: 'pointer' }}
             >
               <p>
-                Continuing to Reset your data will permanently erase your
-                wallets, keys, passwords, etc.
+                Resetting your data will delete all your wallets from the
+                application.
               </p>
               <Warning />
             </div>
@@ -302,7 +300,7 @@ const styles = theme => ({
     padding: '0 24px 24px',
 
     '& p': {
-      width: '60%'
+      width: '75%'
     },
     '& svg': {
       fontSize: 50,
@@ -326,6 +324,7 @@ const styles = theme => ({
     background: Colors.darkerGray,
     color: 'white',
     borderRadius: 15,
+    width: '50%',
     '& h1': {
       fontSize: 28,
       padding: '32px 24px'
@@ -459,7 +458,8 @@ function mapDispatchToProps(dispatch) {
       setDefaultFiatCurrency: setDefaultFiatCurrency,
       setPinCode: setPinCode,
       setTerms: setTerms,
-      fillWallets: fillWallets
+      fillWallets: fillWallets,
+      cleanDefaultFiat: cleanDefaultFiat
     },
     dispatch
   );

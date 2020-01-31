@@ -57,11 +57,7 @@ class PassphraseTab extends Component {
   async startPasshphraseImporting(phrase) {
     const importedWallet = getWalletFromMnemonic(phrase);
 
-    console.log('PASSPHRASE NEW WALLET', importedWallet);
-
     const importedWalletAddress = importedWallet.getAddress();
-
-    console.log('PASSPHRASE NEW WALLET', importedWalletAddress);
 
     const rippleClassicAddress = await getRippleClassicAddressFromXAddress(
       importedWalletAddress
@@ -84,11 +80,14 @@ class PassphraseTab extends Component {
 
     const { wallets } = this.props.wallets;
 
-    const itAlreadyExists = wallets.filter(item => item.id === walletAddress);
+    const filteredArray =
+      wallets.length > 0
+        ? wallets.filter(item => item.id === walletAddress)
+        : [];
 
-    console.log('PASSPHRASE', itAlreadyExists);
+    const itAlreadyExists = filteredArray.length > 0 ? true : false;
 
-    if (itAlreadyExists.length === 0) {
+    if (!itAlreadyExists) {
       await this.props.fillNewWallet({
         nickname: '',
         wallet: {
@@ -187,7 +186,7 @@ class PassphraseTab extends Component {
           </Dialog>
           <Dialog
             open={importSuccessfulModal}
-            classes={{ paper: classes.phraseErrorModal }}
+            classes={{ paper: classes.importSuccessfulModal }}
           >
             <h1>Success</h1>
             <p>Wallet has been imported.</p>
@@ -292,6 +291,19 @@ const styles = theme => ({
     '& p': {
       fontSize: 14,
       padding: '12px 24px 24px'
+    }
+  },
+  importSuccessfulModal: {
+    background: Colors.darkerGray,
+    borderRadius: 15,
+    color: 'white',
+    '& h1': {
+      fontSize: 28,
+      padding: '32px 24px',
+      fontWeight: 300
+    },
+    '& p': {
+      padding: '0 24px 32px'
     }
   },
   dismissBtn: {

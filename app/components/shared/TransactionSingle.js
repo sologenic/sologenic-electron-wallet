@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withStyles, Slide } from '@material-ui/core';
+import { withStyles, Slide, Fade } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import moment from 'moment';
 import {
@@ -15,20 +15,36 @@ class TransactionSingle extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      secondLineOpen: false
+      secondLineOpen: false,
+      showCopyNotification: false
     };
     this.toggleSecondLine = this.toggleSecondLine.bind(this);
   }
 
   toggleSecondLine() {
-    console.log('Expand');
     this.setState({
       secondLineOpen: !this.state.secondLineOpen
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.showCopyNotification !== this.state.showCopyNotification) {
+      if (this.state.showCopyNotification) {
+        setTimeout(
+          function() {
+            this.setState({
+              showCopyNotification: false
+            });
+          }.bind(this),
+          1500
+        );
+      }
+    }
+  }
+
   render() {
     const { classes, tx, currentLedger, currency } = this.props;
+
     const {
       timestamp,
       deliveredAmount,
@@ -36,7 +52,7 @@ class TransactionSingle extends Component {
       fee,
       ledgerVersion
     } = tx.outcome;
-    const { secondLineOpen } = this.state;
+    const { secondLineOpen, showCopyNotification } = this.state;
 
     const thisWalletReceived =
       tx.specification.destination.address === this.props.address
@@ -124,37 +140,42 @@ class TransactionSingle extends Component {
               </section>
             </div>
             <div className={classes.amount}>
-              <p style={{ color: statusColor, fontSize: newFontSize }}>
+              <p style={{ color: 'white', fontSize: newFontSize }}>
                 <span style={{ fontSize: 12, color: Colors.lightGray }}>
                   {thisWalletReceived ? '+' : '-'}
                   {currencyName}
                 </span>{' '}
-                {/* {tx.outcome.deliveredAmount
-                  ? tx.outcome.deliveredAmount.value
-                  : tx.specification.source.maxAmount.currency === 'XRP'
-                  ? Number(tx.specification.source.maxAmount.value)
-                  : Number(tx.specification.source.maxAmount.value) - 1} */}
                 {!thisWalletReceived && currency === 'solo'
                   ? tx.specification.source.maxAmount.value
                   : !thisWalletReceived && currency === 'xrp'
                   ? tx.specification.source.maxAmount.value
                   : thisWalletReceived
                   ? tx.outcome.deliveredAmount.value
-                  : ''}
+                  : ''}{' '}
+                {thisWalletReceived ? (
+                  <CallReceived
+                    style={{ color: Colors.lightGray, fontSize: 12 }}
+                  />
+                ) : (
+                  <CallMade style={{ color: Colors.lightGray, fontSize: 12 }} />
+                )}
               </p>
             </div>
-            <div className={classes.status}>
-              <p style={{ color: statusColor }}>{status}</p>
+            <div
+              className={classes.status}
+              style={{ justifyContent: 'flex-end' }}
+            >
+              <p style={{ color: statusColor, marginRight: 40 }}>{status}</p>
             </div>
           </div>
           {secondLineOpen ? (
-            <div className={classes.secondLine}>
+            <div className={classes.secondLine} style={{ height: 50 }}>
               <div className={classes.confirmations}>
                 <span>Confirmations</span>
                 <b>{currentLedger - ledgerVersion}</b>
               </div>
               <div className={classes.fee}>
-                {!thisWalletReceived ? (
+                {!thisWalletReceived && status !== 'Failed' ? (
                   <section>
                     <span>Tx Fee</span>
                     <b>
@@ -188,14 +209,73 @@ class TransactionSingle extends Component {
                   ''
                 )}
               </div>
-              {/* <CopyToClipboard text={otherAddress}>
+            </div>
+          ) : (
+            ''
+          )}
+          {secondLineOpen ? (
+            <div className={`${classes.secondLine} ${classes.thirdLine}`}>
+              <CopyToClipboard
+                text={otherAddress}
+                onCopy={() => this.setState({ showCopyNotification: true })}
+              >
                 <div className={classes.copyAddress}>
                   <section>
                     <span>Copy Address</span> <FileCopy />
                   </section>
                 </div>
-              </CopyToClipboard> */}
+              </CopyToClipboard>
+              <CopyToClipboard
+                text={tx.id}
+                onCopy={() => this.setState({ showCopyNotification: true })}
+              >
+                <div
+                  className={classes.copyAddress}
+                  style={{
+                    borderLeft: `1px solid ${Colors.lightGray}`,
+                    borderRight: `1px solid ${Colors.lightGray}`
+                  }}
+                >
+                  <section>
+                    <span>Copy TX ID</span> <FileCopy />
+                  </section>
+                </div>
+              </CopyToClipboard>
+              <div className={classes.confirmations}>
+                <a
+                  href={`https://bithomp.com/explorer/${tx.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'white', fontSize: 14 }}
+                >
+                  View on Bithomp
+                </a>
+              </div>
             </div>
+          ) : (
+            ''
+          )}
+          {showCopyNotification ? (
+            <Fade in>
+              <p
+                style={{
+                  padding: '8px 0',
+                  borderRadius: 5,
+                  background: 'white',
+                  boxShadow: '0 0 15px black',
+                  color: 'black',
+                  position: 'absolute',
+                  width: 100,
+                  bottom: 0,
+                  fontSize: 12,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  textAlign: 'center'
+                }}
+              >
+                Copied!
+              </p>
+            </Fade>
           ) : (
             ''
           )}
@@ -324,6 +404,7 @@ const styles = theme => ({
       alignItems: 'center'
     }
   },
+  thirdLine: {},
   timeContainer: {
     display: 'flex',
     alignItems: 'center',

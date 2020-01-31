@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
+import { withStyles, Dialog, CircularProgress, Fade } from '@material-ui/core';
+import { FileCopy } from '@material-ui/icons';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import { Link, withRouter } from 'react-router-dom';
@@ -10,7 +11,8 @@ import {
   getMarketSevens,
   createTrustlineRequest,
   getTransactions,
-  getSoloPrice
+  getSoloPrice,
+  cleanTrustlineError
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
@@ -18,6 +20,7 @@ import { getPriceChange, getPriceColor } from '../../utils/utils2';
 import TransactionSingle from './TransactionSingle';
 import { decrypt } from '../../utils/encryption';
 import { format } from '../../utils/utils2';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 class WalletSoloTab extends Component {
   constructor(props) {
@@ -27,7 +30,8 @@ class WalletSoloTab extends Component {
       activationSoloModal: false,
       activationSoloModalFirst: false,
       loadingFinished: true,
-      transactionLimit: 5
+      transactionLimit: 5,
+      showCopyNotification: false
     };
     this.openAddressModal = this.openAddressModal.bind(this);
     this.closeAddressModal = this.closeAddressModal.bind(this);
@@ -37,11 +41,20 @@ class WalletSoloTab extends Component {
     this.loadMore = this.loadMore.bind(this);
     this.confirmStartActivation = this.confirmStartActivation.bind(this);
     this.cancelConfirmActivation = this.cancelConfirmActivation.bind(this);
+    this.closeTrustlineErrorModal = this.closeTrustlineErrorModal.bind(this);
   }
 
   cancelConfirmActivation() {
     this.setState({
       activationSoloModalFirst: false
+    });
+  }
+
+  closeTrustlineErrorModal() {
+    this.props.cleanTrustlineError();
+
+    this.setState({
+      activationSoloModal: false
     });
   }
 
@@ -194,7 +207,8 @@ class WalletSoloTab extends Component {
       marketSevens,
       transactions,
       connection,
-      soloPrice
+      soloPrice,
+      trustlineError
     } = this.props;
 
     const {
@@ -203,12 +217,11 @@ class WalletSoloTab extends Component {
       priceColor,
       activationSoloModal,
       loadingFinished,
-      activationSoloModalFirst
+      activationSoloModalFirst,
+      showCopyNotification
     } = this.state;
 
     let totalBalance = 0;
-
-    console.log('SOLLO PRICE', soloPrice.price);
 
     if (soloPrice.price !== null) {
       const price = soloPrice.price[defaultFiat.currency];
@@ -231,15 +244,13 @@ class WalletSoloTab extends Component {
             <button
               className={classes.actSoloWalletBtn}
               onClick={this.activateSoloWalletModalFirst}
-              disabled={wallet.balance.xrp > 21 ? false : true}
+              disabled={wallet.balance.xrp >= 21 ? false : true}
             >
               Activate
             </button>
           </div>
           <div className={classes.sendReceiveBtns}>
-            <button onClick={() => console.log('receive MONEY!!!!')} disabled>
-              RECEIVE
-            </button>
+            <button disabled>RECEIVE</button>
             <button disabled className={classes.sendMoneyBtn}>
               SEND
             </button>
@@ -250,6 +261,12 @@ class WalletSoloTab extends Component {
               <input type="text" value={wallet.walletAddress} readOnly />
             </div>
             <div className={classes.seeQR}>
+              <CopyToClipboard
+                text={wallet.walletAddress}
+                onCopy={() => this.setState({ showCopyNotification: true })}
+              >
+                <FileCopy />
+              </CopyToClipboard>
               <img onClick={this.openAddressModal} src={Images.qricon} />
             </div>
           </div>
@@ -264,7 +281,7 @@ class WalletSoloTab extends Component {
             // open
           >
             <h1 className={classes.activationSoloModalTitle}>
-              Type your Wallet Passphrase
+              Type your Wallet Password
             </h1>
             <div className={classes.activationSoloModalBody}>
               <input type="password" ref="activateSoloPass" />
@@ -292,6 +309,46 @@ class WalletSoloTab extends Component {
               />
             </div>
           </Dialog>
+
+          <Dialog
+            open={trustlineError.error}
+            classes={{ paper: classes.activationSoloModalPaper }}
+            // open
+          >
+            <h1 className={classes.activationSoloModalTitle}>Error</h1>
+            <div className={classes.activationSoloModalBody}>
+              <p style={{ color: 'white', padding: '0 24px 32px' }}>
+                {trustlineError.reason}
+              </p>
+            </div>
+            <div className={classes.confirmActivationBtnContainer}>
+              <button onClick={this.closeTrustlineErrorModal}>DISMISS</button>
+            </div>
+          </Dialog>
+          {showCopyNotification ? (
+            <Fade in>
+              <p
+                style={{
+                  padding: '8px 0',
+                  borderRadius: 5,
+                  background: 'white',
+                  boxShadow: '0 0 15px black',
+                  color: 'black',
+                  position: 'fixed',
+                  width: 100,
+                  bottom: 24,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  textAlign: 'center',
+                  fontSize: 12
+                }}
+              >
+                Address Copied!
+              </p>
+            </Fade>
+          ) : (
+            ''
+          )}
         </div>
       );
     }
@@ -376,6 +433,12 @@ class WalletSoloTab extends Component {
             <input type="text" value={wallet.walletAddress} readOnly />
           </div>
           <div className={classes.seeQR}>
+            <CopyToClipboard
+              text={wallet.walletAddress}
+              onCopy={() => this.setState({ showCopyNotification: true })}
+            >
+              <FileCopy />
+            </CopyToClipboard>
             <img onClick={this.openAddressModal} src={Images.qricon} />
           </div>
         </div>
@@ -421,6 +484,30 @@ class WalletSoloTab extends Component {
             ''
           )}
         </div>
+        {showCopyNotification ? (
+          <Fade in>
+            <p
+              style={{
+                padding: '8px 0',
+                borderRadius: 5,
+                background: 'white',
+                boxShadow: '0 0 15px black',
+                color: 'black',
+                position: 'fixed',
+                width: 100,
+                bottom: 24,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                textAlign: 'center',
+                fontSize: 12
+              }}
+            >
+              Address Copied!
+            </p>
+          </Fade>
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -434,7 +521,8 @@ function mapStateToProps(state) {
     transactions: state.transactions,
     wallets: state.wallets,
     connection: state.connection,
-    soloPrice: state.soloPrice
+    soloPrice: state.soloPrice,
+    trustlineError: state.trustlineError
   };
 }
 
@@ -445,7 +533,8 @@ function mapDispatchToProps(dispatch) {
       getMarketSevens,
       createTrustlineRequest,
       getTransactions,
-      getSoloPrice
+      getSoloPrice,
+      cleanTrustlineError
     },
     dispatch
   );
@@ -456,12 +545,26 @@ const styles = theme => ({
     background: Colors.darkerGray,
     borderRadius: 15,
     // padding: 35,
+    width: '60%',
     '& h1': {
       fontSize: 24,
       textAlign: 'center',
       color: 'white',
       fontWeight: 300,
       padding: '32px 24px'
+    }
+  },
+  seeQR: {
+    display: 'flex',
+    flexDirection: 'column',
+    marginLeft: 5,
+    '& img': {
+      width: 20,
+      cursor: 'pointer'
+    },
+    '& svg': {
+      fontSize: 15,
+      cursor: 'pointer'
     }
   },
   marketCircle: {
@@ -537,13 +640,7 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 24,
-    '& img': {
-      marginLeft: 10,
-      width: 35,
-      height: 'auto',
-      cursor: 'pointer'
-    }
+    paddingTop: 24
   },
   actSoloBtn: {
     width: '100%',

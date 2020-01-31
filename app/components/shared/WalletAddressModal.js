@@ -10,7 +10,6 @@ class WalletAddressModal extends Component {
     this.state = {
       uri: null
     };
-    this.closeModa = this.closeModal.bind(this);
   }
 
   componentDidMount() {
@@ -18,10 +17,6 @@ class WalletAddressModal extends Component {
     this.setState({
       uri
     });
-  }
-
-  closeModal() {
-    console.log('Close');
   }
 
   render() {

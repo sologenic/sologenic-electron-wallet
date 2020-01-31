@@ -145,8 +145,6 @@ class SingleWalletScreen extends Component {
 
     let wallet = currentWallet;
 
-    console.log('Single', wallet);
-
     if (changingNickName) {
       return (
         <div>

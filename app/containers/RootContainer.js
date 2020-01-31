@@ -22,13 +22,12 @@ class RootContainer extends Component {
 
   async componentDidMount() {
     await storage.getAll((err, data) => {
-      console.log('Storage', data);
       if (Object.entries(data).length > 0) {
         this.props.setPinCode(data.pincode.pin);
         this.props.setTerms(data.terms.accepted);
 
         if (typeof data.wallets === 'undefined') {
-          this.props.fillWallets({ wallets: [] });
+          this.props.fillWallets([]);
         } else {
           this.props.fillWallets(data.wallets);
         }

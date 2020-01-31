@@ -59,11 +59,12 @@ class PassphraseTab extends Component {
 
     const { wallets } = this.props.wallets;
 
-    const itAlreadyExists = wallets.filter(item => item.id === address);
+    const filteredArray =
+      wallets.length > 0 ? wallets.filter(item => item.id === address) : [];
 
-    console.log('Address & Secret -------->', itAlreadyExists);
+    const itAlreadyExists = filteredArray.length > 0 ? true : false;
 
-    if (itAlreadyExists.length === 0) {
+    if (!itAlreadyExists) {
       await this.props.fillNewWallet({
         nickname: nickname,
         wallet: {
@@ -153,7 +154,7 @@ class PassphraseTab extends Component {
           </Dialog>
           <Dialog
             open={importSuccessfulModal}
-            classes={{ paper: classes.phraseErrorModal }}
+            classes={{ paper: classes.importSuccessfulModal }}
           >
             <h1>Success</h1>
             <p>Wallet has been imported.</p>
@@ -240,7 +241,19 @@ const styles = theme => ({
       marginTop: 5
     }
   },
-
+  importSuccessfulModal: {
+    background: Colors.darkerGray,
+    borderRadius: 15,
+    color: 'white',
+    '& h1': {
+      fontSize: 28,
+      padding: '32px 24px',
+      fontWeight: 300
+    },
+    '& p': {
+      padding: '0 24px 32px'
+    }
+  },
   footnote: {
     width: '100%',
     margin: '5px auto 0',

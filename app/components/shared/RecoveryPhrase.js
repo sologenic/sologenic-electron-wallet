@@ -57,19 +57,10 @@ class RecoveryPhrase extends Component {
         isWrongPhrase: true
       });
     } else {
-      console.log('NEW WALLET!!!! ', this.props.newWallet.newWallet.wallet);
-
       const privateKey = this.props.newWallet.newWallet.wallet.wallet
         .privateKey;
       const walletAddress = this.props.newWallet.newWallet.rippleClassicAddress;
       const passphrase = this.props.newWallet.newWallet.passphraseProvisional;
-
-      console.log(
-        'CREATED ARGSSSS!!!!!!!!!!!',
-        privateKey,
-        walletAddress,
-        passphrase
-      );
 
       const salt = Math.random()
         .toString(36)
@@ -80,8 +71,6 @@ class RecoveryPhrase extends Component {
         walletAddress,
         passphrase
       );
-
-      console.log('ENCRYP', encryptedPrivateKey);
 
       this.props.fillNewWallet({
         nickname: this.props.newWallet.newWallet.walletNickname,
@@ -105,8 +94,6 @@ class RecoveryPhrase extends Component {
   render() {
     const { classes, phrase, randomNumbers } = this.props;
     const { isWrongPhrase } = this.state;
-
-    console.log('RecoveryPhrase', this.props);
 
     if (randomNumbers && randomNumbers.length) {
       return (
@@ -181,7 +168,6 @@ class RecoveryPhrase extends Component {
 }
 
 function mapStateToProps(state) {
-  console.log(state);
   return {
     newWallet: state.newWallet
   };

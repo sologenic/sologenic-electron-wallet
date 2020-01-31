@@ -11,7 +11,6 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  testingSaga,
   addNewWallet,
   fillNewWallet,
   connectToRippleApi,
@@ -74,19 +73,6 @@ const mediatorApi = create({
 
 const getMarketSevensApi = () => mediatorApi.get('seven');
 
-// TESTING SAGA
-function* testingSagaSaga() {
-  yield takeLatest(`${testingSaga}`, testingCall);
-}
-
-function* testingCall() {
-  try {
-    console.log('HELLO, SAGA READY!!!!');
-  } catch (e) {
-    console.log('EEEE');
-  }
-}
-
 // FETCH RIPPLE FEE
 function* fetchRippleFeeSaga() {
   yield takeLatest(`${fetchRippleFee}`, fetchRippleFeeCall);
@@ -96,8 +82,6 @@ function* fetchRippleFeeCall() {
   try {
     const ripple = yield sologenic.getRippleApi();
     const rippleFee = yield ripple.getFee();
-
-    console.log('FEE SAGA', rippleFee);
 
     if (rippleFee) {
       yield put(fillRippleFee(rippleFee));
@@ -112,8 +96,18 @@ function* transferXRPSaga() {
   yield takeLatest(`${transferXRP}`, transferXRPCall);
 }
 
-const transferXrp = (account, destination, value) => {
+const transferXrp = (account, destination, value, tag) => {
   const valueAmount = Number(value) / 0.000001;
+
+  if (tag) {
+    return sologenic.submit({
+      TransactionType: 'Payment',
+      Account: account,
+      Destination: destination,
+      Amount: `${valueAmount}`,
+      DestinationTag: Number(tag)
+    });
+  }
 
   return sologenic.submit({
     TransactionType: 'Payment',
@@ -125,27 +119,41 @@ const transferXrp = (account, destination, value) => {
 
 function* transferXRPCall(data) {
   try {
-    const { account, keypair, destination, value, secret } = data.payload;
+    const { account, keypair, destination, value, secret, tag } = data.payload;
 
     var isValidSecret;
+    var isValidPrivate;
 
     if (secret !== '') {
       isValidSecret = sologenic.getRippleApi().isValidSecret(secret);
-      // yield put(transferXrpSuccess());
-      console.log('SECRET CHECK!!!!!!!!!', isValidSecret);
+    }
+
+    if (typeof keypair.privateKey !== 'undefined') {
+      const isValidPrivateKey = /[0-9A-Fa-f]{66}/g;
+
+      isValidPrivate = isValidPrivateKey.test(keypair.privateKey);
+    }
+
+    if (isValidSecret || isValidPrivate) {
+      yield call(setAccount, account, secret, keypair);
+      const tx = yield call(transferXrp, account, destination, value, tag);
+      console.log('tx', tx);
+      const response = yield tx.promise;
+      if (response) {
+        yield put(transferXrpSuccess(response));
+      }
+    } else {
+      const badSecret = {
+        result: {
+          reason: 'localWRONG_PASSWORD',
+          status: 'failed'
+        }
+      };
+
+      yield put(transferXrpSuccess(badSecret));
     }
 
     // const secret = keypair ? keypair : '';
-    console.log('BEFORE YIELD SET ACCOUNT', data.payload);
-    yield call(setAccount, account, secret, keypair);
-    console.log('BEFORE YIELD TRANSFERXRP');
-    const tx = yield call(transferXrp, account, destination, value);
-    console.log('tx', tx);
-    const response = yield tx.promise;
-    console.log('TRANSFER RESPONSE', response);
-    if (response) {
-      yield put(transferXrpSuccess(response));
-    }
   } catch (e) {
     console.log('TRANSFER_XRP_ERROR ->', e);
   }
@@ -156,7 +164,26 @@ function* transferSOLOSaga() {
   yield takeLatest(`${transferSOLO}`, transferSOLOCall);
 }
 
-const transferSolo = (account, destination, value) => {
+const transferSolo = (account, destination, value, tag) => {
+  if (tag) {
+    return sologenic.submit({
+      TransactionType: 'Payment',
+      Account: account,
+      Destination: destination,
+      DestinationTag: Number(tag),
+      SendMax: {
+        currency: configVars.soloHash,
+        issuer: configVars.soloIssuer,
+        value: value
+      },
+      Amount: {
+        currency: configVars.soloHash,
+        issuer: configVars.soloIssuer,
+        value: String(Number(value) - Number(value) * 0.0001)
+      }
+    });
+  }
+
   return sologenic.submit({
     TransactionType: 'Payment',
     Account: account,
@@ -176,18 +203,38 @@ const transferSolo = (account, destination, value) => {
 
 function* transferSOLOCall(data) {
   try {
-    const { account, keypair, destination, value, secret } = data.payload;
+    const { account, keypair, destination, value, secret, tag } = data.payload;
 
-    // const secret = keypair ? keypair : '';
-    console.log('BEFORE YIELD SET ACCOUNT', data.payload);
-    yield call(setAccount, account, secret, keypair);
-    console.log('BEFORE YIELD TRANSFERSOLO');
-    const tx = yield call(transferSolo, account, destination, value);
-    console.log('tx', tx);
-    const response = yield tx.promise;
-    console.log('TRANSFER RESPONSE', response);
-    if (response) {
-      yield put(transferSoloSuccess(response));
+    var isValidSecret;
+    var isValidPrivate;
+
+    if (secret !== '') {
+      isValidSecret = sologenic.getRippleApi().isValidSecret(secret);
+    }
+
+    if (typeof keypair.privateKey !== 'undefined') {
+      const isValidPrivateKey = /[0-9A-Fa-f]{66}/g;
+
+      isValidPrivate = isValidPrivateKey.test(keypair.privateKey);
+    }
+
+    if (isValidSecret || isValidPrivate) {
+      yield call(setAccount, account, secret, keypair);
+      const tx = yield call(transferSolo, account, destination, value, tag);
+      console.log('tx', tx);
+      const response = yield tx.promise;
+      if (response) {
+        yield put(transferSoloSuccess(response));
+      }
+    } else {
+      const badSecret = {
+        result: {
+          reason: 'localWRONG_PASSWORD',
+          status: 'failed'
+        }
+      };
+
+      yield put(transferSoloSuccess(badSecret));
     }
   } catch (e) {
     console.log('TRANSFER_SOLO_ERROR -> ', e);
@@ -200,8 +247,6 @@ function* createTrustlineSaga() {
 }
 
 const setAccount = (address, secret, keypair) => {
-  console.log('SET ACCOUNT ---->', address, secret, keypair);
-
   if (keypair.publicKey) {
     return sologenic.setAccount({
       address,
@@ -234,27 +279,45 @@ const setTrustline = account => {
 
 function* createTrustlineCall(data) {
   try {
-    console.log('CREATE_TRUSTLINE ->>>>>>>>>>>>', data);
     const { address, secret, keypair, id } = data.payload;
 
-    yield call(setAccount, address, secret, keypair);
+    var isValidSecret = false;
+    var isValidPrivate = false;
 
-    const ripple = sologenic.getRippleApi();
-    const ts = yield ripple.getTrustlines(address, {
-      counterparty: configVars.soloIssuer
-    });
+    if (secret !== '') {
+      isValidSecret = sologenic.getRippleApi().isValidSecret(secret);
+    }
 
-    if (ts.length > 0) {
-      yield put(createTrustlineSuccess(id));
-    } else {
-      const tx = yield call(setTrustline, address);
+    if (typeof keypair.privateKey !== 'undefined') {
+      const isValidPrivateKey = /[0-9A-Fa-f]{66}/g;
 
-      console.log('tx ------->>>', tx);
-      const response = yield tx.promise;
+      isValidPrivate = isValidPrivateKey.test(keypair.privateKey);
+    }
 
-      if (response) {
+    if (isValidSecret || isValidPrivate) {
+      yield call(setAccount, address, secret, keypair);
+
+      const ripple = sologenic.getRippleApi();
+      const ts = yield ripple.getTrustlines(address, {
+        counterparty: configVars.soloIssuer
+      });
+
+      if (ts.length > 0) {
         yield put(createTrustlineSuccess(id));
+      } else {
+        const tx = yield call(setTrustline, address);
+
+        console.log('tx ------->>>', tx);
+        const response = yield tx.promise;
+
+        if (response.result && response.result.status === 'failed') {
+          yield put(createTrustlineError());
+        } else {
+          yield put(createTrustlineSuccess(id));
+        }
       }
+    } else {
+      yield put(createTrustlineError({ reason: 'Wrong Password!' }));
     }
   } catch (e) {
     console.log('CREATE_TRUSTLINE_ERROR ->', e);
@@ -276,8 +339,6 @@ function* getSoloPriceCall() {
     if (response) {
       yield put(fillSoloPrice(response.data));
     }
-
-    console.log('SOLO RATES', response);
   } catch (e) {
     console.log('GET_SOLO_PRICE_ERROR', e);
   }
@@ -314,16 +375,13 @@ const getTransactionsApi = async (address, limit) => {
 function* getTransactionsCall(data) {
   try {
     const { address, limit } = data.payload;
-    console.log('GET ---------------->', data);
     const response = yield call(getTransactionsApi, address, limit);
 
-    console.log('GET_TRANSACTIONS_RESPONSE ->', response);
     if (response) {
       yield put(getTransactionsSuccess(response));
     }
   } catch (e) {
     console.log('GET_TRANSACTION_ERROR -> ', e);
-    yield put(getTransactionsError(e));
   }
 }
 
@@ -334,10 +392,7 @@ function* getMarketSevensSaga() {
 
 function* getMarketSevensCall(data) {
   try {
-    // console.log('GET_MARKET_7 ->', data);
-
     const response = yield call(getMarketSevensApi);
-    console.log('RESPONSE 7', response);
 
     if (response.ok) {
       const sevenObj = yield createSevensObj(response.data);
@@ -366,8 +421,6 @@ function* getMarketDataCall(data) {
     } else {
       yield put(getMarketDataError(response.data));
     }
-
-    console.log('GET_MARKET_DATA_CALL ->', response);
   } catch (e) {
     console.log('GET_MARKET_DATA_ERROR -> ', e);
   }
@@ -381,8 +434,6 @@ function* connectToRippleApiSaga() {
 function* connectToRippleApiCall() {
   try {
     const a = yield sologenic.connect();
-
-    // console.log(a);
 
     yield sologenic.on('queued', (id, tx) => {
       console.log('TX QUEUED: ', id, tx);
@@ -403,18 +454,14 @@ function* connectToRippleApiCall() {
       console.log('TX FAILED:', id, type, tx);
     });
     console.log('start');
-
-    // yield put(setConnection(true));
   } catch (error) {
-    // yield put(connectToRippleApiError());
     console.log('REQUEST_CONNECT_RIPPLE_API_ERROR', error);
-    // yield put(setConnection(false));
   }
 }
 
 // GET BALANCE
 function* getBalanceSaga() {
-  yield takeLatest(`${getBalance}`, requestBalance);
+  yield takeEvery(`${getBalance}`, requestBalance);
 }
 
 const getBalances = address => {
@@ -427,13 +474,10 @@ function* requestBalance(data) {
     const { id, address } = data.payload;
 
     const response = yield call(getBalances, address);
-    console.log('REQUEST_BALANCE_SAGA ->', response);
     const xrpBalance = response.filter(item => item.currency === 'XRP');
     const soloBalance = response.filter(
       item => item.currency === configVars.soloHash
     );
-
-    console.log('LE SOLO BALANCE -------->', soloBalance);
 
     if (response) {
       yield put(
@@ -452,8 +496,6 @@ function* requestBalance(data) {
 
 export default function* rootSaga() {
   yield all([
-    fork(testingSagaSaga),
-    // fork(addNewWalletSaga),
     fork(connectToRippleApiSaga),
     fork(getBalanceSaga),
     fork(getMarketDataSaga),
