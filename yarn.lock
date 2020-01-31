@@ -14640,10 +14640,10 @@ sockjs@0.3.19:
     faye-websocket "^0.10.0"
     uuid "^3.0.1"
 
-sologenic-xrpl-stream-js@^1.0.25:
-  version "1.0.25"
-  resolved "https://registry.yarnpkg.com/sologenic-xrpl-stream-js/-/sologenic-xrpl-stream-js-1.0.25.tgz#c7fa8c1d8e5e1e3d119232b8a0ab2e2890041010"
-  integrity sha512-asycp2LSqm8VxESEVFpfcqp3evmDyQmIbg6rXHV6LNZ7Ig7DQhXxMnwwYxT2fBeaBp9dxfcgkEheWRSR5R/9bA==
+sologenic-xrpl-stream-js@^1.0.27:
+  version "1.0.27"
+  resolved "https://registry.yarnpkg.com/sologenic-xrpl-stream-js/-/sologenic-xrpl-stream-js-1.0.27.tgz#b46c4a65d22aafff6ee54d55ffeff05c0cca57a2"
+  integrity sha512-L6DBvfjP24T5eglYbOYkgmfBm0JCPSN+29ubdycxLHPNktnkxWdKaFUrcMpPyefsJiG0nzgwFpAfDX04bI83Xg==
   dependencies:
     "@types/ioredis" "^4.14.6"
     "@types/mathjs" "6.0.2"
