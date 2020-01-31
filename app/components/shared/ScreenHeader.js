@@ -17,7 +17,8 @@ class ScreenHeader extends Component {
     this.closeOptionsModal = this.closeOptionsModal.bind(this);
   }
 
-  goBack() {
+  async goBack() {
+    await this.props.closeOptions();
     this.props.history.goBack();
   }
 

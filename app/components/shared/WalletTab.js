@@ -2,7 +2,13 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link, withRouter } from 'react-router-dom';
-import { withStyles, Dialog, CircularProgress, Fade } from '@material-ui/core';
+import {
+  withStyles,
+  Dialog,
+  CircularProgress,
+  Fade,
+  Slide
+} from '@material-ui/core';
 import { Help, FileCopy } from '@material-ui/icons';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
@@ -10,7 +16,8 @@ import {
   getMarketData,
   getMarketSevens,
   transferXRP,
-  getTransactions
+  getTransactions,
+  closeOptions
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
@@ -176,49 +183,188 @@ class WalletTab extends Component {
 
     if (xrp === 0) {
       return (
-        <div className={classes.tabContainer}>
-          <p className={classes.inOrderToActivate}>
-            In order to activate your XRP wallet, you must first send at{' '}
-            <b>least 21 XRP</b> to this address
-          </p>
-          <div className={classes.actBtnContainer}>
-            <button
-              className={classes.actXrpWalletBtn}
-              onClick={this.openAddressModal}
-            >
-              Activate
-            </button>
-          </div>
-          <div className={classes.why21Link}>
-            <p onClick={this.open21XrpModal}>
-              Why 21 XRP <Help />
+        <Slide in direction="up" mountOnEnter unmountOnExit>
+          <div
+            className={classes.tabContainer}
+            onClick={() => this.props.closeOptions()}
+          >
+            <p className={classes.inOrderToActivate}>
+              In order to activate your XRP wallet, you must first send at{' '}
+              <b>least 21 XRP</b> to this address
             </p>
+            <div className={classes.actBtnContainer}>
+              <button
+                className={classes.actXrpWalletBtn}
+                onClick={this.openAddressModal}
+              >
+                Activate
+              </button>
+            </div>
+            <div className={classes.why21Link}>
+              <p onClick={this.open21XrpModal}>
+                Why 21 XRP <Help />
+              </p>
+            </div>
+            <div className={classes.sendReceiveBtns}>
+              <button disabled>RECEIVE</button>
+              <button disabled className={classes.sendMoneyBtn}>
+                SEND
+              </button>
+            </div>
+            <Dialog
+              open={why21XrpModal}
+              classes={{ paper: classes.why21XrpModal }}
+              // open
+            >
+              <h1 className={classes.activationSoloModalTitle}>Why 21 XRP?</h1>
+              <p>
+                Similar to some bank accounts, Ripple Wallets require a minimum
+                balance of 20 XRP to facilitate use of the XRP Ledger.
+              </p>
+              <p>
+                We ask you to deposit 21 XRP here instead, in order to
+                facilitate the activation of your SOLO Wallet, which you can do
+                as soon as your XRP Wallet is activated.
+              </p>
+              <div className={classes.why21dismissbtn}>
+                <button onClick={this.closeWhy21XrpModal}>DISMISS</button>
+              </div>
+            </Dialog>
+            <div className={classes.walletFunctions}>
+              <div className={classes.walletAddress}>
+                <label>Wallet Address</label>
+                <input type="text" value={wallet.walletAddress} readOnly />
+              </div>
+              <div className={classes.seeQR}>
+                <CopyToClipboard
+                  text={wallet.walletAddress}
+                  onCopy={() => this.setState({ showCopyNotification: true })}
+                >
+                  <FileCopy />
+                </CopyToClipboard>
+                <img onClick={this.openAddressModal} src={Images.qricon} />
+              </div>
+            </div>
+            <WalletAddressModal
+              data={wallet.walletAddress}
+              isModalOpen={isModalOpen}
+              closeModal={this.closeAddressModal}
+            />
+            {showCopyNotification ? (
+              <Fade in>
+                <p
+                  style={{
+                    padding: '8px 0',
+                    borderRadius: 5,
+                    background: 'white',
+                    boxShadow: '0 0 15px black',
+                    color: 'black',
+                    position: 'fixed',
+                    width: 100,
+                    bottom: 24,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    textAlign: 'center',
+                    fontSize: 12
+                  }}
+                >
+                  Address Copied!
+                </p>
+              </Fade>
+            ) : (
+              ''
+            )}
+          </div>
+        </Slide>
+      );
+    }
+
+    return (
+      <Slide in direction="up" mountOnEnter unmountOnExit>
+        <div
+          className={classes.tabContainer}
+          onClick={() => this.props.closeOptions()}
+        >
+          <p className={classes.balanceTitle}>Your Balance:</p>
+          <h2 className={classes.balance}>
+            {format(wallet.balance.xrp, 6)}
+            <span> XRP</span>
+          </h2>
+          {connection.connected ? (
+            <p className={classes.fiatValue}>
+              {defaultFiat.symbol}
+              {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
+            </p>
+          ) : (
+            ''
+          )}
+          {xrp > 0 && xrp < 21 ? (
+            <p className={classes.lowXrpMessage}>
+              Your XRP balance is running low. You need at least 21 XRP to pay
+              for transactions fees.
+            </p>
+          ) : (
+            ''
+          )}
+          <div className={classes.marketInfo}>
+            <div className={classes.marketPrice}>
+              <p>Market Price:</p>
+              {!marketData.updated || !connection.connected ? (
+                <CircularProgress
+                  size={20}
+                  classes={{ circle: classes.marketCircle }}
+                />
+              ) : (
+                <span>
+                  {defaultFiat.symbol}
+                  {marketData.market.last} {defaultFiat.currency.toUpperCase()}
+                </span>
+              )}
+            </div>
+            {this.props.connection.connected ? (
+              <div className={classes.marketGraph}>
+                <SevenChart
+                  color={priceColor}
+                  marketSevens={
+                    marketSevens.sevens[`xrp${defaultFiat.currency}`]
+                  }
+                />
+
+                <p style={{ color: priceColor, textAlign: 'center' }}>
+                  {Number.isNaN(priceChange) ? '' : priceChange}
+                </p>
+              </div>
+            ) : (
+              ''
+            )}
           </div>
           <div className={classes.sendReceiveBtns}>
-            <button disabled>RECEIVE</button>
-            <button disabled className={classes.sendMoneyBtn}>
-              SEND
+            <button
+              onClick={() =>
+                this.props.history.push({
+                  pathname: '/receive-screen',
+                  state: {
+                    wallet: wallet,
+                    currency: 'xrp'
+                  }
+                })
+              }
+            >
+              RECEIVE
             </button>
+            {(xrp > 0 && xrp < 21) || !this.props.connection.connected ? (
+              <button disabled className={classes.sendMoneyBtn}>
+                SEND
+              </button>
+            ) : (
+              <Link
+                className={classes.sendMoneyBtn}
+                to={{ pathname: '/send-xrp', state: { wallet: wallet } }}
+              >
+                SEND
+              </Link>
+            )}
           </div>
-          <Dialog
-            open={why21XrpModal}
-            classes={{ paper: classes.why21XrpModal }}
-            // open
-          >
-            <h1 className={classes.activationSoloModalTitle}>Why 21 XRP?</h1>
-            <p>
-              Similar to some bank accounts, Ripple Wallets require a minimum
-              balance of 20 XRP to facilitate use of the XRP Ledger.
-            </p>
-            <p>
-              We ask you to deposit 21 XRP here instead, in order to facilitate
-              the activation of your SOLO Wallet, which you can do as soon as
-              your XRP Wallet is activated.
-            </p>
-            <div className={classes.why21dismissbtn}>
-              <button onClick={this.closeWhy21XrpModal}>DISMISS</button>
-            </div>
-          </Dialog>
           <div className={classes.walletFunctions}>
             <div className={classes.walletAddress}>
               <label>Wallet Address</label>
@@ -239,6 +385,44 @@ class WalletTab extends Component {
             isModalOpen={isModalOpen}
             closeModal={this.closeAddressModal}
           />
+          <div className={classes.transactionsContainer}>
+            {transactions.updated &&
+            transactions.transactions.txs.length > 0 ? (
+              <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
+            ) : (
+              <h1>No recent transactions</h1>
+            )}
+            {transactions.updated && transactions.transactions.txs.length > 0
+              ? transactions.transactions.txs.map((tx, idx) => {
+                  if (
+                    tx.type === 'payment' &&
+                    tx.specification.source.maxAmount.currency === 'XRP'
+                  ) {
+                    return (
+                      <TransactionSingle
+                        key={idx}
+                        tx={tx}
+                        currentLedger={transactions.transactions.currentLedger}
+                        address={wallet.walletAddress}
+                        currency="xrp"
+                      />
+                    );
+                  }
+                })
+              : ''}
+            {transactions.updated &&
+            transactions.transactions.txs.length > 0 ? (
+              <button
+                className={classes.loadMoreBtn}
+                onClick={this.loadMore}
+                disabled={loadingFinished ? false : true}
+              >
+                {loadingFinished ? 'Load More' : '...'}
+              </button>
+            ) : (
+              ''
+            )}
+          </div>
           {showCopyNotification ? (
             <Fade in>
               <p
@@ -264,170 +448,7 @@ class WalletTab extends Component {
             ''
           )}
         </div>
-      );
-    }
-
-    return (
-      <div className={classes.tabContainer}>
-        <p className={classes.balanceTitle}>Your Balance:</p>
-        <h2 className={classes.balance}>
-          {format(wallet.balance.xrp, 4)}
-          <span> XRP</span>
-        </h2>
-        {connection.connected ? (
-          <p className={classes.fiatValue}>
-            {defaultFiat.symbol}
-            {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
-          </p>
-        ) : (
-          ''
-        )}
-        {xrp > 0 && xrp < 21 ? (
-          <p className={classes.lowXrpMessage}>
-            Your XRP balance is running low. You need at least 21 XRP to pay for
-            transactions fees.
-          </p>
-        ) : (
-          ''
-        )}
-        <div className={classes.marketInfo}>
-          <div className={classes.marketPrice}>
-            <p>Market Price:</p>
-            {!marketData.updated || !connection.connected ? (
-              <CircularProgress
-                size={20}
-                classes={{ circle: classes.marketCircle }}
-              />
-            ) : (
-              <span>
-                {defaultFiat.symbol}
-                {marketData.market.last} {defaultFiat.currency.toUpperCase()}
-              </span>
-            )}
-          </div>
-          {this.props.connection.connected ? (
-            <div className={classes.marketGraph}>
-              <SevenChart
-                color={priceColor}
-                marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
-              />
-
-              <p style={{ color: priceColor, textAlign: 'center' }}>
-                {priceChange}
-              </p>
-            </div>
-          ) : (
-            ''
-          )}
-        </div>
-        <div className={classes.sendReceiveBtns}>
-          <button
-            onClick={() =>
-              this.props.history.push({
-                pathname: '/receive-screen',
-                state: {
-                  wallet: wallet,
-                  currency: 'xrp'
-                }
-              })
-            }
-          >
-            RECEIVE
-          </button>
-          {(xrp > 0 && xrp < 21) || !this.props.connection.connected ? (
-            <button disabled className={classes.sendMoneyBtn}>
-              SEND
-            </button>
-          ) : (
-            <Link
-              className={classes.sendMoneyBtn}
-              to={{ pathname: '/send-xrp', state: { wallet: wallet } }}
-            >
-              SEND
-            </Link>
-          )}
-        </div>
-        <div className={classes.walletFunctions}>
-          <div className={classes.walletAddress}>
-            <label>Wallet Address</label>
-            <input type="text" value={wallet.walletAddress} readOnly />
-          </div>
-          <div className={classes.seeQR}>
-            <CopyToClipboard
-              text={wallet.walletAddress}
-              onCopy={() => this.setState({ showCopyNotification: true })}
-            >
-              <FileCopy />
-            </CopyToClipboard>
-            <img onClick={this.openAddressModal} src={Images.qricon} />
-          </div>
-        </div>
-        <WalletAddressModal
-          data={wallet.walletAddress}
-          isModalOpen={isModalOpen}
-          closeModal={this.closeAddressModal}
-        />
-        <div className={classes.transactionsContainer}>
-          {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
-          ) : (
-            <h1>No recent transactions</h1>
-          )}
-          {transactions.updated && transactions.transactions.txs.length > 0
-            ? transactions.transactions.txs.map((tx, idx) => {
-                if (
-                  tx.type === 'payment' &&
-                  tx.specification.source.maxAmount.currency === 'XRP'
-                ) {
-                  return (
-                    <TransactionSingle
-                      key={idx}
-                      tx={tx}
-                      currentLedger={transactions.transactions.currentLedger}
-                      address={wallet.walletAddress}
-                      currency="xrp"
-                    />
-                  );
-                }
-              })
-            : ''}
-          {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <button
-              className={classes.loadMoreBtn}
-              onClick={this.loadMore}
-              disabled={loadingFinished ? false : true}
-            >
-              {loadingFinished ? 'Load More' : '...'}
-            </button>
-          ) : (
-            ''
-          )}
-        </div>
-        {showCopyNotification ? (
-          <Fade in>
-            <p
-              style={{
-                padding: '8px 0',
-                borderRadius: 5,
-                background: 'white',
-                boxShadow: '0 0 15px black',
-                color: 'black',
-                position: 'fixed',
-                width: 100,
-                bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                textAlign: 'center',
-                fontSize: 12
-              }}
-            >
-              Address Copied!
-            </p>
-          </Fade>
-        ) : (
-          ''
-        )}
-      </div>
+      </Slide>
     );
   }
 }
@@ -444,7 +465,13 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, transferXRP, getTransactions },
+    {
+      getMarketData,
+      getMarketSevens,
+      transferXRP,
+      getTransactions,
+      closeOptions
+    },
     dispatch
   );
 }

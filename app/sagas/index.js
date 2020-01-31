@@ -35,7 +35,8 @@ import {
   getSoloPrice,
   fillSoloPrice,
   fetchRippleFee,
-  fillRippleFee
+  fillRippleFee,
+  checkForExistingTrustline
 } from '../actions/index';
 import { createSevensObj, sologenic } from '../utils/utils2.js';
 import configVars from '../utils/config';
@@ -104,7 +105,7 @@ const transferXrp = (account, destination, value, tag) => {
       TransactionType: 'Payment',
       Account: account,
       Destination: destination,
-      Amount: `${valueAmount}`,
+      Amount: `${valueAmount.toFixed()}`,
       DestinationTag: Number(tag)
     });
   }
@@ -113,7 +114,7 @@ const transferXrp = (account, destination, value, tag) => {
     TransactionType: 'Payment',
     Account: account,
     Destination: destination,
-    Amount: `${valueAmount}`
+    Amount: `${valueAmount.toFixed()}`
   });
 };
 
@@ -277,6 +278,32 @@ const setTrustline = account => {
   });
 };
 
+function* checkForExistingTrustlineSaga() {
+  yield takeLatest(
+    `${checkForExistingTrustline}`,
+    checkForExistingTrustlineCall
+  );
+}
+
+function* checkForExistingTrustlineCall(data) {
+  try {
+    const { address, secret, keypair, id } = data.payload;
+
+    yield call(setAccount, address, secret, keypair);
+
+    const ripple = sologenic.getRippleApi();
+    const ts = yield ripple.getTrustlines(address, {
+      counterparty: configVars.soloIssuer
+    });
+
+    if (ts.length > 0) {
+      yield put(createTrustlineSuccess(id));
+    }
+  } catch (e) {
+    console.log('CHECK_FOR_EXISTING_TRUSTLINE_ERROR ->', e);
+  }
+}
+
 function* createTrustlineCall(data) {
   try {
     const { address, secret, keypair, id } = data.payload;
@@ -433,7 +460,17 @@ function* connectToRippleApiSaga() {
 
 function* connectToRippleApiCall() {
   try {
-    const a = yield sologenic.connect();
+    const isConnected = sologenic.getRippleApi().isConnected();
+
+    console.log('IS RIPPLEAPI CONNECTED -------->', isConnected);
+
+    if (!isConnected) {
+      yield sologenic.connect();
+
+      console.log('CONNECTING!!!');
+    } else {
+      console.log('NOT CONNECTING BECAUSE CONNECTED!!!!');
+    }
 
     yield sologenic.on('queued', (id, tx) => {
       console.log('TX QUEUED: ', id, tx);
@@ -505,6 +542,7 @@ export default function* rootSaga() {
     fork(transferXRPSaga),
     fork(transferSOLOSaga),
     fork(getSoloPriceSaga),
-    fork(fetchRippleFeeSaga)
+    fork(fetchRippleFeeSaga),
+    fork(checkForExistingTrustlineSaga)
   ]);
 }

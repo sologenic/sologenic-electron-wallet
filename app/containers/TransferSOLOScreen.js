@@ -291,7 +291,7 @@ class TransferXRPScreen extends Component {
         />
         <div className={classes.balanceHeader}>
           <img src={Images.solo} />
-          <p>{format(wallet.balance.solo, 4)} SOLO</p>
+          <p>{format(wallet.balance.solo, 6)} SOLO</p>
         </div>
         <div className={classes.inputsContainer}>
           <div
@@ -388,7 +388,7 @@ class TransferXRPScreen extends Component {
             <span style={{ color: 'white', marginTop: 8 }}>Burn Amount:</span>
             <p>
               <span style={{ color: Colors.lightGray, fontSize: 10 }}>Ƨ</span>
-              {format(burnAmountState, 5)}
+              {format(burnAmountState, 6)}
             </p>
           </div>
           <div className={classes.summaryDestination}>

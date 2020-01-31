@@ -243,7 +243,7 @@ class TransferXRPScreen extends Component {
         tag: Number(this.state.destinationTag)
       });
     } else {
-      this.seState({
+      this.setState({
         openNotConnectedModal: true,
         transactionInProgress: false
       });
@@ -302,7 +302,7 @@ class TransferXRPScreen extends Component {
         />
         <div className={classes.balanceHeader}>
           <img src={Images.xrp} />
-          <p>{format(wallet.balance.xrp, 4)} XRP</p>
+          <p>{format(wallet.balance.xrp, 6)} XRP</p>
         </div>
         <div className={classes.inputsContainer}>
           <div

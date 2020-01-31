@@ -29,6 +29,8 @@ class PinScreen extends Component {
       this.setState({
         isPinWrong: true
       });
+
+      this.refs.pinContainer.clear;
     } else {
       this.props.history.push('/dashboard');
     }
@@ -50,6 +52,7 @@ class PinScreen extends Component {
           length={4}
           initialValue=""
           secret
+          ref={n => (n && isPinWrong ? n.clear() : '')}
           focus
           onChange={(v, i) => {}}
           type="numeric"

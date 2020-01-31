@@ -28,6 +28,9 @@ export const createTrustlineRequest = createAction('createTrustlineRequest');
 export const createTrustlineSuccess = createAction('createTrustlineSuccess');
 export const createTrustlineError = createAction('createTrustlineError');
 export const cleanTrustlineError = createAction('cleanTrustlineError');
+export const checkForExistingTrustline = createAction(
+  'checkForExistingTrustline'
+);
 
 export const transferXRP = createAction('transferXRP');
 export const transferXrpSuccess = createAction('transferXrpSuccess');

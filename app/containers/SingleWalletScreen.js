@@ -126,7 +126,8 @@ class SingleWalletScreen extends Component {
     // this.props.history.push('/dashboard');
   }
 
-  changeTab(tab) {
+  async changeTab(tab) {
+    await this.props.closeOptions();
     this.setState({ tabOnView: tab });
   }
 
@@ -140,7 +141,7 @@ class SingleWalletScreen extends Component {
     } = this.state;
 
     if (currentWallet === null) {
-      return <span>Loading....</span>;
+      return <span />;
     }
 
     let wallet = currentWallet;
@@ -310,6 +311,7 @@ const styles = theme => ({
   deleteModalContainer: {
     background: Colors.darkerGray,
     color: 'white',
+    borderRadius: 15,
     '& h2': {
       fontSize: 20,
       fontWeight: 300,

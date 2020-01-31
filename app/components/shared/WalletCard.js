@@ -56,6 +56,13 @@ class WalletCard extends Component {
         this.props.getMarketData({
           defaultFiat: this.props.defaultCurrency.currency
         });
+
+        this.props.getBalance({
+          address: this.props.wallet.walletAddress,
+          id: this.props.wallet.id
+        });
+
+        this.props.getSoloPrice();
       }
     }
   }
@@ -72,7 +79,7 @@ class WalletCard extends Component {
       soloPrice
     } = this.props;
 
-    let totalBalance = 0;
+    let totalBalance = { balance: 0, updated: false };
 
     if (
       marketData.market !== null &&
@@ -91,7 +98,7 @@ class WalletCard extends Component {
         soloValue = solo * price;
       }
 
-      totalBalance = xrpValue + soloValue;
+      totalBalance = { balance: xrpValue + soloValue, updated: true };
     }
 
     return (
@@ -119,12 +126,14 @@ class WalletCard extends Component {
                         size={15}
                         classes={{ circle: classes.totalBalanceCircle }}
                       />
-                    ) : (
+                    ) : totalBalance.updated ? (
                       <p>
                         {defaultCurrency.symbol}
-                        {format(totalBalance, 2)}{' '}
+                        {format(totalBalance.balance, 2)}{' '}
                         {defaultCurrency.currency.toUpperCase()}
                       </p>
+                    ) : (
+                      ''
                     )}
                   </div>
                   <div className={classes.balanceLine}>
@@ -145,7 +154,7 @@ class WalletCard extends Component {
               <p className={balance.xrp === 0 ? classes.notActivated : ''}>
                 {balance.xrp === 0
                   ? 'Not Activated'
-                  : `${format(balance.xrp, 4)} XRP`}
+                  : `${format(balance.xrp, 6)} XRP`}
               </p>
             </div>
             <div className={classes.walletBodySection}>
@@ -153,7 +162,7 @@ class WalletCard extends Component {
               <p className={!wallet.trustline ? classes.notActivated : ''}>
                 {!wallet.trustline
                   ? 'Not Activated'
-                  : `${format(balance.solo, 4)} SOLO`}
+                  : `${format(balance.solo, 6)} SOLO`}
               </p>
             </div>
           </div>
@@ -193,7 +202,7 @@ const styles = theme => ({
   grayCircle: {
     height: 30,
     width: 30,
-    background: Colors.lightGray,
+    background: 'transparent',
     borderRadius: '50%'
   },
   arrow: {
@@ -247,7 +256,8 @@ const styles = theme => ({
     flexDirection: 'column',
     alignItems: 'center',
     '& img': {
-      marginBottom: 12
+      marginBottom: 12,
+      width: 35
     }
   },
   notActivated: {

@@ -10,6 +10,7 @@ import {
   CallReceived
 } from '@material-ui/icons';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { format } from '../../utils/utils2';
 
 class TransactionSingle extends Component {
   constructor(props) {
@@ -146,11 +147,11 @@ class TransactionSingle extends Component {
                   {currencyName}
                 </span>{' '}
                 {!thisWalletReceived && currency === 'solo'
-                  ? tx.specification.source.maxAmount.value
+                  ? format(tx.specification.source.maxAmount.value, 6)
                   : !thisWalletReceived && currency === 'xrp'
-                  ? tx.specification.source.maxAmount.value
-                  : thisWalletReceived
-                  ? tx.outcome.deliveredAmount.value
+                  ? format(tx.specification.source.maxAmount.value, 6)
+                  : thisWalletReceived && tx.outcome.deliveredAmount
+                  ? format(tx.outcome.deliveredAmount.value, 6)
                   : ''}{' '}
                 {thisWalletReceived ? (
                   <CallReceived

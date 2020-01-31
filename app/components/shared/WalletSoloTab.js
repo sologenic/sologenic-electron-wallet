@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles, Dialog, CircularProgress, Fade } from '@material-ui/core';
+import {
+  withStyles,
+  Dialog,
+  CircularProgress,
+  Fade,
+  Slide
+} from '@material-ui/core';
 import { FileCopy } from '@material-ui/icons';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
@@ -12,7 +18,8 @@ import {
   createTrustlineRequest,
   getTransactions,
   getSoloPrice,
-  cleanTrustlineError
+  cleanTrustlineError,
+  closeOptions
 } from '../../actions/index';
 import SevenChart from '../../components/shared/SevenChart';
 import WalletAddressModal from './WalletAddressModal';
@@ -235,25 +242,206 @@ class WalletSoloTab extends Component {
 
     if (!wallet.trustline) {
       return (
-        <div className={classes.tabContainer}>
-          <p className={classes.balanceTitle}>
-            In order to activate your SOLO wallet, you must first send at{' '}
-            <b>least 21 XRP</b> to this address.
-          </p>
-          <div className={classes.actSoloBtn}>
-            <button
-              className={classes.actSoloWalletBtn}
-              onClick={this.activateSoloWalletModalFirst}
-              disabled={wallet.balance.xrp >= 21 ? false : true}
+        <Slide in direction="up" mountOnEnter unmountOnExit>
+          <div
+            className={classes.tabContainer}
+            onClick={() => this.props.closeOptions()}
+          >
+            <p className={classes.balanceTitle}>
+              In order to activate your SOLO wallet, you must first send at{' '}
+              <b>least 21 XRP</b> to this address.
+            </p>
+            <div className={classes.actSoloBtn}>
+              <button
+                className={classes.actSoloWalletBtn}
+                onClick={this.activateSoloWalletModalFirst}
+                disabled={wallet.balance.xrp >= 21 ? false : true}
+              >
+                Activate
+              </button>
+            </div>
+            <div className={classes.sendReceiveBtns}>
+              <button disabled>RECEIVE</button>
+              <button disabled className={classes.sendMoneyBtn}>
+                SEND
+              </button>
+            </div>
+            <div className={classes.walletFunctions}>
+              <div className={classes.walletAddress}>
+                <label>Wallet Address</label>
+                <input type="text" value={wallet.walletAddress} readOnly />
+              </div>
+              <div className={classes.seeQR}>
+                <CopyToClipboard
+                  text={wallet.walletAddress}
+                  onCopy={() => this.setState({ showCopyNotification: true })}
+                >
+                  <FileCopy />
+                </CopyToClipboard>
+                <img onClick={this.openAddressModal} src={Images.qricon} />
+              </div>
+            </div>
+            <WalletAddressModal
+              data={wallet.walletAddress}
+              isModalOpen={isModalOpen}
+              closeModal={this.closeAddressModal}
+            />
+            <Dialog
+              open={activationSoloModalFirst}
+              classes={{ paper: classes.activationSoloModalPaper }}
+              // open
             >
-              Activate
-            </button>
+              <h1 className={classes.activationSoloModalTitle}>
+                Type your Wallet Password
+              </h1>
+              <div className={classes.activationSoloModalBody}>
+                <input type="password" ref="activateSoloPass" />
+              </div>
+              <div className={classes.confirmActivationBtnContainer}>
+                <button onClick={this.cancelConfirmActivation}>CANCEL</button>
+                <button onClick={this.confirmStartActivation}>SUBMIT</button>
+              </div>
+            </Dialog>
+
+            <Dialog
+              open={activationSoloModal}
+              classes={{ paper: classes.activationSoloModalPaper }}
+            >
+              <h1 className={classes.activationSoloModalTitle}>
+                Activating SOLO...
+              </h1>
+              <div className={classes.activationSoloModalBody}>
+                <span>Please wait</span>
+                <CircularProgress
+                  classes={{
+                    circle: classes.activatinSoloCircle,
+                    root: classes.rootCircle
+                  }}
+                />
+              </div>
+            </Dialog>
+
+            <Dialog
+              open={trustlineError.error}
+              classes={{ paper: classes.activationSoloModalPaper }}
+              // open
+            >
+              <h1 className={classes.activationSoloModalTitle}>Error</h1>
+              <div className={classes.activationSoloModalBody}>
+                <p style={{ color: 'white', padding: '0 24px 32px' }}>
+                  {trustlineError.reason}
+                </p>
+              </div>
+              <div className={classes.confirmActivationBtnContainer}>
+                <button onClick={this.closeTrustlineErrorModal}>DISMISS</button>
+              </div>
+            </Dialog>
+            {showCopyNotification ? (
+              <Fade in>
+                <p
+                  style={{
+                    padding: '8px 0',
+                    borderRadius: 5,
+                    background: 'white',
+                    boxShadow: '0 0 15px black',
+                    color: 'black',
+                    position: 'fixed',
+                    width: 100,
+                    bottom: 24,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    textAlign: 'center',
+                    fontSize: 12
+                  }}
+                >
+                  Address Copied!
+                </p>
+              </Fade>
+            ) : (
+              ''
+            )}
+          </div>
+        </Slide>
+      );
+    }
+
+    return (
+      <Slide in direction="up" mountOnEnter unmountOnExit>
+        <div
+          className={classes.tabContainer}
+          onClick={() => this.props.closeOptions()}
+        >
+          <p className={classes.balanceTitle}>Your Balance:</p>
+          <h2 className={classes.balance}>
+            {format(wallet.balance.solo, 6)}
+            <span> SOLO</span>
+          </h2>
+          {connection.connected && soloPrice.price !== null ? (
+            <p className={classes.fiatValue}>
+              {defaultFiat.symbol}
+              {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
+            </p>
+          ) : (
+            ''
+          )}
+          <div className={classes.marketInfo}>
+            <div className={classes.marketPrice}>
+              <p>Market Price:</p>
+              {soloPrice.price === null || !connection.connected ? (
+                <CircularProgress
+                  size={20}
+                  classes={{
+                    circle: classes.marketCircle
+                  }}
+                />
+              ) : (
+                <span>
+                  {defaultFiat.symbol}
+                  {soloPrice.price[defaultFiat.currency]}{' '}
+                  {defaultFiat.currency.toUpperCase()}
+                </span>
+              )}
+            </div>
+            {/* <div className={classes.marketGraph}>
+            <SevenChart
+              color={priceColor}
+              marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
+            />
+            {this.props.connection.connected ? (
+              <p style={{ color: priceColor, textAlign: 'center' }}>
+                {priceChange}
+              </p>
+            ) : (
+              ''
+            )}
+          </div> */}
           </div>
           <div className={classes.sendReceiveBtns}>
-            <button disabled>RECEIVE</button>
-            <button disabled className={classes.sendMoneyBtn}>
-              SEND
+            <button
+              onClick={() =>
+                this.props.history.push({
+                  pathname: '/receive-screen',
+                  state: {
+                    wallet: wallet,
+                    currency: 'solo'
+                  }
+                })
+              }
+            >
+              RECEIVE
             </button>
+            {!this.props.connection.connected ? (
+              <button disabled className={classes.sendMoneyBtn}>
+                SEND
+              </button>
+            ) : (
+              <Link
+                className={classes.sendMoneyBtn}
+                to={{ pathname: '/send-solo', state: { wallet: wallet } }}
+              >
+                SEND
+              </Link>
+            )}
           </div>
           <div className={classes.walletFunctions}>
             <div className={classes.walletAddress}>
@@ -275,56 +463,45 @@ class WalletSoloTab extends Component {
             isModalOpen={isModalOpen}
             closeModal={this.closeAddressModal}
           />
-          <Dialog
-            open={activationSoloModalFirst}
-            classes={{ paper: classes.activationSoloModalPaper }}
-            // open
-          >
-            <h1 className={classes.activationSoloModalTitle}>
-              Type your Wallet Password
-            </h1>
-            <div className={classes.activationSoloModalBody}>
-              <input type="password" ref="activateSoloPass" />
-            </div>
-            <div className={classes.confirmActivationBtnContainer}>
-              <button onClick={this.cancelConfirmActivation}>CANCEL</button>
-              <button onClick={this.confirmStartActivation}>SUBMIT</button>
-            </div>
-          </Dialog>
-
-          <Dialog
-            open={activationSoloModal}
-            classes={{ paper: classes.activationSoloModalPaper }}
-          >
-            <h1 className={classes.activationSoloModalTitle}>
-              Activating SOLO...
-            </h1>
-            <div className={classes.activationSoloModalBody}>
-              <span>Please wait</span>
-              <CircularProgress
-                classes={{
-                  circle: classes.activatinSoloCircle,
-                  root: classes.rootCircle
-                }}
-              />
-            </div>
-          </Dialog>
-
-          <Dialog
-            open={trustlineError.error}
-            classes={{ paper: classes.activationSoloModalPaper }}
-            // open
-          >
-            <h1 className={classes.activationSoloModalTitle}>Error</h1>
-            <div className={classes.activationSoloModalBody}>
-              <p style={{ color: 'white', padding: '0 24px 32px' }}>
-                {trustlineError.reason}
-              </p>
-            </div>
-            <div className={classes.confirmActivationBtnContainer}>
-              <button onClick={this.closeTrustlineErrorModal}>DISMISS</button>
-            </div>
-          </Dialog>
+          <div className={classes.transactionsContainer}>
+            {transactions.updated &&
+            transactions.transactions.txs.length > 0 ? (
+              <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
+            ) : (
+              <h1>No recent transactions</h1>
+            )}
+            {transactions.updated && transactions.transactions.txs.length > 0
+              ? transactions.transactions.txs.map((tx, idx) => {
+                  if (
+                    tx.type === 'payment' &&
+                    tx.specification.source.maxAmount.currency ===
+                      '534F4C4F00000000000000000000000000000000'
+                  ) {
+                    return (
+                      <TransactionSingle
+                        key={idx}
+                        tx={tx}
+                        currentLedger={transactions.transactions.currentLedger}
+                        address={wallet.walletAddress}
+                        currency="solo"
+                      />
+                    );
+                  }
+                })
+              : ''}
+            {transactions.updated &&
+            transactions.transactions.txs.length > 0 ? (
+              <button
+                className={classes.loadMoreBtn}
+                onClick={this.loadMore}
+                disabled={loadingFinished ? false : true}
+              >
+                {loadingFinished ? 'Load More' : '...'}
+              </button>
+            ) : (
+              ''
+            )}
+          </div>
           {showCopyNotification ? (
             <Fade in>
               <p
@@ -350,165 +527,7 @@ class WalletSoloTab extends Component {
             ''
           )}
         </div>
-      );
-    }
-
-    return (
-      <div className={classes.tabContainer}>
-        <p className={classes.balanceTitle}>Your Balance:</p>
-        <h2 className={classes.balance}>
-          {format(wallet.balance.solo, 4)}
-          <span> SOLO</span>
-        </h2>
-        {connection.connected && soloPrice.price !== null ? (
-          <p className={classes.fiatValue}>
-            {defaultFiat.symbol}
-            {format(totalBalance, 2)} {defaultFiat.currency.toUpperCase()}
-          </p>
-        ) : (
-          ''
-        )}
-        <div className={classes.marketInfo}>
-          <div className={classes.marketPrice}>
-            <p>Market Price:</p>
-            {soloPrice.price === null || !connection.connected ? (
-              <CircularProgress
-                size={20}
-                classes={{
-                  circle: classes.marketCircle
-                }}
-              />
-            ) : (
-              <span>
-                {defaultFiat.symbol}
-                {soloPrice.price[defaultFiat.currency]}{' '}
-                {defaultFiat.currency.toUpperCase()}
-              </span>
-            )}
-          </div>
-          {/* <div className={classes.marketGraph}>
-            <SevenChart
-              color={priceColor}
-              marketSevens={marketSevens.sevens[`xrp${defaultFiat.currency}`]}
-            />
-            {this.props.connection.connected ? (
-              <p style={{ color: priceColor, textAlign: 'center' }}>
-                {priceChange}
-              </p>
-            ) : (
-              ''
-            )}
-          </div> */}
-        </div>
-        <div className={classes.sendReceiveBtns}>
-          <button
-            onClick={() =>
-              this.props.history.push({
-                pathname: '/receive-screen',
-                state: {
-                  wallet: wallet,
-                  currency: 'solo'
-                }
-              })
-            }
-          >
-            RECEIVE
-          </button>
-          {!this.props.connection.connected ? (
-            <button disabled className={classes.sendMoneyBtn}>
-              SEND
-            </button>
-          ) : (
-            <Link
-              className={classes.sendMoneyBtn}
-              to={{ pathname: '/send-solo', state: { wallet: wallet } }}
-            >
-              SEND
-            </Link>
-          )}
-        </div>
-        <div className={classes.walletFunctions}>
-          <div className={classes.walletAddress}>
-            <label>Wallet Address</label>
-            <input type="text" value={wallet.walletAddress} readOnly />
-          </div>
-          <div className={classes.seeQR}>
-            <CopyToClipboard
-              text={wallet.walletAddress}
-              onCopy={() => this.setState({ showCopyNotification: true })}
-            >
-              <FileCopy />
-            </CopyToClipboard>
-            <img onClick={this.openAddressModal} src={Images.qricon} />
-          </div>
-        </div>
-        <WalletAddressModal
-          data={wallet.walletAddress}
-          isModalOpen={isModalOpen}
-          closeModal={this.closeAddressModal}
-        />
-        <div className={classes.transactionsContainer}>
-          {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
-          ) : (
-            <h1>No recent transactions</h1>
-          )}
-          {transactions.updated && transactions.transactions.txs.length > 0
-            ? transactions.transactions.txs.map((tx, idx) => {
-                if (
-                  tx.type === 'payment' &&
-                  tx.specification.source.maxAmount.currency ===
-                    '534F4C4F00000000000000000000000000000000'
-                ) {
-                  return (
-                    <TransactionSingle
-                      key={idx}
-                      tx={tx}
-                      currentLedger={transactions.transactions.currentLedger}
-                      address={wallet.walletAddress}
-                      currency="solo"
-                    />
-                  );
-                }
-              })
-            : ''}
-          {transactions.updated && transactions.transactions.txs.length > 0 ? (
-            <button
-              className={classes.loadMoreBtn}
-              onClick={this.loadMore}
-              disabled={loadingFinished ? false : true}
-            >
-              {loadingFinished ? 'Load More' : '...'}
-            </button>
-          ) : (
-            ''
-          )}
-        </div>
-        {showCopyNotification ? (
-          <Fade in>
-            <p
-              style={{
-                padding: '8px 0',
-                borderRadius: 5,
-                background: 'white',
-                boxShadow: '0 0 15px black',
-                color: 'black',
-                position: 'fixed',
-                width: 100,
-                bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                textAlign: 'center',
-                fontSize: 12
-              }}
-            >
-              Address Copied!
-            </p>
-          </Fade>
-        ) : (
-          ''
-        )}
-      </div>
+      </Slide>
     );
   }
 }
@@ -534,7 +553,8 @@ function mapDispatchToProps(dispatch) {
       createTrustlineRequest,
       getTransactions,
       getSoloPrice,
-      cleanTrustlineError
+      cleanTrustlineError,
+      closeOptions
     },
     dispatch
   );

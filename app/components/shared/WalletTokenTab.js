@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { withStyles, Fade } from '@material-ui/core';
+import { withStyles, Fade, Slide } from '@material-ui/core';
 import Colors from '../../constants/Colors';
 import Images from '../../constants/Images';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,8 @@ import {
   getMarketData,
   getMarketSevens,
   createTrustlineRequest,
-  getTransactions
+  getTransactions,
+  closeOptions
 } from '../../actions/index';
 import WalletAddressModal from './WalletAddressModal';
 import TransactionSingle from './TransactionSingle';
@@ -58,61 +59,66 @@ class WalletTokenTab extends Component {
     } = this.state;
 
     return (
-      <div className={classes.tabContainer}>
-        <p className={classes.balanceTitle}>
-          Tokenized assets are coming in Q3 2020
-        </p>
-        <div className={classes.sendReceiveBtns}>
-          <button disabled>RECEIVE</button>
-          <button className={classes.sendMoneyBtn} disabled>
-            SEND
-          </button>
-        </div>
-        <div className={classes.walletFunctions}>
-          <div className={classes.walletAddress}>
-            <label>Wallet Address</label>
-            <input type="text" value={wallet.walletAddress} readOnly />
+      <Slide in direction="up" mountOnEnter unmountOnExit>
+        <div
+          className={classes.tabContainer}
+          onClick={() => this.props.closeOptions()}
+        >
+          <p className={classes.balanceTitle}>
+            Tokenized assets are coming in Q3 2020
+          </p>
+          <div className={classes.sendReceiveBtns}>
+            <button disabled>RECEIVE</button>
+            <button className={classes.sendMoneyBtn} disabled>
+              SEND
+            </button>
           </div>
-          <div className={classes.seeQR}>
-            <CopyToClipboard
-              text={wallet.walletAddress}
-              onCopy={() => this.setState({ showCopyNotification: true })}
-            >
-              <FileCopy />
-            </CopyToClipboard>
-            <img onClick={this.openAddressModal} src={Images.qricon} />
+          <div className={classes.walletFunctions}>
+            <div className={classes.walletAddress}>
+              <label>Wallet Address</label>
+              <input type="text" value={wallet.walletAddress} readOnly />
+            </div>
+            <div className={classes.seeQR}>
+              <CopyToClipboard
+                text={wallet.walletAddress}
+                onCopy={() => this.setState({ showCopyNotification: true })}
+              >
+                <FileCopy />
+              </CopyToClipboard>
+              <img onClick={this.openAddressModal} src={Images.qricon} />
+            </div>
           </div>
+          <WalletAddressModal
+            data={wallet.walletAddress}
+            isModalOpen={isModalOpen}
+            closeModal={this.closeAddressModal}
+          />
+          {showCopyNotification ? (
+            <Fade in>
+              <p
+                style={{
+                  padding: '8px 0',
+                  borderRadius: 5,
+                  background: 'white',
+                  boxShadow: '0 0 15px black',
+                  color: 'black',
+                  position: 'fixed',
+                  width: 100,
+                  bottom: 24,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  textAlign: 'center',
+                  fontSize: 12
+                }}
+              >
+                Address Copied!
+              </p>
+            </Fade>
+          ) : (
+            ''
+          )}
         </div>
-        <WalletAddressModal
-          data={wallet.walletAddress}
-          isModalOpen={isModalOpen}
-          closeModal={this.closeAddressModal}
-        />
-        {showCopyNotification ? (
-          <Fade in>
-            <p
-              style={{
-                padding: '8px 0',
-                borderRadius: 5,
-                background: 'white',
-                boxShadow: '0 0 15px black',
-                color: 'black',
-                position: 'fixed',
-                width: 100,
-                bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                textAlign: 'center',
-                fontSize: 12
-              }}
-            >
-              Address Copied!
-            </p>
-          </Fade>
-        ) : (
-          ''
-        )}
-      </div>
+      </Slide>
     );
   }
 }
@@ -129,7 +135,13 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators(
-    { getMarketData, getMarketSevens, createTrustlineRequest, getTransactions },
+    {
+      getMarketData,
+      getMarketSevens,
+      createTrustlineRequest,
+      getTransactions,
+      closeOptions
+    },
     dispatch
   );
 }

@@ -7,7 +7,11 @@ import {
   getWalletFromMnemonic,
   getRippleClassicAddressFromXAddress
 } from '../utils/utils2';
-import { createTrustlineRequest, fillNewWallet } from '../actions/index';
+import {
+  createTrustlineRequest,
+  fillNewWallet,
+  checkForExistingTrustline
+} from '../actions/index';
 import { withStyles, Fade, Dialog } from '@material-ui/core';
 import { encrypt } from '../utils/encryption';
 import { withRouter } from 'react-router-dom';
@@ -101,7 +105,17 @@ class PassphraseTab extends Component {
         rippleClassicAddress: rippleClassicAddress
       });
 
-      await this.props.createTrustlineRequest({
+      // await this.props.createTrustlineRequest({
+      //   address: rippleClassicAddress,
+      //   secret: '',
+      //   keypair: {
+      //     publicKey: importedWallet.publicKey,
+      //     privateKey: importedWallet.privateKey
+      //   },
+      //   id: rippleClassicAddress
+      // });
+
+      await this.props.checkForExistingTrustline({
         address: rippleClassicAddress,
         secret: '',
         keypair: {
@@ -215,7 +229,8 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       fillNewWallet,
-      createTrustlineRequest
+      createTrustlineRequest,
+      checkForExistingTrustline
     },
     dispatch
   );
