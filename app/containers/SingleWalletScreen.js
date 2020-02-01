@@ -26,7 +26,8 @@ import {
   closeOptions,
   deleteWallet,
   getBalance,
-  getTransactions
+  getTransactions,
+  changeTabOnView
 } from '../actions/index';
 
 class SingleWalletScreen extends Component {
@@ -128,17 +129,13 @@ class SingleWalletScreen extends Component {
 
   async changeTab(tab) {
     await this.props.closeOptions();
-    this.setState({ tabOnView: tab });
+    this.props.changeTabOnView(tab);
+    // this.setState({ tabOnView: tab });
   }
 
   render() {
-    const { classes, location, walletOptions } = this.props;
-    const {
-      changingNickName,
-      openDeleteModal,
-      tabOnView,
-      currentWallet
-    } = this.state;
+    const { classes, location, walletOptions, tabOnView } = this.props;
+    const { changingNickName, openDeleteModal, currentWallet } = this.state;
 
     if (currentWallet === null) {
       return <span />;
@@ -214,7 +211,7 @@ class SingleWalletScreen extends Component {
             <div className={classes.tabsDiv}>
               <div
                 className={`${classes.singleTab} ${
-                  tabOnView === 'xrp' ? classes.activeTab : ''
+                  tabOnView.view === 'xrp' ? classes.activeTab : ''
                 }`}
                 onClick={() => this.changeTab('xrp')}
               >
@@ -222,7 +219,7 @@ class SingleWalletScreen extends Component {
               </div>
               <div
                 className={`${classes.singleTab} ${
-                  tabOnView === 'solo' ? classes.activeTab : ''
+                  tabOnView.view === 'solo' ? classes.activeTab : ''
                 }`}
                 onClick={() => this.changeTab('solo')}
               >
@@ -230,7 +227,7 @@ class SingleWalletScreen extends Component {
               </div>
               <div
                 className={`${classes.singleTab} ${
-                  tabOnView === 'token' ? classes.activeTab : ''
+                  tabOnView.view === 'token' ? classes.activeTab : ''
                 }`}
                 onClick={() => this.changeTab('token')}
               >
@@ -238,18 +235,18 @@ class SingleWalletScreen extends Component {
               </div>
             </div>
           </div>
-          {tabOnView === 'xrp' ? (
-            <WalletTab wallet={wallet} tabOnView={tabOnView} />
+          {tabOnView.view === 'xrp' ? (
+            <WalletTab wallet={wallet} tabOnView={tabOnView.view} />
           ) : (
             ''
           )}
-          {tabOnView === 'solo' ? (
-            <WalletSoloTab wallet={wallet} tabOnView={tabOnView} />
+          {tabOnView.view === 'solo' ? (
+            <WalletSoloTab wallet={wallet} tabOnView={tabOnView.view} />
           ) : (
             ''
           )}
-          {tabOnView === 'token' ? (
-            <WalletTokenTab wallet={wallet} tabOnView={tabOnView} />
+          {tabOnView.view === 'token' ? (
+            <WalletTokenTab wallet={wallet} tabOnView={tabOnView.view} />
           ) : (
             ''
           )}
@@ -262,7 +259,8 @@ class SingleWalletScreen extends Component {
 function mapStateToProps(state) {
   return {
     walletOptions: state.walletOptions,
-    wallets: state.wallets
+    wallets: state.wallets,
+    tabOnView: state.tabOnView
   };
 }
 
@@ -274,7 +272,8 @@ function mapDispatchToProps(dispatch) {
       deleteWallet,
       getBalance,
       getTransactions,
-      closeOptions
+      closeOptions,
+      changeTabOnView
     },
     dispatch
   );

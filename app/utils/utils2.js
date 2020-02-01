@@ -3,6 +3,7 @@ import Colors from '../constants/Colors';
 import { Wallet, Utils } from 'xpring-common-js';
 import * as s from 'sologenic-xrpl-stream-js';
 import numbro from 'numbro';
+import configVars from './config';
 
 export const countWords = words => {
   const arrayOfWords = words
@@ -131,10 +132,10 @@ export const sologenic = new s.SologenicTxHandler(
   }
 );
 
-// export const isValidSecret = secret => {
-//   const rippleApi = sologenic.getRippleApi();
-//   return secret ? rippleApi.isValidSecret(secret) : false;
-// };
+export const isValidSecret = secret => {
+  const rippleApi = sologenic.getRippleApi();
+  return secret ? rippleApi.isValidSecret(secret) : false;
+};
 
 // export const rippleApi = new RippleAPI({
 //   server: "wss://s.altnet.rippletest.net:51233"
@@ -246,18 +247,56 @@ export function format(value, precision) {
 
   return a[0] + '.' + a[1].replace('.', '');
 }
-// // Format Numbers
-// export function format(value, precision) {
-//   const regex = new RegExp('^-?\\d+(?:\\.\\d{0,' + precision + '})?', 'g');
-//   const a = value.toString().match(regex)[0];
-//   const dot = a.indexOf('.');
 
-//   if (dot === -1) {
-//     return a + '.' + '0'.repeat(precision);
-//   }
-
-//   const b = precision - (a.length - dot) + 1;
-//   return b > 0
-//     ? a + '0'.repeat(b).replace(/\d(?=(\d{3})+\.)/g, '$&,')
-//     : a.replace(/\d(?=(\d{3})+\.)/g, '$&,');
-// }
+export const filterTransactions = (transactions, currentLedger) => {
+  let xrpTransactions = [];
+  let soloTransactions = [];
+  transactions.filter(item => {
+    if (item.type === 'payment' && item.outcome.result === 'tesSUCCESS') {
+      if (item.outcome.deliveredAmount.currency === configVars.soloHash) {
+        soloTransactions.push({
+          ...item,
+          outcome: {
+            ...item.outcome,
+            ledgerVersion: currentLedger - item.outcome.ledgerVersion
+          }
+        });
+      } else {
+        xrpTransactions.push({
+          ...item,
+          outcome: {
+            ...item.outcome,
+            ledgerVersion: currentLedger - item.outcome.ledgerVersion
+          }
+        });
+      }
+    } else {
+      if (item.outcome.result === 'tecUNFUNDED_PAYMENT') {
+        // console.log(item.specification.source.maxAmount);
+        if (
+          item.specification.source.maxAmount.currency === configVars.soloHash
+        ) {
+          soloTransactions.push({
+            ...item,
+            outcome: {
+              ...item.outcome,
+              ledgerVersion: currentLedger - item.outcome.ledgerVersion
+            }
+          });
+        } else if (item.specification.source.maxAmount.currency === 'XRP') {
+          xrpTransactions.push({
+            ...item,
+            outcome: {
+              ...item.outcome,
+              ledgerVersion: currentLedger - item.outcome.ledgerVersion
+            }
+          });
+        }
+      }
+    }
+  });
+  return {
+    xrpTransactions,
+    soloTransactions
+  };
+};

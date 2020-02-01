@@ -199,17 +199,20 @@ class SettingsScreen extends Component {
             </div>
             <div className={classes.inputWrapper}>
               <label>Legal</label>
-              <a
+              <Link
                 className={classes.settingsLink}
-                href="https://sologenic.com/terms-and-conditions"
-                target="_blank"
-                rel="noreferrer noopener"
+                to={{
+                  pathname: '/terms-conditions',
+                  state: {
+                    fromSettings: true
+                  }
+                }}
               >
                 <div className={classes.dropdownCurrency}>
                   <span>Terms & Conditions</span>
                   <ChevronRight />
                 </div>
-              </a>
+              </Link>
               <a
                 className={classes.settingsLink}
                 href="https://sologenic.com/privacy-policy"

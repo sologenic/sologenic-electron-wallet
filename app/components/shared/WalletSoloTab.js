@@ -465,32 +465,37 @@ class WalletSoloTab extends Component {
           />
           <div className={classes.transactionsContainer}>
             {transactions.updated &&
-            transactions.transactions.txs.length > 0 ? (
+            transactions.transactions.txs.soloTransactions.length > 0 ? (
               <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
             ) : (
               <h1>No recent transactions</h1>
             )}
-            {transactions.updated && transactions.transactions.txs.length > 0
-              ? transactions.transactions.txs.map((tx, idx) => {
-                  if (
-                    tx.type === 'payment' &&
-                    tx.specification.source.maxAmount.currency ===
-                      '534F4C4F00000000000000000000000000000000'
-                  ) {
-                    return (
-                      <TransactionSingle
-                        key={idx}
-                        tx={tx}
-                        currentLedger={transactions.transactions.currentLedger}
-                        address={wallet.walletAddress}
-                        currency="solo"
-                      />
-                    );
+            {transactions.updated &&
+            transactions.transactions.txs.soloTransactions.length > 0
+              ? transactions.transactions.txs.soloTransactions.map(
+                  (tx, idx) => {
+                    if (
+                      tx.type === 'payment' &&
+                      tx.specification.source.maxAmount.currency ===
+                        '534F4C4F00000000000000000000000000000000'
+                    ) {
+                      return (
+                        <TransactionSingle
+                          key={idx}
+                          tx={tx}
+                          currentLedger={
+                            transactions.transactions.currentLedger
+                          }
+                          address={wallet.walletAddress}
+                          currency="solo"
+                        />
+                      );
+                    }
                   }
-                })
+                )
               : ''}
             {transactions.updated &&
-            transactions.transactions.txs.length > 0 ? (
+            transactions.transactions.txs.soloTransactions.length > 0 ? (
               <button
                 className={classes.loadMoreBtn}
                 onClick={this.loadMore}

@@ -54,6 +54,9 @@
       "git add"
     ]
   },
+  "mac": {
+    "identity": "sologenic_desktopapp_certificate.cer"
+  },
   "build": {
     "productName": "Solo Wallet",
     "appId": "com.electron.solowallet",
@@ -78,7 +81,8 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "sign": true
     },
     "win": {
       "target": [

@@ -34,7 +34,8 @@ import {
   fillRippleFee,
   createTrustlineError,
   cleanTrustlineError,
-  cleanDefaultFiat
+  cleanDefaultFiat,
+  changeTabOnView
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -97,8 +98,23 @@ const initial = {
   trustlineError: {
     error: false,
     updated: false
+  },
+  tabOnView: {
+    view: 'xrp'
   }
 };
+
+const tabOnView = createReducer(
+  {
+    [changeTabOnView]: (state, payload) => {
+      return {
+        ...state,
+        view: payload
+      };
+    }
+  },
+  initial.tabOnView
+);
 
 const trustlineError = createReducer(
   {
@@ -218,7 +234,7 @@ const transactions = createReducer(
       return {
         ...state,
         transactions: {
-          txs: [...payload.txs],
+          txs: payload,
           currentLedger: payload.currentLedger
         },
         updated: true
@@ -563,6 +579,7 @@ export default function createRootReducer(history) {
     transferInProgress: transferInProgress,
     soloPrice: soloPrice,
     rippleFee: rippleFee,
-    trustlineError: trustlineError
+    trustlineError: trustlineError,
+    tabOnView: tabOnView
   });
 }

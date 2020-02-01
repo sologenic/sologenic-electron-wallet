@@ -19,6 +19,7 @@ class ScreenHeader extends Component {
 
   async goBack() {
     await this.props.closeOptions();
+
     this.props.history.goBack();
   }
 

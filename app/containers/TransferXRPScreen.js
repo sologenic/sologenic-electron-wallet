@@ -55,6 +55,13 @@ class TransferXRPScreen extends Component {
     this.checkIfSameAddress = this.checkIfSameAddress.bind(this);
     this.closeNotConnectedModal = this.closeNotConnectedModal.bind(this);
     this.checkInteger = this.checkInteger.bind(this);
+    this.focusInput = this.focusInput.bind(this);
+  }
+
+  focusInput(input) {
+    const inputToFocus = this.refs[input];
+
+    inputToFocus.focus();
   }
 
   checkInteger() {
@@ -307,6 +314,7 @@ class TransferXRPScreen extends Component {
         <div className={classes.inputsContainer}>
           <div
             className={`${classes.amountToSend} ${classes.sendInputWrapper}`}
+            onClick={() => this.focusInput('amountToSend')}
           >
             <label>Amount to Send</label>
             <input
@@ -325,6 +333,7 @@ class TransferXRPScreen extends Component {
           </p>
           <div
             className={`${classes.destinationAddress} ${classes.sendInputWrapper}`}
+            onClick={() => this.focusInput('destinationAddress')}
           >
             {sameAddress ? (
               <label style={{ color: Colors.errorBackground }}>
@@ -344,6 +353,7 @@ class TransferXRPScreen extends Component {
           </div>
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
+            onClick={() => this.focusInput('destinationTag')}
           >
             <label>Destination Tag</label>
             <input
@@ -358,6 +368,7 @@ class TransferXRPScreen extends Component {
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
             style={{ position: 'relative' }}
+            onClick={() => this.focusInput('password')}
           >
             <label>Wallet Password</label>
             <input type="password" ref="password" />

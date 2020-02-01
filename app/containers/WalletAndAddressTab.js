@@ -16,7 +16,7 @@ import { withStyles, Fade, Dialog } from '@material-ui/core';
 import { encrypt } from '../utils/encryption';
 import { withRouter } from 'react-router-dom';
 
-class PassphraseTab extends Component {
+class WalletAndAddressTab extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -315,5 +315,5 @@ const styles = theme => ({
 });
 
 export default withStyles(styles)(
-  connect(mapStateToProps, mapDispatchToProps)(withRouter(PassphraseTab))
+  connect(mapStateToProps, mapDispatchToProps)(withRouter(WalletAndAddressTab))
 );

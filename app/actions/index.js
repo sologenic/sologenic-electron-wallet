@@ -32,6 +32,8 @@ export const checkForExistingTrustline = createAction(
   'checkForExistingTrustline'
 );
 
+export const changeTabOnView = createAction('changeTabOnView');
+
 export const transferXRP = createAction('transferXRP');
 export const transferXrpSuccess = createAction('transferXrpSuccess');
 export const cleanTransferInProgress = createAction('cleanTransferInProgress');

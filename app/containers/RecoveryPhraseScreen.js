@@ -239,7 +239,8 @@ const styles = theme => ({
     }
   },
   radio: {
-    color: 'white'
+    color: 'white',
+    paddingTop: 0
   },
   btnContainer: {
     width: '90%',
@@ -276,13 +277,12 @@ const styles = theme => ({
     paddingTop: 16,
     display: 'flex',
     justifyContent: 'flex-end',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     borderTop: '1px solid gray',
 
     '& span': {
       fontSize: 14,
       fontWeight: 300,
-      textAlign: 'right',
       lineHeight: 1.5
     }
   }

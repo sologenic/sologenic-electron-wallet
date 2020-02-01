@@ -206,7 +206,19 @@ class WalletTab extends Component {
               </p>
             </div>
             <div className={classes.sendReceiveBtns}>
-              <button disabled>RECEIVE</button>
+              <button
+                onClick={() =>
+                  this.props.history.push({
+                    pathname: '/receive-screen',
+                    state: {
+                      wallet: wallet,
+                      currency: 'xrp'
+                    }
+                  })
+                }
+              >
+                RECEIVE
+              </button>
               <button disabled className={classes.sendMoneyBtn}>
                 SEND
               </button>
@@ -218,13 +230,18 @@ class WalletTab extends Component {
             >
               <h1 className={classes.activationSoloModalTitle}>Why 21 XRP?</h1>
               <p>
-                Similar to some bank accounts, Ripple Wallets require a minimum
-                balance of 20 XRP to facilitate use of the XRP Ledger.
+                There is a 20 XRP reserve requirement to activate any XRP
+                wallet. Once an XRP address is funded with the 20 XRP, the
+                activation fee will be locked by the XRP ledger network and is
+                non-refundable and non-recoverable unless the network lowers the
+                reserve requirement.
               </p>
               <p>
-                We ask you to deposit 21 XRP here instead, in order to
-                facilitate the activation of your SOLO Wallet, which you can do
-                as soon as your XRP Wallet is activated.
+                In addition, the user must transfer and maintain at least 1 XRP
+                to cover transaction fees for SOLO or other tokenized asset
+                transactions. The current minimum transaction cost required by
+                the network for a standard transaction is 0.00001 XRP (10
+                drops). It sometimes increases due to higher than usual load.
               </p>
               <div className={classes.why21dismissbtn}>
                 <button onClick={this.closeWhy21XrpModal}>DISMISS</button>
@@ -387,13 +404,14 @@ class WalletTab extends Component {
           />
           <div className={classes.transactionsContainer}>
             {transactions.updated &&
-            transactions.transactions.txs.length > 0 ? (
+            transactions.transactions.txs.xrpTransactions.length > 0 ? (
               <h1 style={{ marginBottom: 24 }}>Recent Transactions</h1>
             ) : (
               <h1>No recent transactions</h1>
             )}
-            {transactions.updated && transactions.transactions.txs.length > 0
-              ? transactions.transactions.txs.map((tx, idx) => {
+            {transactions.updated &&
+            transactions.transactions.txs.xrpTransactions.length > 0
+              ? transactions.transactions.txs.xrpTransactions.map((tx, idx) => {
                   if (
                     tx.type === 'payment' &&
                     tx.specification.source.maxAmount.currency === 'XRP'
@@ -411,7 +429,7 @@ class WalletTab extends Component {
                 })
               : ''}
             {transactions.updated &&
-            transactions.transactions.txs.length > 0 ? (
+            transactions.transactions.txs.xrpTransactions.length > 0 ? (
               <button
                 className={classes.loadMoreBtn}
                 onClick={this.loadMore}

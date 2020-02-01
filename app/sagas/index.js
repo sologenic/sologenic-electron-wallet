@@ -38,7 +38,11 @@ import {
   fillRippleFee,
   checkForExistingTrustline
 } from '../actions/index';
-import { createSevensObj, sologenic } from '../utils/utils2.js';
+import {
+  createSevensObj,
+  sologenic,
+  filterTransactions
+} from '../utils/utils2.js';
 import configVars from '../utils/config';
 import { create } from 'apisauce';
 
@@ -138,7 +142,6 @@ function* transferXRPCall(data) {
     if (isValidSecret || isValidPrivate) {
       yield call(setAccount, account, secret, keypair);
       const tx = yield call(transferXrp, account, destination, value, tag);
-      console.log('tx', tx);
       const response = yield tx.promise;
       if (response) {
         yield put(transferXrpSuccess(response));
@@ -222,7 +225,6 @@ function* transferSOLOCall(data) {
     if (isValidSecret || isValidPrivate) {
       yield call(setAccount, account, secret, keypair);
       const tx = yield call(transferSolo, account, destination, value, tag);
-      console.log('tx', tx);
       const response = yield tx.promise;
       if (response) {
         yield put(transferSoloSuccess(response));
@@ -334,7 +336,6 @@ function* createTrustlineCall(data) {
       } else {
         const tx = yield call(setTrustline, address);
 
-        console.log('tx ------->>>', tx);
         const response = yield tx.promise;
 
         if (response.result && response.result.status === 'failed') {
@@ -380,7 +381,6 @@ const getTransactionsApi = async (address, limit) => {
   const rippleApi = sologenic.getRippleApi();
   const currentLedger = await rippleApi.getLedgerVersion();
   const serverInfo = await rippleApi.getServerInfo();
-  console.log('currentLedger', currentLedger);
   const ledgers = serverInfo.completeLedgers.split('-');
   const minLedgerVersion = Number(ledgers[0]);
   const maxLedgerVersion = Number(ledgers[1]);
@@ -399,13 +399,31 @@ const getTransactionsApi = async (address, limit) => {
   return txsObj;
 };
 
+const getFormattedTransactions = async transactions => {
+  const rippleApi = sologenic.getRippleApi();
+  const currentLedger = await rippleApi.getLedgerVersion();
+  const formattedTransactions = filterTransactions(transactions, currentLedger);
+  return formattedTransactions;
+};
+
 function* getTransactionsCall(data) {
   try {
     const { address, limit } = data.payload;
     const response = yield call(getTransactionsApi, address, limit);
 
+    const { xrpTransactions, soloTransactions } = yield call(
+      getFormattedTransactions,
+      response.txs
+    );
+
     if (response) {
-      yield put(getTransactionsSuccess(response));
+      yield put(
+        getTransactionsSuccess({
+          xrpTransactions,
+          soloTransactions,
+          currentLedger: response.currentLedger
+        })
+      );
     }
   } catch (e) {
     console.log('GET_TRANSACTION_ERROR -> ', e);
@@ -466,10 +484,6 @@ function* connectToRippleApiCall() {
 
     if (!isConnected) {
       yield sologenic.connect();
-
-      console.log('CONNECTING!!!');
-    } else {
-      console.log('NOT CONNECTING BECAUSE CONNECTED!!!!');
     }
 
     yield sologenic.on('queued', (id, tx) => {
