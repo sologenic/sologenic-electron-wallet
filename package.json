@@ -55,7 +55,7 @@
     ]
   },
   "build": {
-    "productName": "Solo Wallet Test Net",
+    "productName": "Solo Wallet",
     "appId": "com.sologenic.solowallet",
     "copyright": "Copyright © 2020 Sologenic",
     "afterSign": "resources/notarize.js",
