@@ -42,10 +42,14 @@ app/renderer.prod.js
 app/renderer.prod.js.map
 app/style.css
 app/style.css.map
-dist
 dll
 main.js
 main.js.map
+.env
+resources/notarize.js
+resources/entitlements.mac.plist
+
+
 
 .idea
 npm-debug.log.*

@@ -1,3 +1,18 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component } from 'react';
 import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
 import { connect } from 'react-redux';
@@ -13,7 +28,7 @@ import {
 } from '../actions/index';
 import { CheckCircle, Close } from '@material-ui/icons';
 import { decrypt } from '../utils/encryption';
-import { format } from '../utils/utils2';
+import { format, getRippleClassicAddressFromXAddress } from '../utils/utils2';
 // import { multiply, evaluate } from 'mathjs';
 import { all as mathAll, create as mathCreate } from 'mathjs';
 
@@ -33,7 +48,8 @@ class TransferXRPScreen extends Component {
       reason: '',
       sameAddress: false,
       burnAmountState: 0,
-      userInputTag: ''
+      userInputTag: '',
+      usingXAddress: false
     };
     this.calculateFiat = this.calculateFiat.bind(this);
     this.onFocus = this.onFocus.bind(this);
@@ -47,7 +63,9 @@ class TransferXRPScreen extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this);
     this.transferFinishedAndFailed = this.transferFinishedAndFailed.bind(this);
     this.closeFailModal = this.closeFailModal.bind(this);
-    this.checkIfSameAddress = this.checkIfSameAddress.bind(this);
+    this.checkIfSameAddressOrXAddress = this.checkIfSameAddressOrXAddress.bind(
+      this
+    );
     this.checkInteger = this.checkInteger.bind(this);
     this.focusInput = this.focusInput.bind(this);
   }
@@ -67,8 +85,20 @@ class TransferXRPScreen extends Component {
     });
   }
 
-  checkIfSameAddress() {
+  checkIfSameAddressOrXAddress() {
     const address = this.refs.destinationAddress.value.trim();
+    const startsWithX = address.startsWith('X');
+
+    if (startsWithX) {
+      return this.setState({
+        usingXAddress: true,
+        userInputTag: ''
+      });
+    } else {
+      this.setState({
+        usingXAddress: false
+      });
+    }
 
     const senderAddress = this.props.location.state.wallet.walletAddress;
 
@@ -240,7 +270,9 @@ class TransferXRPScreen extends Component {
         publicKey: keypair.publicKey,
         privateKey: privateDecrypted
       },
-      destination: this.state.destination,
+      destination: this.state.usingXAddress
+        ? getRippleClassicAddressFromXAddress(this.state.destination)
+        : this.state.destination,
       value: this.state.userInput,
       secret: secretDecrypted,
       tag: this.state.destinationTag
@@ -285,7 +317,8 @@ class TransferXRPScreen extends Component {
       reason,
       burnAmountState,
       sameAddress,
-      userInputTag
+      userInputTag,
+      usingXAddress
     } = this.state;
 
     return (
@@ -337,19 +370,24 @@ class TransferXRPScreen extends Component {
               style={{
                 color: sameAddress ? Colors.errorBackground : 'white'
               }}
-              onBlur={this.checkIfSameAddress}
+              onBlur={this.checkIfSameAddressOrXAddress}
             />
           </div>
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
             onClick={() => this.focusInput('destinationTag')}
           >
-            <label>Destination Tag</label>
+            <label>
+              {usingXAddress
+                ? "You're using an X-address, you don't need a Destination Tag"
+                : 'Destination Tag'}
+            </label>
             <input
               type="text"
               value={userInputTag}
               ref="destinationTag"
-              placeholder="Optional"
+              placeholder={usingXAddress ? 'Disabled' : 'Optional'}
+              disabled={usingXAddress}
               onChange={this.checkInteger}
             />
           </div>
@@ -386,19 +424,29 @@ class TransferXRPScreen extends Component {
           <h1 className={classes.summaryTitle}>Transfer Summary</h1>
           <div className={classes.summaryAmount}>
             <span>Amount to Send:</span>
-            <h2>{userInput} SOLO</h2>
+            <h2>
+              <span style={{ color: Colors.lightGray, fontSize: 10 }}>Ƨ </span>{' '}
+              {userInput}
+            </h2>
             <p>
               {defaultFiat.symbol} {format(amountInFiat, 2)}{' '}
               {defaultFiat.currency.toUpperCase()}
             </p>
+            <span style={{ marginTop: 20 }}>Receiver gets:</span>
+            <h2>
+              <span style={{ color: Colors.lightGray, fontSize: 12 }}>Ƨ </span>{' '}
+              {userInput - userInput * 0.0001}
+            </h2>
             <span style={{ color: 'white', marginTop: 8 }}>Tx Fee:</span>
             <p>
-              <span style={{ color: Colors.lightGray, fontSize: 10 }}>XRP</span>
+              <span style={{ color: Colors.lightGray, fontSize: 10 }}>
+                XRP{' '}
+              </span>
               {rippleFee.fee}
             </p>
             <span style={{ color: 'white', marginTop: 8 }}>Burn Amount:</span>
             <p>
-              <span style={{ color: Colors.lightGray, fontSize: 10 }}>Ƨ</span>
+              <span style={{ color: Colors.lightGray, fontSize: 12 }}>Ƨ </span>
               {format(burnAmountState, 6)}
             </p>
           </div>
@@ -590,7 +638,7 @@ const styles = theme => ({
       color: Colors.lightGray
     },
     '& p': {
-      fontSize: 16,
+      fontSize: 13,
       color: 'white',
       marginTop: 3
     }

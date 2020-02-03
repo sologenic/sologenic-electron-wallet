@@ -1,24 +1,23 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component } from 'react';
 import Colors from '../../constants/Colors';
 import { LineChart, Line, YAxis } from 'recharts';
 
-// let data = {
-//   datasets: [
-//     {
-//       data: []
-//     }
-//   ]
-// };
-
 class SevenChart extends Component {
-  //   shouldComponentUpdate(nextProps) {
-  //     if (this.props !== nextProps) {
-  //       return true;
-  //     }
-
-  //     return false;
-  //   }
-
   render() {
     const { marketSevens, color } = this.props;
 
@@ -33,7 +32,6 @@ class SevenChart extends Component {
           value: item
         };
       });
-
     }
 
     const testData = [{ value: 0.2023 }, { value: 0.207 }, { value: 0.2102 }];

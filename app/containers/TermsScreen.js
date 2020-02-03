@@ -1,7 +1,21 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core';
 import ScreenHeader from '../components/shared/ScreenHeader';
-import terms from '../utils/terms';
 import Colors from '../constants/Colors';
 import { Radio } from '@material-ui/core';
 import { ChevronRight } from '@material-ui/icons';
@@ -45,7 +59,7 @@ class TermsScreen extends Component {
       return (
         <div>
           <ScreenHeader
-            title="Terms & Conditions"
+            title="License Agreement"
             showSettings={false}
             showBackArrow
           />
@@ -870,7 +884,7 @@ class TermsScreen extends Component {
     return (
       <div>
         <ScreenHeader
-          title="Terms & Conditions"
+          title="License Agreement"
           showSettings={false}
           showBackArrow={false}
         />
@@ -1707,7 +1721,7 @@ class TermsScreen extends Component {
           </button>
         </div>
         <div className={classes.copyrightAndVersion}>
-          <p>
+          <p style={{ fontSize: 12 }}>
             If you do NOT agree, please close and remove this application
             immediately.
           </p>
@@ -1793,9 +1807,8 @@ const styles = theme => ({
     },
 
     '& span': {
-      fontSize: 10,
+      fontSize: 12,
       fontWeight: 300,
-      textAlign: 'right',
       lineHeight: 1.5
     }
   },

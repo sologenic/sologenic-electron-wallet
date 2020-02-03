@@ -1,3 +1,18 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
@@ -123,7 +138,8 @@ class SettingsScreen extends Component {
       selectFiatMenuOpen,
       selectedFiat,
       openResetDataModal,
-      wrongPin
+      wrongPin,
+      deletingInProgress
     } = this.state;
     const fiats = ['usd', 'cad', 'gbp', 'eur', 'jpy', 'aed'];
 
@@ -209,11 +225,11 @@ class SettingsScreen extends Component {
                 }}
               >
                 <div className={classes.dropdownCurrency}>
-                  <span>Terms & Conditions</span>
+                  <span>License Agreement</span>
                   <ChevronRight />
                 </div>
               </Link>
-              <a
+              {/* <a
                 className={classes.settingsLink}
                 href="https://sologenic.com/privacy-policy"
                 target="_blank"
@@ -223,13 +239,13 @@ class SettingsScreen extends Component {
                   <span>Privacy Policy</span>
                   <ChevronRight />
                 </div>
-              </a>
+              </a> */}
             </div>
             <div className={classes.inputWrapper}>
               <label>Support</label>
               <a
                 className={classes.settingsLink}
-                href="https://github.com/sologenic"
+                href="https://github.com/sologenic/sologenic-electron-wallet/issues"
                 target="_blank"
                 rel="noreferrer noopener"
               >
@@ -274,8 +290,17 @@ class SettingsScreen extends Component {
               <input type="password" ref="deletePin" />
             </div>
             <div className={classes.confirmDeletionBtn}>
-              <button onClick={this.closeResetDataModal}>CANCEL</button>
-              <button onClick={this.confirmDeletion}>CONFIRM</button>
+              {deletingInProgress ? (
+                ''
+              ) : (
+                <button onClick={this.closeResetDataModal}>CANCEL</button>
+              )}
+              <button
+                onClick={this.confirmDeletion}
+                disabled={deletingInProgress}
+              >
+                {deletingInProgress ? 'DELETING' : 'CONFIRM'}
+              </button>
             </div>
           </Dialog>
         </div>

@@ -1,3 +1,18 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component } from 'react';
 import { withStyles, Slide, Fade } from '@material-ui/core';
 import Colors from '../../constants/Colors';
@@ -173,7 +188,7 @@ class TransactionSingle extends Component {
             <div className={classes.secondLine} style={{ height: 50 }}>
               <div className={classes.confirmations}>
                 <span>Confirmations</span>
-                <b>{currentLedger - ledgerVersion}</b>
+                <b>{ledgerVersion}</b>
               </div>
               <div className={classes.fee}>
                 {!thisWalletReceived && status !== 'Failed' ? (
@@ -220,7 +235,10 @@ class TransactionSingle extends Component {
                 text={otherAddress}
                 onCopy={() => this.setState({ showCopyNotification: true })}
               >
-                <div className={classes.copyAddress}>
+                <div
+                  className={classes.copyAddress}
+                  onClick={e => e.stopPropagation()}
+                >
                   <section>
                     <span>Copy Address</span> <FileCopy />
                   </section>
@@ -236,6 +254,7 @@ class TransactionSingle extends Component {
                     borderLeft: `1px solid ${Colors.lightGray}`,
                     borderRight: `1px solid ${Colors.lightGray}`
                   }}
+                  onClick={e => e.stopPropagation()}
                 >
                   <section>
                     <span>Copy TX ID</span> <FileCopy />

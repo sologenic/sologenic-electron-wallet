@@ -1,3 +1,18 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import qrcode from 'qrcode-generator';
 import Colors from '../constants/Colors';
 import { Wallet, Utils } from 'xpring-common-js';
@@ -118,7 +133,8 @@ export const isValidClassicAddress = address => {
 export const sologenic = new s.SologenicTxHandler(
   // RippleAPI Options
   {
-    server: 'wss://testnet.xrpl-labs.com' // Kudos to Wietse Wind
+    // server: 'wss://s1.ripple.com' // Kudos to Wietse Wind
+    server: 'wss://testnet.xrpl-labs.com'
   },
   // Sologenic Options, hash or redis
   {

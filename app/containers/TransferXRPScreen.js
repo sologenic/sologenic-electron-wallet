@@ -1,3 +1,18 @@
+//     Sologenic Wallet, Decentralized Wallet. Copyright (C) 2020 Sologenic
+
+//     This program is free software: you can redistribute it and/or modify
+//     it under the terms of the GNU General Public License as published by
+//     the Free Software Foundation, either version 3 of the License, or
+//     (at your option) any later version.
+
+//     This program is distributed in the hope that it will be useful,
+//     but WITHOUT ANY WARRANTY; without even the implied warranty of
+//     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//     GNU General Public License for more details.
+
+//     You should have received a copy of the GNU General Public License
+//     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import React, { Component } from 'react';
 import { withStyles, Dialog, CircularProgress } from '@material-ui/core';
 import { connect } from 'react-redux';
@@ -18,8 +33,7 @@ import {
   VisibilityOff
 } from '@material-ui/icons';
 import { decrypt } from '../utils/encryption';
-import { format } from '../utils/utils2';
-import { CONNECTION_ERROR } from 'apisauce';
+import { format, getRippleClassicAddressFromXAddress } from '../utils/utils2';
 
 class TransferXRPScreen extends Component {
   constructor(props) {
@@ -38,7 +52,8 @@ class TransferXRPScreen extends Component {
       pass: '',
       sameAddress: false,
       openNotConnectedModal: false,
-      userInputTag: ''
+      userInputTag: '',
+      usingXAddress: false
     };
     this.calculateFiat = this.calculateFiat.bind(this);
     this.onFocus = this.onFocus.bind(this);
@@ -52,7 +67,9 @@ class TransferXRPScreen extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this);
     this.transferFinishedAndFailed = this.transferFinishedAndFailed.bind(this);
     this.closeFailModal = this.closeFailModal.bind(this);
-    this.checkIfSameAddress = this.checkIfSameAddress.bind(this);
+    this.checkIfSameAddressOrXAddress = this.checkIfSameAddressOrXAddress.bind(
+      this
+    );
     this.closeNotConnectedModal = this.closeNotConnectedModal.bind(this);
     this.checkInteger = this.checkInteger.bind(this);
     this.focusInput = this.focusInput.bind(this);
@@ -79,11 +96,23 @@ class TransferXRPScreen extends Component {
     });
   }
 
-  checkIfSameAddress() {
+  checkIfSameAddressOrXAddress() {
     const address = this.refs.destinationAddress.value.trim();
 
-    const senderAddress = this.props.location.state.wallet.walletAddress;
+    const startsWithX = address.startsWith('X');
 
+    if (startsWithX) {
+      return this.setState({
+        usingXAddress: true,
+        userInputTag: ''
+      });
+    } else {
+      this.setState({
+        usingXAddress: false
+      });
+    }
+
+    const senderAddress = this.props.location.state.wallet.walletAddress;
     const isSameAddress = address === senderAddress ? true : false;
 
     if (isSameAddress) {
@@ -244,7 +273,9 @@ class TransferXRPScreen extends Component {
           publicKey: keypair.publicKey,
           privateKey: privateDecrypted
         },
-        destination: this.state.destination,
+        destination: this.state.usingXAddress
+          ? getRippleClassicAddressFromXAddress(this.state.destination)
+          : this.state.destination,
         value: this.state.userInput,
         secret: secretDecrypted,
         tag: Number(this.state.destinationTag)
@@ -296,7 +327,8 @@ class TransferXRPScreen extends Component {
       reason,
       sameAddress,
       openNotConnectedModal,
-      userInputTag
+      userInputTag,
+      usingXAddress
     } = this.state;
 
     return (
@@ -348,20 +380,25 @@ class TransferXRPScreen extends Component {
               style={{
                 color: sameAddress ? Colors.errorBackground : 'white'
               }}
-              onBlur={this.checkIfSameAddress}
+              onBlur={this.checkIfSameAddressOrXAddress}
             />
           </div>
           <div
             className={`${classes.destinationTag} ${classes.sendInputWrapper}`}
             onClick={() => this.focusInput('destinationTag')}
           >
-            <label>Destination Tag</label>
+            <label>
+              {usingXAddress
+                ? "You're using an X-address, you don't need a Destination Tag"
+                : 'Destination Tag'}
+            </label>
             <input
               type="text"
               value={userInputTag}
               onChange={this.checkInteger}
               ref="destinationTag"
-              placeholder="Optional"
+              placeholder={usingXAddress ? 'Disabled' : 'Optional'}
+              disabled={usingXAddress}
             />
           </div>
 
@@ -614,7 +651,7 @@ const styles = theme => ({
       color: Colors.lightGray
     },
     '& p': {
-      fontSize: 16,
+      fontSize: 13,
       color: 'white',
       marginTop: 3
     }

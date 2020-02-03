@@ -2,7 +2,7 @@
   "name": "solo-wallet",
   "productName": "Solo Wallet",
   "version": "0.18.1",
-  "description": "Open Source Crypto Wallet",
+  "description": "SOLO Wallet is a decentralized wallet for SOLO, XRP, and tokenized assets.",
   "main": "./main.prod.js",
   "author": {
     "name": "Sologenic",
@@ -12,7 +12,7 @@
     "electron-rebuild": "node -r ../internals/scripts/BabelRegister.js ../internals/scripts/ElectronRebuild.js",
     "postinstall": "yarn electron-rebuild"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "xpring-common-js": "^2.0.1"
   }
