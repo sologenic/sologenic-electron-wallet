@@ -68,3 +68,5 @@ export const closeModal = createAction('closeModal');
 export const openModal = createAction('openModal');
 export const openOptions = createAction('openOptions');
 export const closeOptions = createAction('closeOptions');
+export const joinNewsletter = createAction('joinNewsletter');
+export const fillEmailResponse = createAction('fillEmailResponse');

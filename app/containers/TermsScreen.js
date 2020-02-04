@@ -1714,7 +1714,7 @@ class TermsScreen extends Component {
         <div className={classes.btnContainer}>
           <button
             className={classes.nextBtn}
-            onClick={() => this.props.history.push('/set-pin-screen')}
+            onClick={() => this.props.history.push('/newsletter')}
             disabled={termsAccepted && disclaimerAccepted ? false : true}
           >
             Next <ChevronRight />

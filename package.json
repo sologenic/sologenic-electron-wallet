@@ -55,7 +55,7 @@
     ]
   },
   "build": {
-    "productName": "Solo Wallet",
+    "productName": "SOLO Wallet",
     "appId": "com.sologenic.solowallet",
     "copyright": "Copyright © 2020 Sologenic",
     "afterSign": "resources/notarize.js",
@@ -252,7 +252,6 @@
     "@hot-loader/react-dom": "^16.11.0",
     "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
-    "@sentry/electron": "^1.2.0",
     "apisauce": "^1.1.1",
     "connected-react-router": "^6.6.1",
     "core-js": "^3.5.0",
@@ -262,6 +261,7 @@
     "electron-json-storage": "^4.1.8",
     "electron-log": "^4.0.0",
     "electron-updater": "^4.2.0",
+    "email-validator": "^2.0.4",
     "history": "^4.10.1",
     "mathjs": "^6.5.0",
     "moment": "^2.24.0",

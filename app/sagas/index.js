@@ -13,6 +13,8 @@
 //     You should have received a copy of the GNU General Public License
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+require('dotenv').config();
+
 import {
   fork,
   take,
@@ -51,7 +53,9 @@ import {
   fillSoloPrice,
   fetchRippleFee,
   fillRippleFee,
-  checkForExistingTrustline
+  checkForExistingTrustline,
+  joinNewsletter,
+  fillEmailResponse
 } from '../actions/index';
 import {
   createSevensObj,
@@ -60,6 +64,11 @@ import {
 } from '../utils/utils2.js';
 import configVars from '../utils/config';
 import { create } from 'apisauce';
+
+const soloWebsite = create({
+  baseURL: 'https://sologenic.com/',
+  timeout: 10000
+});
 
 const api = create({
   baseURL: 'https://api.coinfield.com/v1/',
@@ -92,6 +101,27 @@ const mediatorApi = create({
 });
 
 const getMarketSevensApi = () => mediatorApi.get('seven');
+
+// JOIN NEWSLETTER
+function* joinNewsletterSaga() {
+  yield takeLatest(`${joinNewsletter}`, joinNewsletterCall);
+}
+
+function* joinNewsletterCall(data) {
+  try {
+    const email = data.payload;
+
+    const response = yield soloWebsite.post(
+      `newsletter-solo-wallet?email=${email}`
+    );
+
+    if (response) {
+      yield put(fillEmailResponse(response.data));
+    }
+  } catch (e) {
+    console.log('JOIN_NEWSLETTER_ERROR ->', e);
+  }
+}
 
 // FETCH RIPPLE FEE
 function* fetchRippleFeeSaga() {
@@ -569,6 +599,7 @@ export default function* rootSaga() {
     fork(transferSOLOSaga),
     fork(getSoloPriceSaga),
     fork(fetchRippleFeeSaga),
-    fork(checkForExistingTrustlineSaga)
+    fork(checkForExistingTrustlineSaga),
+    fork(joinNewsletterSaga)
   ]);
 }

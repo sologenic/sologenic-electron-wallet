@@ -37,7 +37,10 @@ class RootContainer extends Component {
 
   async componentDidMount() {
     await storage.getAll((err, data) => {
-      if (Object.entries(data).length > 0) {
+      if (
+        Object.entries(data).length > 0 &&
+        typeof data.pincode !== 'undefined'
+      ) {
         this.props.setPinCode(data.pincode.pin);
         this.props.setTerms(data.terms.accepted);
 

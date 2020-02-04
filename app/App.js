@@ -15,11 +15,6 @@
 
 // @flow
 import * as React from 'react';
-import * as Sentry from '@sentry/electron';
-
-Sentry.init({
-  dsn: 'https://6890bc8315f34207a0f891f774602ea9@sentry.io/2143718'
-});
 
 type Props = {
   children: React.Node

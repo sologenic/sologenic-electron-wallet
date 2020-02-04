@@ -30,7 +30,9 @@ const routes = {
   ChangeWalletNicknameScreen: '/change-wallet-nickname',
   TransferXRPScreen: '/send-xrp',
   ImportWalletScreen: '/import-wallet',
-  TransferSOLOScreen: '/send-solo'
+  TransferSOLOScreen: '/send-solo',
+  NewsletterScreen: '/newsletter',
+  ReceiveScreen: '/receive-screen'
 };
 
 module.exports = routes;

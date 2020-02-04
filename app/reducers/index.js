@@ -50,7 +50,8 @@ import {
   createTrustlineError,
   cleanTrustlineError,
   cleanDefaultFiat,
-  changeTabOnView
+  changeTabOnView,
+  fillEmailResponse
 } from '../actions/index.js';
 import { create } from 'react-test-renderer';
 
@@ -116,8 +117,25 @@ const initial = {
   },
   tabOnView: {
     view: 'xrp'
+  },
+  emailResponse: {
+    added: false,
+    updated: false
   }
 };
+
+const emailResponse = createReducer(
+  {
+    [fillEmailResponse]: (state, payload) => {
+      return {
+        ...state,
+        added: payload.added,
+        updated: true
+      };
+    }
+  },
+  initial.emailResponse
+);
 
 const tabOnView = createReducer(
   {
@@ -595,6 +613,7 @@ export default function createRootReducer(history) {
     soloPrice: soloPrice,
     rippleFee: rippleFee,
     trustlineError: trustlineError,
-    tabOnView: tabOnView
+    tabOnView: tabOnView,
+    emailResponse: emailResponse
   });
 }

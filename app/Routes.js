@@ -34,6 +34,7 @@ import TransferXRPScreen from './containers/TransferXRPScreen';
 import TransferSOLOScreen from './containers/TransferSOLOScreen';
 import ImportWalletScreen from './containers/ImportWalletScreen';
 import ReceiveScreen from './containers/ReceiveScreen';
+import NewsletterScreen from './containers/NewsletterScreen';
 import { bindActionCreators } from 'redux';
 import { setConnection, connectToRippleApi } from './actions/index';
 
@@ -142,6 +143,11 @@ class Routes extends React.Component {
             component={ImportWalletScreen}
           />
           <Route exact path={routes.ReceiveScreen} component={ReceiveScreen} />
+          <Route
+            exact
+            path={routes.NewsletterScreen}
+            component={NewsletterScreen}
+          />
         </Switch>
       </App>
     );
