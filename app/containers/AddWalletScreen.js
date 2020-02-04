@@ -23,7 +23,7 @@ import { generateNewWallet } from '../actions/index';
 import ScreenHeader from '../components/shared/ScreenHeader.js';
 
 // MUI COMPONENTS
-import { withStyles } from '@material-ui/core';
+import { withStyles, Dialog } from '@material-ui/core';
 import { ChevronRight, VisibilityOff, Visibility } from '@material-ui/icons';
 
 // WALLET
@@ -37,7 +37,7 @@ import {
 class AddWalletScreen extends Component {
   constructor(props) {
     super(props);
-    this.state = { isShown: false };
+    this.state = { isShown: false, passwordEmpty: false };
     this.createWallet = this.createWallet.bind(this);
     this.showPassword = this.showPassword.bind(this);
     this.hidePassword = this.hidePassword.bind(this);
@@ -71,6 +71,10 @@ class AddWalletScreen extends Component {
     const nickname = this.refs.walletNickname.value.trim();
 
     if (this.refs.walletPassphrase.value.trim() === '') {
+      this.setState({
+        passwordEmpty: true,
+        openPasswordEmptyModal: true
+      });
     } else {
       this.props.generateNewWallet({
         result,
@@ -88,6 +92,7 @@ class AddWalletScreen extends Component {
 
   render() {
     const { classes } = this.props;
+    const { passwordEmpty, openPasswordEmptyModal } = this.state;
     return (
       <div className={classes.walletNicknameContainer}>
         <ScreenHeader
@@ -137,6 +142,14 @@ class AddWalletScreen extends Component {
             />
           )}
         </div>
+        {passwordEmpty ? (
+          <span style={Colors.errorBackground}>
+            Please, choose a password. You will need this for every transaction
+            within the app.
+          </span>
+        ) : (
+          ''
+        )}
         <p className={classes.footnote}>
           Note: You will need this password to make transactions with this
           wallet.

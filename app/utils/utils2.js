@@ -133,8 +133,8 @@ export const isValidClassicAddress = address => {
 export const sologenic = new s.SologenicTxHandler(
   // RippleAPI Options
   {
-    server: 'wss://s1.ripple.com'
-    // server: 'wss://testnet.xrpl-labs.com'
+    // server: 'wss://s1.ripple.com'
+    server: 'wss://testnet.xrpl-labs.com'
   },
   // Sologenic Options, hash or redis
   {

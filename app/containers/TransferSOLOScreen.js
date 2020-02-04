@@ -411,7 +411,10 @@ class TransferXRPScreen extends Component {
         >
           <div className={classes.validationMessage}>
             <h1>Error</h1>
-            <p>"Amount to Send" or "Destination Address" cannot be empty!</p>
+            <p>
+              "Amount to Send" or "Destination Address" or "Password" cannot be
+              empty!
+            </p>
           </div>
           <div className={classes.dismissBtn}>
             <button onClick={this.closeValidationModal}>DISMISS</button>
@@ -488,7 +491,7 @@ class TransferXRPScreen extends Component {
         >
           <h1 className={classes.transferSuccessTitle}>Transfer Successful</h1>
           <div className={classes.transferSuccessBody}>
-            <p>Your XRP transfer has been successfully completed</p>{' '}
+            <p>Your SOLO transfer has been successfully completed</p>{' '}
             <CheckCircle />
           </div>
           <div className={classes.successBtnContainer}>

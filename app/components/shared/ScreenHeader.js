@@ -133,7 +133,9 @@ const styles = theme => ({
       fontSize: 20,
       fontWeight: 300,
       textAlign: 'center',
-      width: '65%'
+      width: '65%',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden'
     },
     '& img': {
       width: 20,

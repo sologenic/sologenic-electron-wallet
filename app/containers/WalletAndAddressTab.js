@@ -20,7 +20,8 @@ import Colors from '../constants/Colors';
 import {
   isValidRippleAddress,
   isValidSecret,
-  getXAddressFromRippleClassicAddress
+  getXAddressFromRippleClassicAddress,
+  getRippleClassicAddressFromXAddress
 } from '../utils/utils2';
 import {
   createTrustlineRequest,
@@ -37,11 +38,20 @@ class WalletAndAddressTab extends Component {
     this.state = {
       openWrongInfoModal: false,
       openAlreadyExistsModal: false,
-      importSuccessfulModal: false
+      importSuccessfulModal: false,
+      passwordEmpty: false,
+      xAddressFound: false
     };
     this.startImporting = this.startImporting.bind(this);
     this.validateInputs = this.validateInputs.bind(this);
     this.dismissErrorModal = this.dismissErrorModal.bind(this);
+    this.closeAlreadyExistsModal = this.closeAlreadyExistsModal.bind(this);
+  }
+
+  closeAlreadyExistsModal() {
+    this.setState({
+      openAlreadyExistsModal: false
+    });
   }
 
   dismissErrorModal() {
@@ -51,25 +61,42 @@ class WalletAndAddressTab extends Component {
   }
 
   validateInputs() {
-    const address = this.refs.walletAddress.value.trim();
+    let address = this.refs.walletAddress.value.trim();
     const secret = this.refs.walletSecret.value.trim();
     const nickName = this.refs.walletNickname.value.trim();
+    const password = this.refs.importedPassword.value.trim();
+
+    if (address.startsWith('X')) {
+      return this.setState({
+        openWrongInfoModal: true,
+        passwordEmpty: false,
+        xAddressFound: true
+      });
+    }
 
     const isAddressValid = isValidRippleAddress(address);
     const isSecretValid = isValidSecret(secret);
 
-    if (!isAddressValid && !isSecretValid) {
+    if (password === '') {
+      return this.setState({
+        openWrongInfoModal: true,
+        passwordEmpty: true,
+        xAddressFound: false
+      });
+    }
+
+    if (!isAddressValid || !isSecretValid) {
       this.setState({
-        openWrongInfoModal: true
+        openWrongInfoModal: true,
+        passwordEmpty: false,
+        xAddressFound: false
       });
     } else {
-      this.startImporting(address, secret, nickName);
+      this.startImporting(address, secret, nickName, password);
     }
   }
 
-  async startImporting(address, secret, nickname) {
-    const pass = this.refs.importedPassword.value.trim();
-
+  async startImporting(address, secret, nickname, pass) {
     const salt = Math.random()
       .toString(36)
       .slice(2);
@@ -125,7 +152,9 @@ class WalletAndAddressTab extends Component {
     const {
       openWrongInfoModal,
       openAlreadyExistsModal,
-      importSuccessfulModal
+      importSuccessfulModal,
+      passwordEmpty,
+      xAddressFound
     } = this.state;
 
     return (
@@ -160,9 +189,12 @@ class WalletAndAddressTab extends Component {
             classes={{ paper: classes.errorModal }}
           >
             <h1>Error</h1>
-            <p>
-              The information you have entered is invalid. Please, check the
-              wallet address and secret key and try again.
+            <p style={{ lineHeight: '20px' }}>
+              {passwordEmpty
+                ? 'Please, choose a password. You will need this for every transaction within the app.'
+                : xAddressFound
+                ? 'We noticed you are using a X-Address format. Currently, we only support Legacy Addresses, please use your Classic XRP Address.'
+                : 'The information you have entered is invalid. Please, check the wallet address and secret key and try again.'}
             </p>
             <div className={classes.dismissBtn}>
               <button onClick={this.dismissErrorModal}>DISMISS</button>
@@ -279,6 +311,21 @@ const styles = theme => ({
     },
     '& p': {
       padding: '0 24px 32px'
+    }
+  },
+  phraseErrorModal: {
+    background: Colors.darkerGray,
+    color: 'white',
+    width: '60%',
+    borderRadius: 15,
+    '& h1': {
+      fontSize: 28,
+      padding: '12px 24px',
+      fontWeight: 300
+    },
+    '& p': {
+      fontSize: 14,
+      padding: '12px 24px 24px'
     }
   },
   footnote: {

@@ -263,8 +263,8 @@ class WalletSoloTab extends Component {
             onClick={() => this.props.closeOptions()}
           >
             <p className={classes.balanceTitle}>
-              In order to activate your SOLO wallet, you must first send at{' '}
-              <b>least 21 XRP</b> to this address.
+              In order to activate your SOLO wallet, you must have at{' '}
+              <b>least 21 XRP</b> in this address.
             </p>
             <div className={classes.actSoloBtn}>
               <button

@@ -242,7 +242,10 @@ const styles = theme => ({
     width: '90%'
   },
   walletName: {
-    fontSize: 18
+    fontSize: 18,
+    width: '85%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   },
   totalBalanceCircle: {
     color: Colors.lightGray

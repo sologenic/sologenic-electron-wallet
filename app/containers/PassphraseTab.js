@@ -36,7 +36,8 @@ class PassphraseTab extends Component {
     this.state = {
       openErrorInPhraseModal: false,
       openAlreadyExistsModal: false,
-      importSuccessfulModal: false
+      importSuccessfulModal: false,
+      passwordEmpty: false
     };
 
     this.checkPassphrase = this.checkPassphrase.bind(this);
@@ -55,12 +56,21 @@ class PassphraseTab extends Component {
 
   checkPassphrase() {
     const phrase = this.refs.passphrase.value.trim();
+    const password = this.refs.passwordForImported.value.trim();
 
     const isPassphraseValid = countWords(phrase);
 
+    if (password === '') {
+      return this.setState({
+        openErrorInPhraseModal: true,
+        passwordEmpty: true
+      });
+    }
+
     if (!isPassphraseValid) {
       this.setState({
-        openErrorInPhraseModal: true
+        openErrorInPhraseModal: true,
+        passwordEmpty: false
       });
     } else {
       this.startPasshphraseImporting(phrase);
@@ -69,12 +79,20 @@ class PassphraseTab extends Component {
 
   closeErrorInPassphraseModal() {
     this.setState({
-      openErrorInPhraseModal: false
+      openErrorInPhraseModal: false,
+      passwordForImported: false
     });
   }
 
   async startPasshphraseImporting(phrase) {
     const importedWallet = getWalletFromMnemonic(phrase);
+
+    if (typeof importedWallet === 'undefined') {
+      return this.setState({
+        openErrorInPhraseModal: true,
+        passwordEmpty: false
+      });
+    }
 
     const importedWalletAddress = importedWallet.getAddress();
 
@@ -155,7 +173,8 @@ class PassphraseTab extends Component {
     const {
       openErrorInPhraseModal,
       openAlreadyExistsModal,
-      importSuccessfulModal
+      importSuccessfulModal,
+      passwordEmpty
     } = this.state;
 
     return (
@@ -192,10 +211,10 @@ class PassphraseTab extends Component {
             classes={{ paper: classes.phraseErrorModal }}
           >
             <h1>Error</h1>
-            <p>
-              You have entered an invalid mnemonic passphrase. It should consist
-              of 12 words, each separated by a space. Please, check your phrase
-              and try again.
+            <p style={{ lineHeight: 20 }}>
+              {passwordEmpty
+                ? 'Please, choose a password. You will need this for every transaction within the app.'
+                : 'You have entered an invalid mnemonic passphrase. It should consist of 12 words, each separated by a space. Please, check your phrase and try again.'}
             </p>
             <div className={classes.dismissBtn}>
               <button onClick={this.closeErrorInPassphraseModal}>

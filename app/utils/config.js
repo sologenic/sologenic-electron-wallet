@@ -14,8 +14,8 @@
 //     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 const configVars = {
-  soloIssuer: 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',
-  // soloIssuer: 'rMiTTf8TA9co9Pmzuzy7bVBr1mTwXzmpyU',
+  // soloIssuer: 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',
+  soloIssuer: 'rMiTTf8TA9co9Pmzuzy7bVBr1mTwXzmpyU',
   soloIssuerValue: '400000000',
   soloHash: '534F4C4F00000000000000000000000000000000',
   soloFlags: 131072
