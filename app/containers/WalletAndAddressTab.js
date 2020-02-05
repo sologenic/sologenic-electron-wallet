@@ -181,7 +181,8 @@ class WalletAndAddressTab extends Component {
           />
           <p className={classes.footnote}>
             Note: You will need this password to make transactions with this
-            wallet.
+            wallet. Please, write down the password and store it in a safe
+            place, if you lose it, there is no way to recover it.
           </p>
           <button onClick={this.validateInputs}>Add Wallet</button>
           <Dialog

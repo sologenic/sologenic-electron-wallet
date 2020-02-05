@@ -273,7 +273,7 @@ class TransferXRPScreen extends Component {
       destination: this.state.usingXAddress
         ? getRippleClassicAddressFromXAddress(this.state.destination)
         : this.state.destination,
-      value: this.state.userInput,
+      value: String(Number(this.state.userInput)),
       secret: secretDecrypted,
       tag: this.state.destinationTag
     });

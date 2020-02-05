@@ -203,7 +203,8 @@ class PassphraseTab extends Component {
           />
           <p className={classes.footnote} style={{ textAlign: 'left' }}>
             Note: You will need this password to make transactions with this
-            wallet.
+            wallet. Please, write down the password and store it in a safe
+            place, if you lose it, there is no way to recover it.
           </p>
           <button onClick={this.checkPassphrase}>Add Wallet</button>
           <Dialog
@@ -211,7 +212,7 @@ class PassphraseTab extends Component {
             classes={{ paper: classes.phraseErrorModal }}
           >
             <h1>Error</h1>
-            <p style={{ lineHeight: 20 }}>
+            <p style={{ lineHeight: '20px' }}>
               {passwordEmpty
                 ? 'Please, choose a password. You will need this for every transaction within the app.'
                 : 'You have entered an invalid mnemonic passphrase. It should consist of 12 words, each separated by a space. Please, check your phrase and try again.'}

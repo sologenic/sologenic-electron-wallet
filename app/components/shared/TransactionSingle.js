@@ -209,16 +209,29 @@ class TransactionSingle extends Component {
                 {!thisWalletReceived && currency === 'solo' ? (
                   <section>
                     <span>Burn Amount</span>
-                    <b>
+                    <b
+                      style={{
+                        maxWidth: 100,
+                        display: 'flex',
+                        alignItems: 'flex-end'
+                      }}
+                    >
                       <span style={{ color: Colors.lightGray, fontSize: 10 }}>
                         Ƨ
                       </span>
-                      {Number(
-                        tx.outcome.deliveredAmount
-                          ? Number(tx.specification.source.maxAmount.value) *
-                              0.0001
-                          : ''
-                      )}
+                      <p
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
+                        {Number(
+                          tx.outcome.deliveredAmount
+                            ? Number(tx.specification.source.maxAmount.value) *
+                                0.0001
+                            : ''
+                        )}
+                      </p>
                     </b>
                   </section>
                 ) : (

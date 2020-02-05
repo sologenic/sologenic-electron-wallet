@@ -1,7 +1,7 @@
 {
   "name": "sollo-wallet",
   "productName": "Solo Wallet",
-  "version": "0.18.1",
+  "version": "0.20.0",
   "description": "SOLO Wallet is a decentralized wallet for SOLO, XRP, and tokenized assets.",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
@@ -55,7 +55,7 @@
     ]
   },
   "build": {
-    "productName": "SOLO Wallet",
+    "productName": "SOLO Wallet TEST NET",
     "appId": "com.sologenic.solowallet",
     "copyright": "Copyright © 2020 Sologenic",
     "afterSign": "resources/notarize.js",

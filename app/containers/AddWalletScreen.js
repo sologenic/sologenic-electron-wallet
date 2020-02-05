@@ -23,7 +23,7 @@ import { generateNewWallet } from '../actions/index';
 import ScreenHeader from '../components/shared/ScreenHeader.js';
 
 // MUI COMPONENTS
-import { withStyles, Dialog } from '@material-ui/core';
+import { withStyles, Dialog, Fade } from '@material-ui/core';
 import { ChevronRight, VisibilityOff, Visibility } from '@material-ui/icons';
 
 // WALLET
@@ -143,16 +143,26 @@ class AddWalletScreen extends Component {
           )}
         </div>
         {passwordEmpty ? (
-          <span style={Colors.errorBackground}>
-            Please, choose a password. You will need this for every transaction
-            within the app.
-          </span>
+          <Fade in>
+            <p
+              style={{
+                color: Colors.errorBackground,
+                margin: '12px auto',
+                width: '50%',
+                fontSize: 14,
+                textAlign: 'center'
+              }}
+            >
+              Please, choose a password.
+            </p>
+          </Fade>
         ) : (
           ''
         )}
         <p className={classes.footnote}>
           Note: You will need this password to make transactions with this
-          wallet.
+          wallet. Please, write down the password and store it in a safe place,
+          if you lose it, there is no way to recover it.
         </p>
         <div className={classes.nextBtnContainer}>
           <button onClick={this.createWallet}>
