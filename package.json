@@ -265,7 +265,7 @@
     "history": "^4.10.1",
     "mathjs": "^6.5.0",
     "moment": "^2.24.0",
-    "node-forge": "^0.9.1",
+    "node-forge": "^0.10.0",
     "numbro": "^2.1.2",
     "qrcode-generator": "^1.4.4",
     "react": "^16.12.0",
